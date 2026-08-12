@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArticleDetailPage } from '../../../pages/ArticleDetailPage';
+import { ArticleDetailPage } from '../../../views/ArticleDetailPage';
 
 export default function Page() {
   const router = useRouter();

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { CatalogPage } from '../../pages/CatalogPage';
+import { CatalogPage } from '../../views/CatalogPage';
 import { Product } from '../../types';
 
 export default function Page() {

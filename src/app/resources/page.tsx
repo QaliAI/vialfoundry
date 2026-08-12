@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { ResourcesPage } from '../../pages/ResourcesPage';
+import { ResourcesPage } from '../../views/ResourcesPage';
 
 export default function Page() {
   const router = useRouter();

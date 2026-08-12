@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { HomePage } from '../pages/HomePage';
+import { HomePage } from '../views/HomePage';
 import { Product } from '../types';
 
 export default function Page() {

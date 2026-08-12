@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { QualityPage } from '../../pages/QualityPage';
+import { QualityPage } from '../../views/QualityPage';
 
 export default function Page() {
   return <QualityPage />;

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ProductDetailPage } from '../../../pages/ProductDetailPage';
+import { ProductDetailPage } from '../../../views/ProductDetailPage';
 import { PRODUCTS } from '../../../data/products';
 import { Product } from '../../../types';
 
