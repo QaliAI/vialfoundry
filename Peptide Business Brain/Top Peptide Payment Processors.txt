@@ -1,0 +1,82 @@
+Top Payment Processor / Merchant Account Options for the Peptide Website
+
+Because this is a research-use peptide ecommerce business, we should not rely on Stripe, PayPal, Square, Shopify Payments, or WooPayments. Those mainstream processors are more likely to reject, freeze, or shut down the account. The website is being built processor-agnostic so we can connect whichever high-risk merchant account/gateway approves the business.
+
+Recommended first-call list:
+
+1. AllayPay
+Website: https://allaypay.com/industries/peptides-merchant-services/
+Why: Explicitly markets peptide/research chemical merchant accounts and says they can support credit cards and ACH/eCheck. Strong first call for a custom website because they discuss high-risk gateways like NMI, Authorize.net, and FluidPay.
+
+2. Corepay
+Website: https://corepay.net/industries/best-peptide-merchant-accounts/
+Why: Explicit peptide merchant account page. Good first call for high-risk peptide ecommerce underwriting.
+
+3. PayBlox
+Website: https://payblox.com/high-risk-processing/peptides/
+Why: Explicit peptide payment processing page. Markets itself around peptide sellers that mainstream processors will not support.
+
+4. Sensapay
+Website: https://sensapay.com/high-risk-industries/peptide-merchant-account
+Why: Explicit peptide merchant account page. Worth contacting for ecommerce/high-risk underwriting.
+
+5. Verified Credit Card Processing
+Website: https://verifiedcreditcardprocessing.com/research-peptides-guide/
+Why: Explicit research peptide credit card processing guide. Useful to contact and also useful for understanding underwriting expectations.
+
+6. PayDiverse
+Website: https://paydiverse.com/peptides-merchant-accounts/
+Why: Explicit peptide merchant account page. Claims access to multiple banking solutions for high-risk peptide merchants.
+
+7. Signature Payments
+Website: https://signaturepayments.com/industries/peptides/
+Why: Explicit peptide industry page. Worth contacting for high-risk merchant account underwriting.
+
+8. Unison Payment
+Website: https://www.unisonpayment.com/industries/peptides
+Why: Explicit peptide/research chemical page. Worth contacting as another peptide-specific high-risk option.
+
+9. Instabill
+Website: https://instabill.com/ecommerce-industries/peptides-merchant-accounts/
+Why: Explicit peptides merchant account page and mentions offshore banking partners. Good backup option if domestic processors are difficult, but we should review fees/reserves carefully.
+
+10. Easy Pay Direct
+Website: https://www.easypaydirect.com/blog/payment-processing/peptide-merchant-account-fast-and-easy-payment-processing/
+Why: Explicit peptide merchant account guide with credit card, ACH/eCheck, and fraud prevention language. Note: they state peptide merchants must be LegitScript certified, so this may be slower but could be valuable if the client is willing to go through certification.
+
+Questions we need to ask each processor:
+
+- Do you currently underwrite research-use peptide ecommerce?
+- Do you require LegitScript?
+- Do you support credit cards?
+- Do you support ACH/eCheck?
+- Which gateway do you use: NMI, Authorize.net, FluidPay, USAePay, or another?
+- Can you support a custom Next.js/Vercel website, not just Shopify/WooCommerce?
+- Do you offer hosted checkout, API integration, or both?
+- What products are prohibited?
+- Are GLP-1-adjacent research products allowed or excluded?
+- Are bacteriostatic water, syringes, needles, or injection supplies prohibited?
+- What documents do you need to underwrite the account?
+- What are the expected rates, reserves, payout timelines, and monthly fees?
+- What website copy or policy changes would you require before approval?
+- What would cause account shutdown or fund holds?
+
+Documents likely needed:
+
+- LLC/entity docs
+- EIN
+- owner KYC
+- business bank account
+- product list
+- pricing
+- supplier/manufacturer documentation
+- COAs/testing documentation
+- website URL
+- research-use policy
+- terms and conditions
+- privacy policy
+- shipping policy
+- refund/replacement policy
+- expected monthly volume
+- average order value
+- prior processing history if available

@@ -1,0 +1,7 @@
+# Exclude heavy source assets and reference folders from Vercel deployment build
+peptide-graphic-examples -gitignore this whole file/
+video_thumbnails/
+screenshot_*.png
+Goldmine Client Handoff/
+Peptide Business Brain/
+.git/
