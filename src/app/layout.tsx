@@ -5,6 +5,7 @@ import { CartProvider } from '../context/CartContext';
 import { AppNavigationWrapper } from '../components/AppNavigationWrapper';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://vialfoundry.com'),
   title: 'Vial Foundry — Precision-built research materials.',
   description: 'Vial Foundry delivers batch-documented research materials, HPLC identity verification, independent analytical testing, and complete lot traceability.',
   keywords: ['research materials', 'analytical standards', 'batch verification', 'HPLC testing', 'LC-MS analysis', 'reference compounds'],
