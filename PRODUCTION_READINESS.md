@@ -1,31 +1,53 @@
-# Vial Foundry — Production Readiness Checklist
+# Vial Foundry — Production Readiness & Handoff
 
-Detailed summary of completed infrastructure, live deployment endpoints, and next operational steps.
-
----
-
-## 1. Completed Components
-
-- [x] **Next.js 14 App Router Architecture**: Full SSR, dynamic metadata, App Router routes, and serverless API endpoints.
-- [x] **Database Schema & RLS Migrations**: `01_schema.sql`, `02_rls.sql`, and `seed.sql` prepared for Supabase deployment.
-- [x] **Interactive Batch Verification Engine**: Real-time lot search, HTML5 Canvas HPLC chromatogram trace, and browser PDF COA exporter.
-- [x] **Administrative Console (`/admin`)**: Dashboard, Products CRUD, Inventory Tracking, Batches & COAs Manager, Orders, Customers, Discounts, Affiliates, and Settings.
-- [x] **Modular E-Commerce Adapters**: PaymentAdapter (Sandbox active), ShippingAdapter (Cold chain express), TaxAdapter, EmailAdapter.
-- [x] **Large Media Exclusions**: `.gitignore` and `.vercelignore` properly configured to prevent bloating Git/Vercel repositories.
-- [x] **GitHub Version Control**: Public repository `https://github.com/QaliAI/vialfoundry` initialized and pushed.
-- [x] **Vercel Production Deployment**: Live Vercel deployment resolution at `https://vialfoundry-h9zxe82lt-qaliais-projects.vercel.app`.
+Current deployment state and the remaining manual steps to go fully live.
 
 ---
 
-## 2. Next Operational Steps for Client
+## 1. Completed
 
-1. **Supabase Environment Connection**:
-   - Create dedicated Supabase project at `https://supabase.com`.
-   - Run `01_schema.sql`, `02_rls.sql`, and `seed.sql` in Supabase SQL Editor.
-   - Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` to Vercel Environment Settings.
+- [x] Premium RUO storefront (Next.js 14 App Router, dark industrial design system).
+- [x] Dedicated Supabase project `vialfoundry` (QaliAI org, ref `pmueqjoswsbavnkravth`) with schema, RLS, reviews, and seed data applied.
+- [x] Compliance layer: RUO age gate + 6 legal pages (`/legal/*`) + footer disclaimer.
+- [x] Catalog of 20 research compounds; fixed product imagery; rich tabbed product pages; out-of-stock restock capture.
+- [x] Inquiry / quote checkout (no card charging) persisting orders to Supabase — verified end-to-end.
+- [x] Contact, newsletter, and restock forms wired to Supabase with graceful email fallback (Resend optional).
+- [x] Content hub (6 articles) + verified reviews + homepage trust strip.
+- [x] SEO: metadata, Open Graph, `sitemap.xml`, `robots.txt`, Organization + Product JSON-LD. Vercel Analytics installed.
+- [x] Pushed to `github.com/QaliAI/vialfoundry` (branch `main`); Vercel auto-deploys `main` to production.
 
-2. **Merchant Payment Processor**:
-   - Once merchant account underwriting is finalized, connect high-risk card or ACH gateway by implementing `PaymentAdapter`.
+---
 
-3. **Porkbun DNS Configuration**:
-   - Enter A record (`76.76.21.21`) and CNAME record (`cname.vercel-dns.com`) in Porkbun DNS console for `vialfoundry.com`.
+## 2. Remaining manual steps (client)
+
+### A. Add environment variables in Vercel
+Vercel → Project `vialfoundry` → Settings → Environment Variables (Production + Preview):
+
+| Key | Value |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://pmueqjoswsbavnkravth.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | (anon key — Supabase → Project Settings → API) |
+| `SUPABASE_SERVICE_ROLE_KEY` | (service-role key — same page; needed for admin console) |
+| `NEXT_PUBLIC_SITE_URL` | `https://vialfoundry.com` |
+| `RESEND_API_KEY` | (optional — enables inquiry/contact emails) |
+| `NOTIFICATION_EMAIL_TO` | your admin inbox |
+
+Then **redeploy** (Deployments → ⋯ → Redeploy) so the values take effect.
+
+### B. Connect the domain (Porkbun → Vercel)
+1. Vercel → Project → Settings → Domains → add `vialfoundry.com` and `www.vialfoundry.com`.
+2. In Porkbun DNS for `vialfoundry.com`:
+
+| Type | Host | Value | TTL |
+| --- | --- | --- | --- |
+| A | `@` (blank) | `76.76.21.21` | 600 |
+| CNAME | `www` | `cname.vercel-dns.com` | 600 |
+
+3. Set `vialfoundry.com` as the canonical domain (redirect `www` → apex).
+
+> The custom domain is excluded from Vercel Authentication, so it will be publicly accessible once DNS propagates.
+
+### C. Optional
+- Disable Vercel Authentication (Settings → Deployment Protection) if you want the `*.vercel.app` preview URLs public too.
+- Add a Resend API key for transactional emails.
+- Provide a high-risk payment gateway later; the `PaymentAdapter` interface is ready.
