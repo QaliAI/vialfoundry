@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '../../context/CartContext';
 import { calculateShippingRate } from '../../lib/adapters/shippingAdapter';
-import { getPaymentAdapter } from '../../lib/adapters/paymentAdapter';
 import { ShieldCheck, Lock, ArrowRight, CheckCircle2, ShoppingBag } from 'lucide-react';
 
 export default function CheckoutPage() {
@@ -60,26 +59,29 @@ export default function CheckoutPage() {
     }
 
     setIsSubmitting(true);
-    const orderId = `ORD-VF-${Date.now().toString().slice(-6)}`;
-    const paymentAdapter = getPaymentAdapter();
 
     try {
-      const session = await paymentAdapter.createPaymentSession({
-        orderId,
-        orderNumber: orderId,
-        amount: grandTotal,
-        currency: 'USD',
-        customerEmail: shippingAddress.email,
-        shippingAddress,
-        items: cart.map(i => ({ name: i.product.name, quantity: i.quantity, unitPrice: i.product.price }))
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: grandTotal,
+          customerEmail: shippingAddress.email,
+          shippingAddress,
+          items: cart.map(i => ({
+            name: i.product.name,
+            sku: i.product.sku,
+            lotNumber: i.product.lotNumber,
+            quantity: i.quantity,
+            unitPrice: i.product.price,
+          })),
+        }),
       });
 
+      const data = await res.json();
+      const orderNumber = data?.orderNumber || `VF-${Date.now().toString().slice(-8)}`;
       clearCart();
-      if (session.redirectUrl) {
-        router.push(session.redirectUrl);
-      } else {
-        router.push(`/order-confirmation/${orderId}`);
-      }
+      router.push(`/order-confirmation/${orderNumber}`);
     } catch (err) {
       console.error(err);
       setIsSubmitting(false);
@@ -107,11 +109,15 @@ export default function CheckoutPage() {
       
       <div className="space-y-2">
         <div className="mono-tag text-xs text-cyan-400 font-semibold uppercase tracking-wider">
-          SECURE CHECKOUT
+          REQUEST ORDER / QUOTE
         </div>
         <h1 className="font-display text-3xl font-extrabold text-white">
-          Institutional & Guest Checkout
+          Submit Your Research Order Request
         </h1>
+        <p className="text-xs text-slate-400 font-light max-w-2xl">
+          No payment is taken now. Submit your request and our team will confirm availability and
+          reply with a quote and secure payment instructions. All materials are supplied for research use only.
+        </p>
       </div>
 
       <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -290,9 +296,12 @@ export default function CheckoutPage() {
                 </span>
               </div>
               <div className="flex justify-between text-white font-bold text-base pt-3 border-t border-white/10">
-                <span>Grand Total</span>
+                <span>Estimated Total</span>
                 <span className="text-cyan-400">${grandTotal.toFixed(2)}</span>
               </div>
+              <p className="text-[10px] font-mono text-slate-500">
+                Estimate only. Final total is confirmed on your quote.
+              </p>
             </div>
 
             <button
@@ -301,12 +310,12 @@ export default function CheckoutPage() {
               className="w-full py-4 rounded-xl bg-cyan-500 text-slate-950 font-display font-bold text-sm hover:bg-cyan-400 transition-all shadow-lg flex items-center justify-center space-x-2"
             >
               <Lock className="w-4 h-4" />
-              <span>{isSubmitting ? 'Processing Order...' : 'Complete Research Purchase'}</span>
+              <span>{isSubmitting ? 'Submitting Request...' : 'Submit Order Request'}</span>
             </button>
 
             <div className="text-center text-[10px] font-mono text-slate-400 flex items-center justify-center space-x-1">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Modular Payment Adapter Active</span>
+              <span>No card charged — quote &amp; invoice follow-up</span>
             </div>
           </div>
         </div>

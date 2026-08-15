@@ -17,27 +17,32 @@ export default function OrderConfirmationPage() {
       </div>
 
       <div className="space-y-2">
-        <span className="mono-tag text-xs text-emerald-400 font-bold tracking-widest uppercase">ORDER CONFIRMED</span>
-        <h1 className="font-display text-4xl font-extrabold text-white">Thank you for your purchase.</h1>
+        <span className="mono-tag text-xs text-emerald-400 font-bold tracking-widest uppercase">INQUIRY RECEIVED</span>
+        <h1 className="font-display text-4xl font-extrabold text-white">Thank you — your request is in.</h1>
         <p className="text-slate-400 text-sm font-mono">
-          Order Reference: <span className="text-cyan-400 font-bold">{orderId}</span>
+          Reference: <span className="text-cyan-400 font-bold">{orderId}</span>
         </p>
       </div>
 
       <div className="glass-panel p-6 rounded-2xl border border-white/10 text-left space-y-4 font-mono text-xs">
         <div className="flex items-center justify-between border-b border-white/10 pb-3">
-          <span className="text-slate-400">Order Status:</span>
-          <span className="text-emerald-400 font-bold">CONFIRMED / PREPARING COLD PACKAGING</span>
+          <span className="text-slate-400">Status:</span>
+          <span className="text-emerald-400 font-bold">RECEIVED / UNDER REVIEW</span>
         </div>
         <div className="flex items-center justify-between border-b border-white/10 pb-3">
-          <span className="text-slate-400">Dispatch Window:</span>
-          <span className="text-white">Within 24 Hours (-20°C Cold Storage)</span>
+          <span className="text-slate-400">Next Step:</span>
+          <span className="text-white">Quote &amp; secure payment instructions via email</span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-slate-400">Batch COA Documents:</span>
-          <span className="text-cyan-400 font-bold">PDF COA Attached to Order Record</span>
+          <span className="text-slate-400">Typical Response:</span>
+          <span className="text-cyan-400 font-bold">Within 12 business hours</span>
         </div>
       </div>
+
+      <p className="text-xs text-slate-500 font-mono">
+        A confirmation has been sent to your email. No payment has been charged. All materials are
+        supplied for research use only.
+      </p>
 
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
         <button
