@@ -114,10 +114,12 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
           <div className="space-y-3">
             <h5 className="mono-tag text-xs font-semibold text-white uppercase tracking-wider">Policies & Legal</h5>
             <ul className="space-y-2 text-xs">
-              <li><button onClick={() => navigate('/contact')} className="hover:text-cyan-300">Research Use Only Policy</button></li>
-              <li><button onClick={() => navigate('/contact')} className="hover:text-cyan-300">Shipping & Cold Storage</button></li>
-              <li><button onClick={() => navigate('/contact')} className="hover:text-cyan-300">Returns & Replacement</button></li>
-              <li><button onClick={() => navigate('/contact')} className="hover:text-cyan-300">Privacy & Data Security</button></li>
+              <li><button onClick={() => navigate('/legal/ruo-disclaimer')} className="hover:text-cyan-300">Research Use Only Policy</button></li>
+              <li><button onClick={() => navigate('/legal/shipping')} className="hover:text-cyan-300">Shipping & Cold Storage</button></li>
+              <li><button onClick={() => navigate('/legal/refunds')} className="hover:text-cyan-300">Returns & Replacement</button></li>
+              <li><button onClick={() => navigate('/legal/privacy')} className="hover:text-cyan-300">Privacy & Data Security</button></li>
+              <li><button onClick={() => navigate('/legal/terms')} className="hover:text-cyan-300">Terms of Service</button></li>
+              <li><button onClick={() => navigate('/legal/acceptable-use')} className="hover:text-cyan-300">Acceptable Use</button></li>
             </ul>
           </div>
 

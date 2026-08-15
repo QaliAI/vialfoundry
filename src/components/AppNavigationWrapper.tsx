@@ -6,6 +6,7 @@ import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { CartDrawer } from './CartDrawer';
 import { SearchModal } from './SearchModal';
+import { AgeGate } from './AgeGate';
 import { Product } from '../types';
 
 export const AppNavigationWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -28,6 +29,7 @@ export const AppNavigationWrapper: React.FC<{ children: React.ReactNode }> = ({ 
 
   return (
     <>
+      <AgeGate />
       <Navbar currentPath={pathname || '/'} navigate={navigate} />
       <main className="flex-1">{children}</main>
       <Footer navigate={navigate} />
