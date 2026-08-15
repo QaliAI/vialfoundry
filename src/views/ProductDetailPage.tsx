@@ -8,6 +8,8 @@ import { PRODUCTS } from '../data/products';
 import { ProductCard } from '../components/ProductCard';
 import { ProductTabs } from '../components/ProductTabs';
 import { RestockNotify } from '../components/RestockNotify';
+import { ReviewList } from '../components/ReviewList';
+import { productSlug } from '../lib/slug';
 
 interface ProductDetailPageProps {
   product: Product;
@@ -217,6 +219,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
         onViewCOA={batchRecord ? () => setShowCOAModal(true) : undefined}
         navigate={navigate}
       />
+
+      {/* Verified Reviews */}
+      <ReviewList productSlug={productSlug(product.name)} />
 
       {/* Related Products */}
       {relatedProducts.length > 0 && (

@@ -5,6 +5,7 @@ import { ProductCard } from '../components/ProductCard';
 import { FoundryStandard } from '../components/FoundryStandard';
 import { BatchVerificationEngine } from '../components/BatchVerificationEngine';
 import { ToolsHub } from '../components/ToolsHub';
+import { TrustStrip } from '../components/TrustStrip';
 import { PRODUCTS } from '../data/products';
 import { BATCH_RECORDS } from '../data/batches';
 import { Product } from '../types';
@@ -102,6 +103,11 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
 
       {/* Analytical Tools Hub */}
       <ToolsHub />
+
+      {/* Social proof */}
+      <div className="border-t border-white/10">
+        <TrustStrip />
+      </div>
 
       {/* Research Resources Section */}
       <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-white/10">

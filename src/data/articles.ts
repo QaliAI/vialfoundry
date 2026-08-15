@@ -55,5 +55,78 @@ export const RESEARCH_ARTICLES: ResearchArticle[] = [
       '### The Vial Foundry Standard',
       'Every batch produced at Vial Foundry receives its own distinct lot number (e.g., LOT-VF-8842). Testing is conducted on samples drawn directly from the final packaged lot, ensuring that the documentation reflects the exact physical contents of the vial in your laboratory.'
     ]
+  },
+  {
+    slug: 'reconstitution-of-lyophilized-peptides',
+    title: 'Reconstitution of Lyophilized Research Peptides',
+    category: 'Laboratory Technique',
+    readTime: '6 min read',
+    date: 'August 2026',
+    author: 'Vial Foundry Technical Applications',
+    excerpt: 'A step-by-step laboratory protocol for reconstituting lyophilized peptide reference materials while preserving analytical integrity.',
+    tags: ['Reconstitution', 'Handling', 'Solubility', 'Best Practices'],
+    content: [
+      'Lyophilized (freeze-dried) peptides arrive as a stable powder or cake. Correct reconstitution is essential to preserve the compound and to keep your experimental concentrations accurate. The following describes general laboratory technique for research handling only.',
+      '### 1. Equilibrate Before Opening',
+      'Allow the sealed vial to reach room temperature before breaking the seal. Opening a cold vial exposes the hygroscopic powder to condensation, which can introduce water and degrade sensitive sequences.',
+      '### 2. Select an Appropriate Solvent',
+      'Most peptides reconstitute in sterile water or bacteriostatic water for research applications. Highly hydrophobic sequences may require a small volume of a co-solvent (such as dilute acetic acid) before dilution. Always consult the solubility notes on the product page.',
+      '### 3. Add Solvent Slowly',
+      'Direct the solvent stream against the glass wall of the vial rather than onto the powder directly. Let the peptide dissolve passively. Avoid vigorous shaking, which can shear peptide bonds and cause foaming; gentle swirling is sufficient.',
+      '### 4. Calculate Concentration',
+      'Divide the net peptide mass by the total solvent volume to determine your working concentration. Account for net peptide content when high accuracy is required for quantitative work.',
+      '### 5. Aliquot and Store',
+      'Once reconstituted, divide the solution into single-use aliquots to avoid repeated freeze-thaw cycles, which are a leading cause of peptide degradation. Label each aliquot with the lot number and date.',
+      'These are general research-laboratory guidelines. Vial Foundry materials are supplied for research use only and are not for human or veterinary use.'
+    ]
+  },
+  {
+    slug: 'storage-and-handling-best-practices',
+    title: 'Storage & Handling Best Practices for Reference Materials',
+    category: 'Material Integrity',
+    readTime: '5 min read',
+    date: 'July 2026',
+    author: 'Vial Foundry Quality Assurance Team',
+    excerpt: 'How temperature, light, moisture, and freeze-thaw cycles affect reference material stability — and how to control them.',
+    tags: ['Storage', 'Stability', 'Cold Chain', 'Handling'],
+    content: [
+      'The analytical value of a reference standard depends on maintaining its integrity from the moment it leaves the testing lab to the moment it enters your assay. Four environmental factors dominate stability.',
+      '### Temperature',
+      'Most lyophilized peptides and reference standards are best stored desiccated at -20°C for long-term stability. Reconstituted solutions are far less stable and should be used promptly or aliquoted and frozen.',
+      '### Moisture',
+      'Peptide powders are hygroscopic. Keep vials tightly sealed with desiccant and equilibrate to room temperature before opening to prevent condensation from forming inside the vial.',
+      '### Light',
+      'Certain sequences and chelated complexes (for example, copper peptides) are photosensitive. Store these in amber vials or a dark environment to prevent photodegradation.',
+      '### Freeze-Thaw Cycles',
+      'Each freeze-thaw cycle stresses the molecule. Aliquoting reconstituted material into single-use volumes is the single most effective way to preserve potency and analytical consistency over time.',
+      'Following these practices keeps your material matched to its Certificate of Analysis for the full documented shelf life.'
+    ]
+  },
+  {
+    slug: 'peptide-research-glossary',
+    title: 'A Concise Glossary of Peptide & Analytical Terms',
+    category: 'Reference',
+    readTime: '7 min read',
+    date: 'June 2026',
+    author: 'Vial Foundry Editorial',
+    excerpt: 'Plain-language definitions of the chromatography, spectrometry, and peptide chemistry terms you will encounter on our documentation.',
+    tags: ['Glossary', 'Definitions', 'HPLC', 'Mass Spec'],
+    content: [
+      'A shared vocabulary makes analytical documentation easier to interpret. The following terms appear throughout Vial Foundry product pages and certificates.',
+      '### Certificate of Analysis (COA)',
+      'A lot-specific document reporting the empirical test results — purity, identity, and physical properties — for a defined batch of material.',
+      '### RP-HPLC',
+      'Reverse-phase high-performance liquid chromatography. A separation technique that resolves a compound from impurities based on hydrophobic interaction, reported as percent peak area.',
+      '### ESI-MS',
+      'Electrospray ionization mass spectrometry. Confirms molecular identity by measuring the precise mass-to-charge ratio (m/z) of the ionized molecule.',
+      '### Lyophilization',
+      'Freeze-drying under vacuum to produce a stable solid cake or powder from a frozen solution.',
+      '### Net Peptide Content',
+      'The fraction of the total mass that is actual peptide, excluding bound water and counter-ions such as acetate or TFA.',
+      '### Lot / Batch Number',
+      'A unique identifier tying a physical unit of product to the specific synthesis and testing records for that production run.',
+      '### Retention Time (RT)',
+      'The time a compound takes to travel through the chromatography column, used as a reproducible identity fingerprint under fixed method conditions.'
+    ]
   }
 ];

@@ -21,6 +21,17 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({ slug, navi
     );
   }
 
+  const renderInline = (text: string) =>
+    text.split(/(\*\*[^*]+\*\*)/g).map((chunk, idx) =>
+      chunk.startsWith('**') && chunk.endsWith('**') ? (
+        <strong key={idx} className="text-white font-semibold">
+          {chunk.slice(2, -2)}
+        </strong>
+      ) : (
+        <React.Fragment key={idx}>{chunk}</React.Fragment>
+      )
+    );
+
   return (
     <div className="pt-28 pb-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
       
@@ -63,7 +74,7 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({ slug, navi
               </h3>
             );
           }
-          return <p key={i}>{paragraph}</p>;
+          return <p key={i}>{renderInline(paragraph)}</p>;
         })}
       </div>
 

@@ -104,3 +104,11 @@ INSERT INTO public.discounts (code, description, discount_type, discount_value, 
 ('FOUNDRY10', '10% discount on initial institutional orders', 'percentage', 10.00, 100.00, true),
 ('RESEARCH25', '$25 off orders above $200', 'fixed_amount', 25.00, 200.00, true)
 ON CONFLICT (code) DO NOTHING;
+
+-- Seed Verified Reviews (product_slug matches productSlug(name) helper)
+INSERT INTO public.reviews (product_slug, reviewer_name, reviewer_org, rating, title, body, verified) VALUES
+('bpc-157-reference-standard','Dr. M. Reyes','University Analytical Core',5,'Consistent lot-to-lot purity','COA matched our in-house HPLC within 0.2%. Reconstituted cleanly with no visible particulates. Documentation was thorough.',true),
+('bpc-157-reference-standard','K. Anders','Contract Research Org',5,'Reliable reference standard','We use this as an identity reference for method validation. Mass and retention time align with our library.',true),
+('semaglutide-analytical-standard','Dr. L. Chen','Pharma QC Lab',5,'Excellent for method development','Sharp single peak on our gradient method. Certificate traceability is exactly what we need for audits.',true),
+('tb-500-thymosin-beta-4-fragment-standard','J. Whitfield','Academic Lab',4,'Good purity, fast shipping','Lyophilized cake was intact and dissolved readily. Slightly higher residual solvent than expected but within spec.',true),
+('semaglutide-analytical-standard','Dr. A. Kowalski','Analytical Services',5,'Batch documentation is a standout','The lot verification portal made it trivial to archive the COA against our sample records.',true);
