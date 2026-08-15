@@ -507,8 +507,8 @@ export const PRODUCTS: Product[] = [
     purityPercentage: 99.22,
     lotNumber: 'LOT-VF-3444',
     price: 118.00,
-    inStock: true,
-    stockCount: 37,
+    inStock: false,
+    stockCount: 0,
     description: 'Mitochondrial-derived 16-residue peptide analytical standard for advanced biochemical research.',
     technicalNotes: [
       'HPLC purity: 99.22%',

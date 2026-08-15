@@ -91,10 +91,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <div className="font-mono text-lg font-bold text-white">
               ${product.price.toFixed(2)}
             </div>
-            <div className="text-[9px] text-slate-400 font-mono flex items-center space-x-1">
-              <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400" />
-              <span>In Stock ({product.stockCount} Vials)</span>
-            </div>
+            {product.inStock ? (
+              <div className="text-[9px] text-slate-400 font-mono flex items-center space-x-1">
+                <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400" />
+                <span>In Stock ({product.stockCount} Vials)</span>
+              </div>
+            ) : (
+              <div className="text-[9px] text-amber-400 font-mono">Out of Stock</div>
+            )}
           </div>
 
           <div className="flex items-center space-x-2">
@@ -108,13 +112,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               </button>
             )}
 
-            <button
-              onClick={() => addToCart(product)}
-              className="flex items-center space-x-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-white/15 text-slate-100 hover:bg-cyan-500 hover:text-slate-950 hover:border-cyan-400 transition-all font-medium text-xs shadow-md"
-            >
-              <ShoppingBag className="w-3.5 h-3.5" />
-              <span>Add</span>
-            </button>
+            {product.inStock ? (
+              <button
+                onClick={() => addToCart(product)}
+                className="flex items-center space-x-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-white/15 text-slate-100 hover:bg-cyan-500 hover:text-slate-950 hover:border-cyan-400 transition-all font-medium text-xs shadow-md"
+              >
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span>Add</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => onViewProduct(product)}
+                className="flex items-center space-x-1.5 px-3 py-2 rounded-lg bg-slate-900 border border-amber-500/30 text-amber-400 hover:bg-amber-500 hover:text-slate-950 transition-all font-medium text-xs shadow-md"
+              >
+                <span>Notify Me</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

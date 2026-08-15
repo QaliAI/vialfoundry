@@ -6,6 +6,8 @@ import { useCart } from '../context/CartContext';
 import { ShieldCheck, FileCheck, ShoppingBag, ArrowLeft, CheckCircle2, Copy, Download, Sun, Moon } from 'lucide-react';
 import { PRODUCTS } from '../data/products';
 import { ProductCard } from '../components/ProductCard';
+import { ProductTabs } from '../components/ProductTabs';
+import { RestockNotify } from '../components/RestockNotify';
 
 interface ProductDetailPageProps {
   product: Product;
@@ -131,55 +133,59 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             </div>
           )}
 
-          {/* Pricing & Add to Cart */}
-          <div className="p-5 rounded-2xl bg-slate-900/90 border border-white/10 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-mono text-3xl font-bold text-white">${product.price.toFixed(2)}</div>
-                <div className="text-[11px] font-mono text-emerald-400 flex items-center space-x-1 mt-0.5">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>In Stock — Dispatched within 24 Hours</span>
+          {/* Pricing & Add to Cart (or Restock when out of stock) */}
+          {product.inStock ? (
+            <div className="p-5 rounded-2xl bg-slate-900/90 border border-white/10 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-mono text-3xl font-bold text-white">${product.price.toFixed(2)}</div>
+                  <div className="text-[11px] font-mono text-emerald-400 flex items-center space-x-1 mt-0.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>In Stock — Dispatched within 24 Hours</span>
+                  </div>
+                </div>
+
+                {/* Quantity Selector */}
+                <div className="flex items-center space-x-2 bg-slate-950 border border-white/10 rounded-xl p-1 font-mono text-xs">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="w-7 h-7 flex items-center justify-center text-slate-300 hover:bg-slate-800 rounded"
+                  >
+                    -
+                  </button>
+                  <span className="w-8 text-center font-bold text-white">{quantity}</span>
+                  <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="w-7 h-7 flex items-center justify-center text-slate-300 hover:bg-slate-800 rounded"
+                  >
+                    +
+                  </button>
                 </div>
               </div>
 
-              {/* Quantity Selector */}
-              <div className="flex items-center space-x-2 bg-slate-950 border border-white/10 rounded-xl p-1 font-mono text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                 <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-7 h-7 flex items-center justify-center text-slate-300 hover:bg-slate-800 rounded"
+                  onClick={() => addToCart(product, quantity)}
+                  className="py-3.5 rounded-xl bg-cyan-500 text-slate-950 font-display font-bold text-xs hover:bg-cyan-400 transition-all shadow-lg flex items-center justify-center space-x-2"
                 >
-                  -
+                  <ShoppingBag className="w-4 h-4" />
+                  <span>Add to Cart</span>
                 </button>
-                <span className="w-8 text-center font-bold text-white">{quantity}</span>
-                <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="w-7 h-7 flex items-center justify-center text-slate-300 hover:bg-slate-800 rounded"
-                >
-                  +
-                </button>
+
+                {batchRecord && (
+                  <button
+                    onClick={() => setShowCOAModal(true)}
+                    className="py-3.5 rounded-xl bg-slate-800 border border-white/15 text-white font-display font-bold text-xs hover:bg-slate-700 hover:border-cyan-500/40 transition-all flex items-center justify-center space-x-2"
+                  >
+                    <FileCheck className="w-4 h-4 text-cyan-400" />
+                    <span>View Lot COA Report</span>
+                  </button>
+                )}
               </div>
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              <button
-                onClick={() => addToCart(product, quantity)}
-                className="py-3.5 rounded-xl bg-cyan-500 text-slate-950 font-display font-bold text-xs hover:bg-cyan-400 transition-all shadow-lg flex items-center justify-center space-x-2"
-              >
-                <ShoppingBag className="w-4 h-4" />
-                <span>Add to Cart</span>
-              </button>
-
-              {batchRecord && (
-                <button
-                  onClick={() => setShowCOAModal(true)}
-                  className="py-3.5 rounded-xl bg-slate-800 border border-white/15 text-white font-display font-bold text-xs hover:bg-slate-700 hover:border-cyan-500/40 transition-all flex items-center justify-center space-x-2"
-                >
-                  <FileCheck className="w-4 h-4 text-cyan-400" />
-                  <span>View Lot COA Report</span>
-                </button>
-              )}
-            </div>
-          </div>
+          ) : (
+            <RestockNotify product={product} />
+          )}
 
           {/* Technical Specs Checklist */}
           <div className="space-y-2 border-t border-white/10 pt-4">
@@ -204,31 +210,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
       </div>
 
-      {/* Technical Notes & Batch Traceability Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 border-t border-white/10 pt-12">
-        <div className="lg:col-span-6 space-y-4">
-          <h3 className="mono-tag text-xs font-semibold text-cyan-400 uppercase tracking-wider">
-            Quality Assurance & Technical Notes
-          </h3>
-          <ul className="space-y-2 text-xs font-mono text-slate-300">
-            {product.technicalNotes.map((note, i) => (
-              <li key={i} className="flex items-start space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                <span>{note}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="lg:col-span-6 space-y-4">
-          <h3 className="mono-tag text-xs font-semibold text-cyan-400 uppercase tracking-wider">
-            Research Use Notice
-          </h3>
-          <div className="p-4 rounded-xl bg-slate-900 border border-white/10 text-xs font-mono text-slate-400 leading-relaxed">
-            This material is supplied strictly for in vitro laboratory, analytical, and research applications. It is not intended for human consumption, clinical diagnosis, veterinary application, or drug formulation.
-          </div>
-        </div>
-      </div>
+      {/* Rich tabbed product detail */}
+      <ProductTabs
+        product={product}
+        batchRecord={batchRecord}
+        onViewCOA={batchRecord ? () => setShowCOAModal(true) : undefined}
+        navigate={navigate}
+      />
 
       {/* Related Products */}
       {relatedProducts.length > 0 && (
