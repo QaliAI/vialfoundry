@@ -38,11 +38,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </span>
         </div>
 
-        {/* Vial Product Image */}
+        {/* Vial Product Image (dark studio shot blends with the card surface) */}
         <img
-          src={product.transparentImage || product.image}
+          src={product.image}
           alt={product.name}
-          className="relative z-10 max-h-44 object-contain filter drop-shadow-xl transform group-hover:scale-105 transition-transform duration-500"
+          className="relative z-10 max-h-52 object-contain filter drop-shadow-xl transform group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
         />
 

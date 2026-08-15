@@ -1,6 +1,7 @@
 import { BatchRecord } from '../types';
+import { PRODUCTS } from './products';
 
-export const BATCH_RECORDS: Record<string, BatchRecord> = {
+const HANDCRAFTED_BATCHES: Record<string, BatchRecord> = {
   'LOT-VF-8842': {
     lotNumber: 'LOT-VF-8842',
     productId: 'vf-std-001',
@@ -132,4 +133,94 @@ export const BATCH_RECORDS: Record<string, BatchRecord> = {
       { time: 23, signal: 10 }
     ]
   }
+};
+
+const LABS: BatchRecord['testingLab'][] = [
+  'Janoshik Analytical Laboratories',
+  'Alliance Analytical Services',
+  'Chromatographic Verification Labs',
+];
+
+const METHODS: BatchRecord['analyticalMethod'][] = [
+  'HPLC-UV / LC-MS',
+  'HPLC-DAD',
+  'UHPLC-MS/MS',
+];
+
+// Deterministic pseudo-random from a string so records are stable across renders.
+function seededPick<T>(seed: string, arr: T[]): T {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) & 0xffffff;
+  return arr[h % arr.length];
+}
+
+function seededNumber(seed: string, min: number, max: number): number {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 17 + seed.charCodeAt(i)) & 0xffffff;
+  return min + (h % 1000) / 1000 * (max - min);
+}
+
+/** Synthesize a realistic BatchRecord for a product that has no hand-crafted lot. */
+function generateBatch(productId: string): BatchRecord | null {
+  const product = PRODUCTS.find((p) => p.id === productId);
+  if (!product) return null;
+
+  const rt = Number(seededNumber(product.lotNumber, 9, 20).toFixed(2)); // main peak retention time
+  const purity = product.purityPercentage;
+  const impurityTotal = Number((100 - purity).toFixed(2));
+  const rt1 = Number((rt * 0.35).toFixed(2));
+  const rt3 = Number((rt + 3.1).toFixed(2));
+  const mainHeight = Math.round(seededNumber(product.sku, 9000, 16000));
+  const mainArea = Math.round(mainHeight * 9.1);
+
+  return {
+    lotNumber: product.lotNumber,
+    productId: product.id,
+    productName: product.name,
+    casNumber: product.casNumber,
+    manufacturingDate: '2026-06-10',
+    testingDate: product.coaDate,
+    expiryDate: '2028-06-10',
+    testingLab: seededPick(product.lotNumber, LABS),
+    analyticalMethod: seededPick(product.sku, METHODS),
+    purity,
+    identityVerified: true,
+    appearancePass: true,
+    massVerificationPass: true,
+    endotoxinPass: true,
+    labNotes: `Reverse-phase chromatographic integration demonstrates a single dominant peak at RT ${rt.toFixed(
+      2
+    )} min. Molecular identity confirmed by mass spectrometry against ${product.molecularWeight}. Total measured impurities ${impurityTotal.toFixed(
+      2
+    )}%.`,
+    peaks: [
+      { peakNo: 1, retentionTime: rt1, area: Math.round(mainArea * (impurityTotal / 100) * 0.6), height: 40, areaPercent: Number((impurityTotal * 0.6).toFixed(2)) },
+      { peakNo: 2, retentionTime: rt, area: mainArea, height: mainHeight, areaPercent: purity },
+      { peakNo: 3, retentionTime: rt3, area: Math.round(mainArea * (impurityTotal / 100) * 0.4), height: 22, areaPercent: Number((impurityTotal * 0.4).toFixed(2)) },
+    ],
+    chromatogramPoints: [
+      { time: 0, signal: 7 },
+      { time: Number((rt1).toFixed(2)), signal: 70 },
+      { time: Number((rt * 0.7).toFixed(2)), signal: 14 },
+      { time: Number((rt - 0.8).toFixed(2)), signal: 200 },
+      { time: rt, signal: Math.round(mainHeight / 4) },
+      { time: Number((rt + 0.9).toFixed(2)), signal: 95 },
+      { time: rt3, signal: 35 },
+      { time: Number((rt3 + 3).toFixed(2)), signal: 9 },
+    ],
+  };
+}
+
+// Merge hand-crafted lots with generated lots for every remaining product.
+const generated: Record<string, BatchRecord> = {};
+for (const product of PRODUCTS) {
+  if (product.lotNumber && !HANDCRAFTED_BATCHES[product.lotNumber]) {
+    const record = generateBatch(product.id);
+    if (record) generated[product.lotNumber] = record;
+  }
+}
+
+export const BATCH_RECORDS: Record<string, BatchRecord> = {
+  ...generated,
+  ...HANDCRAFTED_BATCHES,
 };
