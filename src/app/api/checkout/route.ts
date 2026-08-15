@@ -32,27 +32,28 @@ export async function POST(req: Request) {
     const supabase = createRouteClient();
 
     if (supabase) {
-      const { data: order, error: orderErr } = await supabase
-        .from('orders')
-        .insert({
-          order_number: orderNumber,
-          guest_email: customerEmail || null,
-          status: 'inquiry',
-          payment_status: 'unpaid',
-          fulfillment_status: 'unfulfilled',
-          subtotal,
-          total_amount: total,
-          shipping_address: shippingAddress || {},
-          notes: 'Inquiry / quote request submitted via storefront.',
-        })
-        .select('id')
-        .single();
+      // Generate the id here so we don't need a RETURNING select (anon key has no
+      // public SELECT policy on orders, which would otherwise roll back the insert).
+      const orderId = crypto.randomUUID();
+
+      const { error: orderErr } = await supabase.from('orders').insert({
+        id: orderId,
+        order_number: orderNumber,
+        guest_email: customerEmail || null,
+        status: 'inquiry',
+        payment_status: 'unpaid',
+        fulfillment_status: 'unfulfilled',
+        subtotal,
+        total_amount: total,
+        shipping_address: shippingAddress || {},
+        notes: 'Inquiry / quote request submitted via storefront.',
+      });
 
       if (orderErr) {
         console.error('[checkout] order insert error', orderErr.message);
-      } else if (order && items && items.length) {
+      } else if (items && items.length) {
         const orderItems = items.map((i) => ({
-          order_id: order.id,
+          order_id: orderId,
           product_name: i.name,
           sku: i.sku || 'N/A',
           unit_price: i.unitPrice,
