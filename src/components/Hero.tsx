@@ -17,6 +17,7 @@ export const Hero: React.FC<HeroProps> = ({ navigate, onQuickVerify }) => {
           loop
           muted
           playsInline
+          preload="none"
           poster="/assets/videos/hero-bg-poster.jpg"
           className="w-full h-full object-cover"
         >
