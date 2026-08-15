@@ -42,4 +42,10 @@ next-env.d.ts
 /screenshot_*.png
 /*.png.bak
 
+# Reference / handoff source material (not part of the deployed app)
+/Goldmine Client Handoff
+/Peptide Business Brain
+/sample.peptide.vials
+/dist
+
 .vercel

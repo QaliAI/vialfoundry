@@ -16,7 +16,7 @@ INSERT INTO public.products (
     cas_number, sequence, chemical_formula, molecular_weight, storage_conditions, appearance, solubility
 ) VALUES
 (
-    'p1111111-1111-1111-1111-111111111111',
+    '11111111-1111-1111-1111-111111111111',
     'bpc-157-reference-standard',
     'VF-SKU-991',
     'BPC-157 Reference Standard',
@@ -35,7 +35,7 @@ INSERT INTO public.products (
     'Soluble in sterile water'
 ),
 (
-    'p2222222-2222-2222-2222-222222222222',
+    '22222222-2222-2222-2222-222222222222',
     'tb-500-thymosin-beta-4-standard',
     'VF-SKU-992',
     'TB-500 (Thymosin Beta-4 Fragment) Standard',
@@ -54,7 +54,7 @@ INSERT INTO public.products (
     'Soluble in aqueous buffers'
 ),
 (
-    'p3333333-3333-3333-3333-333333333333',
+    '33333333-3333-3333-3333-333333333333',
     'semaglutide-analytical-standard',
     'VF-SKU-993',
     'Semaglutide Analytical Standard',
@@ -80,8 +80,8 @@ INSERT INTO public.batches (
     status, testing_lab, reported_purity, identity_method, identity_verified, lab_notes
 ) VALUES
 (
-    'b1111111-1111-1111-1111-111111111111',
-    'p1111111-1111-1111-1111-111111111111',
+    'a1111111-1111-1111-1111-111111111111',
+    '11111111-1111-1111-1111-111111111111',
     'LOT-VF-8842',
     '2026-06-04', '2026-07-14', '2028-06-04',
     'verified', 'Janoshik Analytical Laboratories', 99.64,
@@ -89,8 +89,8 @@ INSERT INTO public.batches (
     'RP-HPLC integration demonstrates single dominant chromatographic peak at RT 14.28 min. Mass verified at 1419.56 Da.'
 ),
 (
-    'b2222222-2222-2222-2222-222222222222',
-    'p2222222-2222-2222-2222-222222222222',
+    'a2222222-2222-2222-2222-222222222222',
+    '22222222-2222-2222-2222-222222222222',
     'LOT-VF-9921',
     '2026-05-18', '2026-06-28', '2028-05-18',
     'verified', 'Alliance Analytical Services', 99.48,
