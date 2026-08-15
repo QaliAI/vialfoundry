@@ -29,6 +29,23 @@ export const LegalDocument: React.FC<{ doc: LegalDoc }> = ({ doc }) => {
         ))}
       </div>
 
+      {doc.slug === 'refunds' && (
+        <div className="mt-12 p-5 rounded-2xl bg-cyan-500/5 border border-cyan-500/25 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="font-display text-base font-bold text-white">Refer researchers, earn commission</h3>
+            <p className="text-xs text-slate-400 font-light mt-1">
+              Love working with our materials? Join the Vial Foundry Affiliate Program.
+            </p>
+          </div>
+          <a
+            href="/affiliates"
+            className="flex-shrink-0 px-5 py-3 rounded-xl bg-cyan-500 text-slate-950 font-display font-bold text-xs hover:bg-cyan-400 transition-all"
+          >
+            Join Affiliate Program
+          </a>
+        </div>
+      )}
+
       <div className="mt-16 p-4 rounded-xl bg-slate-900 border border-white/10 text-xs text-slate-500 font-mono leading-relaxed">
         This document is provided for general informational purposes and does not constitute
         legal advice. Vial Foundry recommends reviewing all policies with qualified counsel for

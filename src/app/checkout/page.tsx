@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '../../context/CartContext';
 import { calculateShippingRate } from '../../lib/adapters/shippingAdapter';
-import { ShieldCheck, Lock, ArrowRight, CheckCircle2, ShoppingBag } from 'lucide-react';
+import { PAYMENT_METHODS, PaymentMethodId, getPaymentMethod } from '../../data/payment';
+import { ShieldCheck, Lock, CheckCircle2, ShoppingBag } from 'lucide-react';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -15,6 +16,10 @@ export default function CheckoutPage() {
   const [discountError, setDiscountError] = useState('');
   const [ruoAgreed, setRuoAgreed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentMethodId, setPaymentMethodId] = useState<PaymentMethodId>('cashapp');
+
+  const selectedMethod = getPaymentMethod(paymentMethodId);
+  const methodDiscount = selectedMethod ? subtotal * selectedMethod.discountRate : 0;
 
   const [shippingAddress, setShippingAddress] = useState({
     firstName: '',
@@ -33,7 +38,7 @@ export default function CheckoutPage() {
     itemsCount: cart.length
   });
 
-  const discountAmount = appliedDiscount ? appliedDiscount.amount : 0;
+  const discountAmount = (appliedDiscount ? appliedDiscount.amount : 0) + methodDiscount;
   const grandTotal = Math.max(0, subtotal - discountAmount + shippingInfo.cost);
 
   const handleApplyDiscount = (e: React.FormEvent) => {
@@ -66,6 +71,8 @@ export default function CheckoutPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           amount: grandTotal,
+          discountAmount,
+          paymentMethod: paymentMethodId,
           customerEmail: shippingAddress.email,
           shippingAddress,
           items: cart.map(i => ({
@@ -81,7 +88,9 @@ export default function CheckoutPage() {
       const data = await res.json();
       const orderNumber = data?.orderNumber || `VF-${Date.now().toString().slice(-8)}`;
       clearCart();
-      router.push(`/order-confirmation/${orderNumber}`);
+      router.push(
+        `/order-confirmation/${orderNumber}?method=${paymentMethodId}&total=${grandTotal.toFixed(2)}`
+      );
     } catch (err) {
       console.error(err);
       setIsSubmitting(false);
@@ -212,6 +221,51 @@ export default function CheckoutPage() {
 
           </div>
 
+          {/* Payment Method Selector */}
+          <div className="glass-panel p-6 rounded-2xl border border-white/10 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-display text-lg font-bold text-white">Payment Method</h3>
+              <span className="mono-tag text-[10px] uppercase tracking-widest text-slate-500">Select one</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {PAYMENT_METHODS.map((m) => {
+                const Icon = m.icon;
+                const active = paymentMethodId === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setPaymentMethodId(m.id)}
+                    className={`text-left p-4 rounded-xl border transition-all flex items-start space-x-3 ${
+                      active
+                        ? 'bg-cyan-500/10 border-cyan-500/60'
+                        : 'bg-slate-950 border-white/10 hover:border-white/25'
+                    }`}
+                  >
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${active ? 'bg-cyan-500 text-slate-950' : 'bg-slate-900 text-cyan-400 border border-white/10'}`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-display text-sm font-bold text-white flex items-center gap-2">
+                        {m.label}
+                        {m.discountRate > 0 && (
+                          <span className="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 text-[9px] font-mono font-bold">
+                            {Math.round(m.discountRate * 100)}% OFF
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] font-mono text-slate-400">{m.tagline}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-[11px] font-mono text-slate-500">
+              Choose how you&apos;ll pay. After you submit, you&apos;ll receive exact payment
+              instructions for {selectedMethod?.label}. No card is charged on this site.
+            </p>
+          </div>
+
           {/* RUO Compliance Checkbox */}
           <div className="p-4 rounded-xl bg-slate-900 border border-white/10 space-y-2">
             <label className="flex items-start space-x-3 cursor-pointer">
@@ -285,8 +339,14 @@ export default function CheckoutPage() {
               </div>
               {appliedDiscount && (
                 <div className="flex justify-between text-emerald-400">
-                  <span>Discount</span>
+                  <span>Discount ({appliedDiscount.code})</span>
                   <span>-${appliedDiscount.amount.toFixed(2)}</span>
+                </div>
+              )}
+              {methodDiscount > 0 && selectedMethod && (
+                <div className="flex justify-between text-emerald-400">
+                  <span>{selectedMethod.label} discount ({Math.round(selectedMethod.discountRate * 100)}%)</span>
+                  <span>-${methodDiscount.toFixed(2)}</span>
                 </div>
               )}
               <div className="flex justify-between text-slate-400">

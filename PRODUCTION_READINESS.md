@@ -31,6 +31,12 @@ Vercel → Project `vialfoundry` → Settings → Environment Variables (Product
 | `NEXT_PUBLIC_SITE_URL` | `https://vialfoundry.com` |
 | `RESEND_API_KEY` | (optional — enables inquiry/contact emails) |
 | `NOTIFICATION_EMAIL_TO` | your admin inbox |
+| `NEXT_PUBLIC_CASHAPP_CASHTAG` | your `$cashtag` (shown at checkout) |
+| `NEXT_PUBLIC_ZELLE_HANDLE` | your Zelle email/phone |
+| `NEXT_PUBLIC_NOWPAYMENTS_LINK` | your NOWPayments hosted crypto link (optional) |
+| `NEXT_PUBLIC_LINKMONEY_LINK` | your link.money ACH link (optional) |
+
+> Checkout offers CashApp (5% off), Crypto (5% off), Zelle, and ACH. These handles are shown to customers as payment instructions — until you set them, sensible placeholders display.
 
 Then **redeploy** (Deployments → ⋯ → Redeploy) so the values take effect.
 

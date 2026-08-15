@@ -15,11 +15,15 @@ export async function POST(req: Request) {
     const body = await req.json();
     const {
       amount,
+      discountAmount,
+      paymentMethod,
       customerEmail,
       shippingAddress,
       items,
     }: {
       amount?: number;
+      discountAmount?: number;
+      paymentMethod?: string;
       customerEmail?: string;
       shippingAddress?: Record<string, string>;
       items?: InquiryItem[];
@@ -43,10 +47,12 @@ export async function POST(req: Request) {
         status: 'inquiry',
         payment_status: 'unpaid',
         fulfillment_status: 'unfulfilled',
+        payment_method: paymentMethod || null,
         subtotal,
+        discount_amount: typeof discountAmount === 'number' ? discountAmount : 0,
         total_amount: total,
         shipping_address: shippingAddress || {},
-        notes: 'Inquiry / quote request submitted via storefront.',
+        notes: `Inquiry / quote request submitted via storefront. Payment method: ${paymentMethod || 'unspecified'}.`,
       });
 
       if (orderErr) {
@@ -75,6 +81,7 @@ export async function POST(req: Request) {
       subject: `[Vial Foundry] New order inquiry ${orderNumber}`,
       html: `<h2>New order inquiry ${orderNumber}</h2>
         <p><strong>Customer:</strong> ${customerEmail || 'n/a'}</p>
+        <p><strong>Payment method:</strong> ${paymentMethod || 'unspecified'}</p>
         <p><strong>Estimated total:</strong> $${total.toFixed(2)}</p>
         <ul>${itemLines}</ul>
         <pre>${JSON.stringify(shippingAddress || {}, null, 2)}</pre>`,

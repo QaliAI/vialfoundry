@@ -116,6 +116,7 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
               <li><button onClick={() => navigate('/about')} className="hover:text-cyan-300">About Vial Foundry</button></li>
               <li><button onClick={() => navigate('/contact')} className="hover:text-cyan-300">Contact Support</button></li>
               <li><button onClick={() => navigate('/resources')} className="hover:text-cyan-300">Research Articles</button></li>
+              <li><button onClick={() => navigate('/affiliates')} className="text-cyan-400 font-bold hover:text-cyan-300">Join Affiliate Program</button></li>
               <li><button onClick={() => navigate('/contact')} className="hover:text-cyan-300">Institutional Procurement</button></li>
             </ul>
           </div>

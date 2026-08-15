@@ -1,17 +1,31 @@
 'use client';
 
-import React from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { CheckCircle2, ShieldCheck, Download, Package, ArrowRight } from 'lucide-react';
+import React, { Suspense, useState } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { CheckCircle2, ShieldCheck, ArrowRight } from 'lucide-react';
+import { getPaymentMethod } from '../../../data/payment';
+import { PaymentInstructions } from '../../../components/PaymentInstructions';
 
-export default function OrderConfirmationPage() {
+function Confirmation() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const orderId = params?.orderId as string;
 
+  const method = getPaymentMethod(searchParams.get('method'));
+  const total = parseFloat(searchParams.get('total') || '0');
+  const [copied, setCopied] = useState(false);
+
+  const copyHandle = () => {
+    if (method) {
+      navigator.clipboard.writeText(method.handle);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   return (
-    <div className="pt-32 pb-20 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 text-center">
-      
+    <div className="pt-32 pb-20 max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 text-center">
       <div className="p-4 rounded-full bg-emerald-500/20 text-emerald-400 w-20 h-20 mx-auto flex items-center justify-center border border-emerald-500/30">
         <CheckCircle2 className="w-10 h-10" />
       </div>
@@ -24,6 +38,17 @@ export default function OrderConfirmationPage() {
         </p>
       </div>
 
+      {/* Payment instructions for the selected method */}
+      {method && total > 0 && (
+        <PaymentInstructions
+          method={method}
+          total={total}
+          orderRef={orderId}
+          onCopyHandle={copyHandle}
+          copied={copied}
+        />
+      )}
+
       <div className="glass-panel p-6 rounded-2xl border border-white/10 text-left space-y-4 font-mono text-xs">
         <div className="flex items-center justify-between border-b border-white/10 pb-3">
           <span className="text-slate-400">Status:</span>
@@ -31,7 +56,7 @@ export default function OrderConfirmationPage() {
         </div>
         <div className="flex items-center justify-between border-b border-white/10 pb-3">
           <span className="text-slate-400">Next Step:</span>
-          <span className="text-white">Quote &amp; secure payment instructions via email</span>
+          <span className="text-white">Send payment, then we confirm &amp; ship</span>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-slate-400">Typical Response:</span>
@@ -40,11 +65,11 @@ export default function OrderConfirmationPage() {
       </div>
 
       <p className="text-xs text-slate-500 font-mono">
-        A confirmation has been sent to your email. No payment has been charged. All materials are
+        A confirmation has been sent to your email. No card is charged on this site. All materials are
         supplied for research use only.
       </p>
 
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
         <button
           onClick={() => router.push('/catalog')}
           className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-cyan-500 text-slate-950 font-display font-bold text-xs hover:bg-cyan-400 transition-all flex items-center justify-center space-x-2"
@@ -60,7 +85,14 @@ export default function OrderConfirmationPage() {
           <span>Lookup Batch COA</span>
         </button>
       </div>
-
     </div>
+  );
+}
+
+export default function OrderConfirmationPage() {
+  return (
+    <Suspense fallback={<div className="pt-32 text-center text-slate-400 font-mono">Loading…</div>}>
+      <Confirmation />
+    </Suspense>
   );
 }
