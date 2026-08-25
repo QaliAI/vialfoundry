@@ -4,7 +4,7 @@ import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Package, Layers, FileCheck, ShoppingCart,
-  Users, Tag, Share2, Settings, LogOut, ArrowLeft, ShieldAlert
+  Users, Tag, Share2, BarChart3, Settings, LogOut, ArrowLeft
 } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -18,15 +18,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navItems = [
     { label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
-    { label: 'Products', path: '/admin/products', icon: Package },
-    { label: 'Inventory', path: '/admin/inventory', icon: Layers },
+    { label: 'Orders & Fulfillment', path: '/admin/orders', icon: ShoppingCart },
+    { label: 'Products Catalog', path: '/admin/products', icon: Package },
+    { label: 'Inventory Matrix', path: '/admin/inventory', icon: Layers },
     { label: 'Batches & COAs', path: '/admin/batches', icon: FileCheck },
-    { label: 'Orders', path: '/admin/orders', icon: ShoppingCart },
+    { label: 'Affiliates Ledger', path: '/admin/affiliates', icon: Share2 },
     { label: 'Customers', path: '/admin/customers', icon: Users },
-    { label: 'Discounts', path: '/admin/discounts', icon: Tag },
-    { label: 'Affiliates', path: '/admin/affiliates', icon: Share2 },
+    { label: 'Promotions', path: '/admin/discounts', icon: Tag },
     { label: 'Settings', path: '/admin/settings', icon: Settings },
   ];
+
+  const handleSignOut = async () => {
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' });
+    } catch {
+      // Ignore
+    }
+    localStorage.removeItem('vf_admin_authenticated');
+    router.push('/admin/login');
+  };
 
   return (
     <div className="min-h-screen flex bg-slate-950 text-slate-100 font-sans">
@@ -82,7 +92,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <span>View Live Site</span>
           </button>
           <button
-            onClick={() => router.push('/admin/login')}
+            onClick={handleSignOut}
             className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-mono text-rose-400 hover:bg-rose-500/10"
           >
             <LogOut className="w-3.5 h-3.5" />

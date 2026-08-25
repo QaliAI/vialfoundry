@@ -1,4 +1,4 @@
-import { BatchRecord } from '../types';
+import type { BatchRecord } from '../types/index';
 import { PRODUCTS } from './products';
 
 const HANDCRAFTED_BATCHES: Record<string, BatchRecord> = {

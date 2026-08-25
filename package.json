@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start -p 3000",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.mjs",
+    "check:prod": "node scripts/check-production-readiness.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
@@ -21,6 +23,7 @@
     "next": "^14.2.24",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "resend": "^6.20.0",
     "tailwind-merge": "^3.0.1",
     "zod": "^3.24.2"
   },

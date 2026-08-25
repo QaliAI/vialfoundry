@@ -67,7 +67,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ navigate, onSelectProd
         <div className="max-h-96 overflow-y-auto space-y-2 pr-1">
           {filteredProducts.length === 0 ? (
             <div className="text-center py-10 text-slate-500 font-mono text-xs">
-              No matching compounds or lot records found for "{query}".
+              No matching compounds or lot records found for &quot;{query}&quot;.
             </div>
           ) : (
             filteredProducts.map((product) => (

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle2, ShieldCheck, ArrowRight } from 'lucide-react';
 import { getPaymentMethod } from '../../../data/payment';
@@ -12,8 +12,23 @@ function Confirmation() {
   const router = useRouter();
   const orderId = params?.orderId as string;
 
+  // Read authoritative totals from sessionStorage (set on checkout success)
+  const storedOrder = typeof window !== 'undefined' ? 
+    JSON.parse(sessionStorage.getItem(`vf_order_${orderId}`) || 'null') : null;
+  
   const method = getPaymentMethod(searchParams.get('method'));
-  const total = parseFloat(searchParams.get('total') || '0');
+  const total = storedOrder 
+    ? storedOrder.totalCents / 100 
+    : parseFloat(searchParams.get('total') || '0');
+  const subtotal = storedOrder 
+    ? storedOrder.subtotalCents / 100 
+    : null;
+  const discount = storedOrder 
+    ? storedOrder.discountCents / 100 
+    : null;
+  const shipping = storedOrder 
+    ? storedOrder.shippingCents / 100 
+    : null;
   const [copied, setCopied] = useState(false);
 
   const copyHandle = () => {

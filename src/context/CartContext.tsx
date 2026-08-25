@@ -35,16 +35,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [cart]);
 
   const addToCart = (product: Product, quantity = 1) => {
+    if (!product.inStock || product.stockCount <= 0) return;
+    const maxStock = product.stockCount;
     setCart(prev => {
       const existing = prev.find(item => item.product.id === product.id);
       if (existing) {
+        const newQty = Math.min(maxStock, existing.quantity + quantity);
         return prev.map(item =>
           item.product.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { ...item, quantity: newQty }
             : item
         );
       }
-      return [...prev, { product, quantity }];
+      const initialQty = Math.min(maxStock, Math.max(1, quantity));
+      return [...prev, { product, quantity: initialQty }];
     });
     setIsCartOpen(true);
   };
@@ -59,9 +63,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
     setCart(prev =>
-      prev.map(item =>
-        item.product.id === productId ? { ...item, quantity } : item
-      )
+      prev.map(item => {
+        if (item.product.id === productId) {
+          const maxStock = item.product.stockCount || Infinity;
+          return { ...item, quantity: Math.min(maxStock, quantity) };
+        }
+        return item;
+      })
     );
   };
 

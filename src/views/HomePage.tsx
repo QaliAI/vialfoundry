@@ -93,7 +93,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
             THE VIAL FOUNDRY CONCEPT
           </span>
           <blockquote className="font-display text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-snug">
-            "Vial Foundry was built around a simple idea: research materials should be presented with the same precision used to evaluate them."
+            &ldquo;Vial Foundry was built around a simple idea: research materials should be presented with the same precision used to evaluate them.&rdquo;
           </blockquote>
           <p className="text-slate-400 text-sm font-light max-w-2xl mx-auto">
             From HPLC peak area integration to temperature-controlled cold storage, we build standards for researchers who demand complete transparency.

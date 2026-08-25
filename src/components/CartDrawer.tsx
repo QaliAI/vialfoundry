@@ -129,7 +129,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
 
               <button
                 onClick={() => {
-                  alert('Checkout initiated. Thank you for placing your research material order with Vial Foundry.');
+                  setIsCartOpen(false);
+                  navigate('/checkout');
                 }}
                 className="w-full py-3.5 rounded-xl bg-cyan-500 text-slate-950 font-display font-bold text-sm hover:bg-cyan-400 transition-all shadow-lg flex items-center justify-center space-x-2"
               >

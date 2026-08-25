@@ -27,6 +27,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   const [lightingMode, setLightingMode] = useState<'dark' | 'light'>('dark');
   const [showCOAModal, setShowCOAModal] = useState(false);
   const [copiedSeq, setCopiedSeq] = useState(false);
+  const maxQuantity = product.inStock ? product.stockCount : Infinity;
 
   const batchRecord = BATCH_RECORDS[product.lotNumber];
 
@@ -179,8 +180,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   </button>
                   <span className="w-8 text-center font-bold text-white">{quantity}</span>
                   <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="w-7 h-7 flex items-center justify-center text-slate-300 hover:bg-slate-800 rounded"
+                    onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
+                    className={maxQuantity === Infinity 
+                      ? 'w-7 h-7 flex items-center justify-center text-slate-300 hover:bg-slate-800 rounded'
+                      : quantity >= maxQuantity 
+                        ? 'w-7 h-7 flex items-center justify-center text-slate-400 cursor-not-allowed'
+                        : 'w-7 h-7 flex items-center justify-center text-slate-300 hover:bg-slate-800 rounded'
+                  }
                   >
                     +
                   </button>

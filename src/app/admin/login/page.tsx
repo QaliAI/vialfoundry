@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ShieldCheck, Lock, Mail, ArrowRight, AlertCircle } from 'lucide-react';
-import { createClient } from '../../../lib/supabase/client';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -17,22 +16,16 @@ export default function AdminLoginPage() {
     setLoading(true);
     setError('');
 
-    // Authenticate via Supabase or admin password check
-    if (email === 'admin@vialfoundry.com' && password === 'foundry2026') {
-      localStorage.setItem('vf_admin_authenticated', 'true');
-      router.push('/admin');
-      return;
-    }
-
     try {
-      const supabase = createClient();
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (authError) {
-        setError(authError.message || 'Invalid administrator credentials.');
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setError(data.error || 'Invalid administrator credentials.');
       } else {
         localStorage.setItem('vf_admin_authenticated', 'true');
         router.push('/admin');
@@ -79,7 +72,7 @@ export default function AdminLoginPage() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-slate-300">Password</label>
+            <label className="text-slate-300">Access Password</label>
             <div className="relative">
               <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
               <input
@@ -103,7 +96,7 @@ export default function AdminLoginPage() {
         </form>
 
         <div className="text-center text-[10px] font-mono text-slate-500 pt-2 border-t border-white/10">
-          Demo Admin Credentials: <span className="text-slate-300">admin@vialfoundry.com</span> / <span className="text-slate-300">foundry2026</span>
+          Vial Foundry Secure HMAC Cookie Session Protected
         </div>
 
       </div>

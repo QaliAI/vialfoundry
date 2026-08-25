@@ -1,58 +1,88 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '../../context/CartContext';
-import { calculateShippingRate } from '../../lib/adapters/shippingAdapter';
+import { vialFoundryBrandConfig } from '../../config/brand';
+import { calculateShipping } from '../../lib/manual-orders/shipping.mjs';
+import { calculateConfiguredPromoDiscount } from '../../lib/promotions/promotions.mjs';
+import { getClientAffiliateCode } from '../../lib/affiliates/client-storage.mjs';
 import { PAYMENT_METHODS, PaymentMethodId, getPaymentMethod } from '../../data/payment';
-import { ShieldCheck, Lock, CheckCircle2, ShoppingBag } from 'lucide-react';
+import { ShieldCheck, Lock, CheckCircle2, ShoppingBag, Truck } from 'lucide-react';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, subtotal, clearCart } = useCart();
 
   const [discountCode, setDiscountCode] = useState('');
-  const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; amount: number } | null>(null);
+  const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; discountCents: number; name?: string } | null>(null);
   const [discountError, setDiscountError] = useState('');
   const [ruoAgreed, setRuoAgreed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [paymentMethodId, setPaymentMethodId] = useState<PaymentMethodId>('cashapp');
+  const [submitError, setSubmitError] = useState('');
+  const [paymentMethodId, setPaymentMethodId] = useState<PaymentMethodId>('zelle');
+  const [shippingMethodId, setShippingMethodId] = useState('standard');
+  const [affiliateCode, setAffiliateCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    const detected = getClientAffiliateCode();
+    if (detected) {
+      setAffiliateCode(detected);
+    }
+  }, []);
 
   const selectedMethod = getPaymentMethod(paymentMethodId);
-  const methodDiscount = selectedMethod ? subtotal * selectedMethod.discountRate : 0;
+  const subtotalCents = Math.round(subtotal * 100);
+
+  const shippingInfo = calculateShipping(
+    subtotalCents,
+    shippingMethodId,
+    vialFoundryBrandConfig.shippingOptions as any
+  );
+
+  const discountAmountCents = appliedDiscount ? appliedDiscount.discountCents : 0;
+  const grandTotalCents = Math.max(0, subtotalCents - discountAmountCents + shippingInfo.amountCents);
+  const grandTotalDollars = (grandTotalCents / 100).toFixed(2);
 
   const [shippingAddress, setShippingAddress] = useState({
     firstName: '',
     lastName: '',
     company: '',
     address: '',
+    address2: '',
     city: '',
     state: '',
     zip: '',
+    country: 'United States',
     email: '',
-    phone: ''
+    phone: '',
   });
-
-  const shippingInfo = calculateShippingRate({
-    subtotal,
-    itemsCount: cart.length
-  });
-
-  const discountAmount = (appliedDiscount ? appliedDiscount.amount : 0) + methodDiscount;
-  const grandTotal = Math.max(0, subtotal - discountAmount + shippingInfo.cost);
 
   const handleApplyDiscount = (e: React.FormEvent) => {
     e.preventDefault();
     const code = discountCode.trim().toUpperCase();
-    if (code === 'FOUNDRY10') {
-      const amt = subtotal * 0.10;
-      setAppliedDiscount({ code, amount: amt });
+    if (!code) {
+      setAppliedDiscount(null);
       setDiscountError('');
-    } else if (code === 'RESEARCH25' && subtotal >= 200) {
-      setAppliedDiscount({ code, amount: 25.00 });
+      return;
+    }
+
+    const promoResult = calculateConfiguredPromoDiscount(
+      subtotalCents,
+      code,
+      vialFoundryBrandConfig.promotions
+    );
+
+    if (promoResult.valid && promoResult.discountCents > 0) {
+      setAppliedDiscount({
+        code: promoResult.code || code,
+        discountCents: promoResult.discountCents,
+        name: promoResult.name,
+      });
       setDiscountError('');
     } else {
-      setDiscountError('Invalid or inapplicable discount code.');
+      setAppliedDiscount(null);
+      setDiscountError(promoResult.error || 'Invalid or inapplicable promotional code.');
     }
   };
 
@@ -64,35 +94,80 @@ export default function CheckoutPage() {
     }
 
     setIsSubmitting(true);
+    setSubmitError('');
+
+    // Generate unique idempotency key
+    const submissionKey = `vf_sub_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
     try {
+      const payload = {
+        submissionKey,
+        customerName: `${shippingAddress.firstName} ${shippingAddress.lastName}`.trim(),
+        customerEmail: shippingAddress.email.trim(),
+        customerPhone: shippingAddress.phone || null,
+        shippingAddress: {
+          firstName: shippingAddress.firstName.trim(),
+          lastName: shippingAddress.lastName.trim(),
+          company: shippingAddress.company ? shippingAddress.company.trim() : null,
+          address: shippingAddress.address.trim(),
+          address2: shippingAddress.address2 ? shippingAddress.address2.trim() : null,
+          city: shippingAddress.city.trim(),
+          state: shippingAddress.state.trim(),
+          zip: shippingAddress.zip.trim(),
+          country: shippingAddress.country || 'United States',
+          email: shippingAddress.email.trim(),
+          phone: shippingAddress.phone || null,
+        },
+        shippingMethodId,
+        preferredPaymentMethod: paymentMethodId,
+        promoCode: appliedDiscount ? appliedDiscount.code : null,
+        affiliateCode: affiliateCode || null,
+        ruoAgreed: true,
+        items: cart.map((i) => ({
+          productId: i.product.id || null,
+          variantId: null,
+          productName: i.product.name,
+          configurationLabel: `${i.product.category} Standard`,
+          quantity: i.quantity,
+          unitPriceAmount: Math.round(i.product.price * 100),
+          priceStatus: 'fixed',
+          sku: i.product.sku,
+          lotNumber: i.product.lotNumber,
+        })),
+        notes: null,
+      };
+
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: grandTotal,
-          discountAmount,
-          paymentMethod: paymentMethodId,
-          customerEmail: shippingAddress.email,
-          shippingAddress,
-          items: cart.map(i => ({
-            name: i.product.name,
-            sku: i.product.sku,
-            lotNumber: i.product.lotNumber,
-            quantity: i.quantity,
-            unitPrice: i.product.price,
-          })),
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
-      const orderNumber = data?.orderNumber || `VF-${Date.now().toString().slice(-8)}`;
+
+      if (!res.ok || !data.success) {
+        throw new Error(data?.error || 'Order request submission failed. Please check your details.');
+      }
+
+      const orderNumber = data.orderNumber || `VF-${Date.now().toString().slice(-6)}`;
       clearCart();
-      router.push(
-        `/order-confirmation/${orderNumber}?method=${paymentMethodId}&total=${grandTotal.toFixed(2)}`
-      );
-    } catch (err) {
-      console.error(err);
+
+      // Store authoritative order totals in sessionStorage for confirmation page
+      if (typeof window !== 'undefined') {
+        const orderData = {
+          totalCents: data.totalAmount || 0,
+          subtotalCents: data.subtotalAmount || 0,
+          discountCents: data.discountAmount || 0,
+          shippingCents: data.shippingAmount || 0,
+          paymentMethod: data.preferredPaymentMethod,
+        };
+        sessionStorage.setItem(`vf_order_${orderNumber}`, JSON.stringify(orderData));
+      }
+
+      router.push(`/order-confirmation/${orderNumber}?method=${paymentMethodId}`);
+    } catch (err: any) {
+      console.error('[checkout] error submitting order:', err);
+      setSubmitError(err?.message || 'An error occurred during submission.');
       setIsSubmitting(false);
     }
   };
@@ -118,16 +193,22 @@ export default function CheckoutPage() {
       
       <div className="space-y-2">
         <div className="mono-tag text-xs text-cyan-400 font-semibold uppercase tracking-wider">
-          REQUEST ORDER / QUOTE
+          REQUEST ORDER / PROCUREMENT
         </div>
         <h1 className="font-display text-3xl font-extrabold text-white">
           Submit Your Research Order Request
         </h1>
         <p className="text-xs text-slate-400 font-light max-w-2xl">
-          No payment is taken now. Submit your request and our team will confirm availability and
-          reply with a quote and secure payment instructions. All materials are supplied for research use only.
+          No credit card is charged on this site. Submit your order request and our procurement team
+          will immediately log your order, verify lot availability, and email secure payment instructions.
         </p>
       </div>
+
+      {submitError && (
+        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-mono">
+          {submitError}
+        </div>
+      )}
 
       <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         
@@ -139,7 +220,7 @@ export default function CheckoutPage() {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
               <div className="space-y-1">
-                <label className="text-slate-400">First Name</label>
+                <label className="text-slate-400">First Name *</label>
                 <input
                   type="text" required
                   value={shippingAddress.firstName}
@@ -148,7 +229,7 @@ export default function CheckoutPage() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-slate-400">Last Name</label>
+                <label className="text-slate-400">Last Name *</label>
                 <input
                   type="text" required
                   value={shippingAddress.lastName}
@@ -169,7 +250,7 @@ export default function CheckoutPage() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-slate-400">Email Address</label>
+                <label className="text-slate-400">Email Address *</label>
                 <input
                   type="email" required
                   value={shippingAddress.email}
@@ -180,7 +261,7 @@ export default function CheckoutPage() {
             </div>
 
             <div className="space-y-1 text-xs font-mono">
-              <label className="text-slate-400">Street Address</label>
+              <label className="text-slate-400">Street Address *</label>
               <input
                 type="text" required
                 value={shippingAddress.address}
@@ -191,7 +272,7 @@ export default function CheckoutPage() {
 
             <div className="grid grid-cols-3 gap-4 text-xs font-mono">
               <div className="space-y-1">
-                <label className="text-slate-400">City</label>
+                <label className="text-slate-400">City *</label>
                 <input
                   type="text" required
                   value={shippingAddress.city}
@@ -200,7 +281,7 @@ export default function CheckoutPage() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-slate-400">State / Prov</label>
+                <label className="text-slate-400">State / Prov *</label>
                 <input
                   type="text" required
                   value={shippingAddress.state}
@@ -209,7 +290,7 @@ export default function CheckoutPage() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-slate-400">ZIP / Postal</label>
+                <label className="text-slate-400">ZIP / Postal *</label>
                 <input
                   type="text" required
                   value={shippingAddress.zip}
@@ -219,6 +300,48 @@ export default function CheckoutPage() {
               </div>
             </div>
 
+          </div>
+
+          {/* Shipping Method Selector */}
+          <div className="glass-panel p-6 rounded-2xl border border-white/10 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-display text-lg font-bold text-white flex items-center gap-2">
+                <Truck className="w-5 h-5 text-cyan-400" />
+                <span>Shipping Method</span>
+              </h3>
+              <span className="mono-tag text-[10px] uppercase tracking-widest text-slate-500">Insulated</span>
+            </div>
+            
+            <div className="grid gap-3">
+              {vialFoundryBrandConfig.shippingOptions.map((opt) => {
+                const isSelected = shippingMethodId === opt.id;
+                const costDisplay =
+                  opt.id === 'standard' && subtotalCents >= (opt.freeShippingThresholdCents ?? 20000)
+                    ? 'FREE'
+                    : `$${(opt.costCents / 100).toFixed(2)}`;
+
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setShippingMethodId(opt.id)}
+                    className={`text-left p-4 rounded-xl border transition-all flex items-start justify-between ${
+                      isSelected
+                        ? 'bg-cyan-500/10 border-cyan-500/60 ring-1 ring-cyan-500/30'
+                        : 'bg-slate-950 border-white/10 hover:border-white/25'
+                    }`}
+                  >
+                    <div>
+                      <div className="font-display text-sm font-bold text-white">{opt.name}</div>
+                      <div className="text-[11px] font-mono text-slate-400 mt-0.5">{opt.description}</div>
+                    </div>
+                    <div className="font-mono text-sm font-bold text-cyan-300">
+                      {costDisplay}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Payment Method Selector */}
@@ -248,11 +371,6 @@ export default function CheckoutPage() {
                     <div className="min-w-0">
                       <div className="font-display text-sm font-bold text-white flex items-center gap-2">
                         {m.label}
-                        {m.discountRate > 0 && (
-                          <span className="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 text-[9px] font-mono font-bold">
-                            {Math.round(m.discountRate * 100)}% OFF
-                          </span>
-                        )}
                       </div>
                       <div className="text-[11px] font-mono text-slate-400">{m.tagline}</div>
                     </div>
@@ -261,8 +379,8 @@ export default function CheckoutPage() {
               })}
             </div>
             <p className="text-[11px] font-mono text-slate-500">
-              Choose how you&apos;ll pay. After you submit, you&apos;ll receive exact payment
-              instructions for {selectedMethod?.label}. No card is charged on this site.
+              Choose your preferred method. After submitting, you&apos;ll receive exact payment
+              details and reference verification. No card is charged on this site.
             </p>
           </div>
 
@@ -277,14 +395,14 @@ export default function CheckoutPage() {
                 className="mt-1 rounded bg-slate-950 border-white/20 text-cyan-500 focus:ring-0"
               />
               <span className="text-xs font-mono text-slate-300">
-                I certify that all products in this order will be used exclusively for in vitro laboratory, analytical, or scientific research purposes (RUO). Not for human, clinical, or therapeutic use.
+                I certify that all products in this order will be used exclusively for in vitro laboratory, analytical, or scientific research purposes (RUO). Not for human, clinical, veterinary, or diagnostic use.
               </span>
             </label>
           </div>
 
         </div>
 
-        {/* Right Column: Order Summary & Payment Adapter */}
+        {/* Right Column: Order Summary */}
         <div className="lg:col-span-5 space-y-6">
           <div className="glass-panel p-6 rounded-2xl border border-white/10 space-y-4">
             <h3 className="font-display text-lg font-bold text-white">Order Summary</h3>
@@ -323,7 +441,7 @@ export default function CheckoutPage() {
               {appliedDiscount && (
                 <div className="text-[11px] font-mono text-emerald-400 flex items-center space-x-1">
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Code {appliedDiscount.code} applied (-${appliedDiscount.amount.toFixed(2)})</span>
+                  <span>Code {appliedDiscount.code} applied (-${(appliedDiscount.discountCents / 100).toFixed(2)})</span>
                 </div>
               )}
               {discountError && (
@@ -340,28 +458,19 @@ export default function CheckoutPage() {
               {appliedDiscount && (
                 <div className="flex justify-between text-emerald-400">
                   <span>Discount ({appliedDiscount.code})</span>
-                  <span>-${appliedDiscount.amount.toFixed(2)}</span>
-                </div>
-              )}
-              {methodDiscount > 0 && selectedMethod && (
-                <div className="flex justify-between text-emerald-400">
-                  <span>{selectedMethod.label} discount ({Math.round(selectedMethod.discountRate * 100)}%)</span>
-                  <span>-${methodDiscount.toFixed(2)}</span>
+                  <span>-${(appliedDiscount.discountCents / 100).toFixed(2)}</span>
                 </div>
               )}
               <div className="flex justify-between text-slate-400">
-                <span>Shipping ({shippingInfo.methodName})</span>
-                <span className={shippingInfo.isFreeShipping ? 'text-emerald-400 font-bold' : ''}>
-                  {shippingInfo.isFreeShipping ? 'FREE' : `$${shippingInfo.cost.toFixed(2)}`}
+                <span>Shipping ({shippingInfo.label || 'Standard Shipping'})</span>
+                <span className={shippingInfo.amountCents === 0 ? 'text-emerald-400 font-bold' : ''}>
+                  {shippingInfo.displayPrice}
                 </span>
               </div>
               <div className="flex justify-between text-white font-bold text-base pt-3 border-t border-white/10">
-                <span>Estimated Total</span>
-                <span className="text-cyan-400">${grandTotal.toFixed(2)}</span>
+                <span>Total Due</span>
+                <span className="text-cyan-400">${grandTotalDollars}</span>
               </div>
-              <p className="text-[10px] font-mono text-slate-500">
-                Estimate only. Final total is confirmed on your quote.
-              </p>
             </div>
 
             <button
@@ -375,7 +484,7 @@ export default function CheckoutPage() {
 
             <div className="text-center text-[10px] font-mono text-slate-400 flex items-center justify-center space-x-1">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>No card charged — quote &amp; invoice follow-up</span>
+              <span>Direct Laboratory Procurement &bull; Instant Confirmation</span>
             </div>
           </div>
         </div>
