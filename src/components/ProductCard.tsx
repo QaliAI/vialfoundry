@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, FileCheck, Check } from 'lucide-react';
+import { ShoppingBag, FileCheck } from 'lucide-react';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
 
@@ -17,15 +17,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const { addToCart } = useCart();
 
   return (
-    <div className="storefront-card rounded-2xl overflow-hidden flex flex-col justify-between group bg-white border border-slate-200/90 hover:border-cyan-600/40 hover:shadow-card-hover transition-all duration-200">
+    <div className="storefront-card rounded-2xl overflow-hidden flex flex-col justify-between group bg-brand-paper border border-brand-border hover:border-brand-border-strong hover:shadow-card-hover transition-all duration-200">
       {/* Top Image Container */}
       <div 
         onClick={() => onViewProduct(product)}
-        className="relative aspect-square w-full bg-[#F8FAFC] p-6 flex items-center justify-center overflow-hidden cursor-pointer border-b border-slate-100"
+        className="relative aspect-square w-full bg-brand-canvas p-6 flex items-center justify-center overflow-hidden cursor-pointer border-b border-brand-border/60"
       >
-        {/* Subtle Category Pill Top Left */}
+        {/* Subtle Category Tag Top Left */}
         <div className="absolute top-3 left-3 z-10">
-          <span className="text-[10px] font-mono font-medium text-slate-600 bg-white/90 border border-slate-200/80 px-2 py-0.5 rounded shadow-2xs">
+          <span className="text-[10px] font-sans font-medium text-brand-graphite bg-brand-paper/95 border border-brand-border px-2 py-0.5 rounded shadow-2xs">
             {product.category}
           </span>
         </div>
@@ -40,40 +40,40 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       </div>
 
       {/* Product Details Section */}
-      <div className="p-5 space-y-3.5 flex-1 flex flex-col justify-between bg-white">
+      <div className="p-5 space-y-3.5 flex-1 flex flex-col justify-between bg-brand-paper">
         <div className="space-y-1.5">
           {/* Size / Presentation */}
-          <div className="text-xs font-mono text-cyan-800 font-medium">
+          <div className="text-xs font-sans text-brand-steel font-medium">
             {product.size}
           </div>
 
           {/* Product Title */}
           <h3
             onClick={() => onViewProduct(product)}
-            className="font-display text-base font-bold text-slate-900 hover:text-cyan-700 transition-colors cursor-pointer line-clamp-1 leading-snug"
+            className="font-display text-base font-bold text-brand-ink group-hover:text-brand-graphite transition-colors cursor-pointer line-clamp-1 leading-snug"
           >
             {product.name}
           </h3>
 
           {/* Brief Factual Subtext */}
-          <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+          <p className="text-xs text-brand-steel line-clamp-2 leading-relaxed">
             {product.description}
           </p>
         </div>
 
         {/* Pricing & Cart Action Bar */}
-        <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+        <div className="pt-3 border-t border-brand-border/60 flex items-center justify-between gap-2">
           <div>
-            <div className="font-mono text-lg font-bold text-slate-900">
+            <div className="font-mono text-lg font-bold text-brand-ink">
               ${product.price.toFixed(2)}
             </div>
             {product.inStock ? (
-              <div className="text-[11px] text-emerald-700 font-medium flex items-center space-x-1 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <div className="text-[11px] text-brand-mineral font-medium flex items-center space-x-1 mt-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-mineral" />
                 <span>In Stock</span>
               </div>
             ) : (
-              <div className="text-[11px] text-amber-600 font-medium">Out of Stock</div>
+              <div className="text-[11px] text-brand-metal font-medium">Out of Stock</div>
             )}
           </div>
 
@@ -85,10 +85,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   e.stopPropagation();
                   onViewCOA(product.lotNumber);
                 }}
-                className="px-2.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 text-xs font-mono font-medium transition-colors"
-                title="View HPLC Lab Results"
+                className="px-2.5 py-2 rounded-lg bg-brand-surface-muted hover:bg-brand-border text-brand-graphite border border-brand-border text-xs font-sans font-medium transition-colors shadow-2xs"
+                title="View Lot Documentation & COA"
+                aria-label={`View Certificate of Analysis for ${product.name}`}
               >
-                <FileCheck className="w-3.5 h-3.5" />
+                <FileCheck className="w-3.5 h-3.5 text-brand-accent" />
               </button>
             )}
 
@@ -99,7 +100,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   e.stopPropagation();
                   addToCart(product);
                 }}
-                className="flex items-center space-x-1.5 px-3.5 py-2 rounded-lg bg-cyan-700 hover:bg-cyan-800 text-white font-medium text-xs shadow-sm transition-all"
+                className="flex items-center space-x-1.5 px-3.5 py-2 rounded-lg bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-semibold text-xs shadow-xs transition-all"
+                aria-label={`Add ${product.name} to cart`}
               >
                 <ShoppingBag className="w-3.5 h-3.5" />
                 <span>Add</span>
@@ -111,7 +113,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   e.stopPropagation();
                   onViewProduct(product);
                 }}
-                className="px-3 py-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs font-medium transition-all"
+                className="px-3 py-2 rounded-lg bg-brand-surface-muted text-brand-graphite hover:bg-brand-border text-xs font-medium transition-all"
               >
                 <span>Notify</span>
               </button>
@@ -122,4 +124,3 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     </div>
   );
 };
-

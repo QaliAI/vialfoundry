@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calculator, Cpu, FileText, Layers, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Calculator } from 'lucide-react';
 
 export const ToolsHub: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'mw' | 'coa' | 'procurement'>('mw');
@@ -46,80 +46,82 @@ export const ToolsHub: React.FC = () => {
   const calculatedTotal = (vialCount * unitPrice * (vialCount >= 50 ? 0.85 : vialCount >= 20 ? 0.90 : 1.0)).toFixed(2);
 
   return (
-    <section className="py-20 bg-slate-950 border-t border-white/10 relative">
+    <section className="py-20 bg-brand-canvas border-t border-brand-border relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="max-w-3xl mx-auto text-center space-y-4 mb-12">
-          <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono font-bold">
-            <Calculator className="w-4 h-4" />
-            <span>ANALYTICAL TOOLS HUB</span>
+          <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-brand-paper border border-brand-border text-brand-ink text-xs font-sans font-medium shadow-2xs">
+            <Calculator className="w-4 h-4 text-brand-accent" />
+            <span className="tracking-wider uppercase text-[11px] text-brand-graphite font-semibold">
+              Analytical Tools
+            </span>
           </div>
-          <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-white">
+          <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-brand-ink tracking-tight">
             Analytical tools & research calculators.
           </h2>
-          <p className="text-slate-400 text-sm font-light">
-            Empowering researchers with sequence mass estimation, HPLC purity verification, and institutional bulk estimation tools.
+          <p className="text-brand-steel text-sm sm:text-base font-normal max-w-2xl mx-auto leading-relaxed">
+            Calculators for peptide molecular weight estimation, chromatographic peak integration, and volume planning.
           </p>
         </div>
 
         {/* Tab Buttons */}
-        <div className="flex items-center justify-center space-x-2 max-w-xl mx-auto mb-10 p-1.5 rounded-xl bg-slate-900 border border-white/10">
+        <div className="flex items-center justify-center space-x-2 max-w-xl mx-auto mb-10 p-1.5 rounded-xl bg-brand-paper border border-brand-border shadow-2xs">
           <button
             onClick={() => setActiveTab('mw')}
             className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium font-display transition-all ${
               activeTab === 'mw'
-                ? 'bg-cyan-500 text-slate-950 shadow-md font-bold'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-brand-primary text-brand-paper shadow-2xs font-bold'
+                : 'text-brand-steel hover:text-brand-ink'
             }`}
           >
-            Sequence Mass Estimator
+            Sequence Mass
           </button>
           <button
             onClick={() => setActiveTab('coa')}
             className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium font-display transition-all ${
               activeTab === 'coa'
-                ? 'bg-cyan-500 text-slate-950 shadow-md font-bold'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-brand-primary text-brand-paper shadow-2xs font-bold'
+                : 'text-brand-steel hover:text-brand-ink'
             }`}
           >
-            HPLC Purity Calculator
+            HPLC Purity Area
           </button>
           <button
             onClick={() => setActiveTab('procurement')}
             className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium font-display transition-all ${
               activeTab === 'procurement'
-                ? 'bg-cyan-500 text-slate-950 shadow-md font-bold'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-brand-primary text-brand-paper shadow-2xs font-bold'
+                : 'text-brand-steel hover:text-brand-ink'
             }`}
           >
-            Bulk Procurement Tool
+            Volume Estimator
           </button>
         </div>
 
         {/* Tab Panels */}
-        <div className="max-w-3xl mx-auto glass-panel p-6 sm:p-8 rounded-2xl border border-white/10 shadow-2xl">
+        <div className="max-w-3xl mx-auto bg-brand-paper p-6 sm:p-8 rounded-2xl border border-brand-border shadow-card">
           
           {activeTab === 'mw' && (
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="mono-tag text-xs text-cyan-300 uppercase">Enter Amino Acid Sequence (3-Letter Code Hyphenated):</label>
+                <label className="text-xs font-sans font-semibold text-brand-graphite uppercase tracking-wider block">Enter Amino Acid Sequence (3-Letter Code Hyphenated):</label>
                 <input
                   type="text"
                   value={sequence}
                   onChange={(e) => setSequence(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-white/15 text-white font-mono text-sm focus:outline-none focus:border-cyan-500"
+                  className="w-full px-4 py-3 rounded-xl bg-brand-canvas border border-brand-border text-brand-ink font-mono text-sm focus:outline-none focus:bg-brand-paper focus:border-brand-graphite"
                 />
-                <p className="text-[11px] text-slate-400">Example: Gly-Glu-Pro-Pro-Pro-Gly-Lys-Pro-Ala-Asp-Asp-Ala-Gly-Leu-Val</p>
+                <p className="text-[11px] text-brand-steel font-sans">Example: Gly-Glu-Pro-Pro-Pro-Gly-Lys-Pro-Ala-Asp-Asp-Ala-Gly-Leu-Val</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-slate-900 border border-white/10 font-mono">
+              <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-brand-canvas border border-brand-border font-sans">
                 <div>
-                  <div className="text-[10px] text-slate-400">ESTIMATED MOLECULAR MASS</div>
-                  <div className="text-2xl font-bold text-emerald-400 mt-1">{calcMW.mw} g/mol</div>
+                  <div className="text-[10px] text-brand-steel uppercase font-medium">ESTIMATED MOLECULAR MASS</div>
+                  <div className="text-2xl font-bold font-mono text-brand-mineral mt-1">{calcMW.mw} g/mol</div>
                 </div>
                 <div>
-                  <div className="text-[10px] text-slate-400">RESIDUE COUNT</div>
-                  <div className="text-2xl font-bold text-cyan-400 mt-1">{calcMW.count} Amino Acids</div>
+                  <div className="text-[10px] text-brand-steel uppercase font-medium">RESIDUE COUNT</div>
+                  <div className="text-2xl font-bold font-mono text-brand-ink mt-1">{calcMW.count} Residues</div>
                 </div>
               </div>
             </div>
@@ -129,33 +131,33 @@ export const ToolsHub: React.FC = () => {
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="mono-tag text-xs text-cyan-300 uppercase">Main Peak Area (uV*sec):</label>
+                  <label className="text-xs font-sans font-semibold text-brand-graphite uppercase tracking-wider block">Main Peak Area (uV*sec):</label>
                   <input
                     type="number"
                     value={mainArea}
                     onChange={(e) => setMainArea(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-white/15 text-white font-mono text-sm focus:outline-none focus:border-cyan-500"
+                    className="w-full px-4 py-3 rounded-xl bg-brand-canvas border border-brand-border text-brand-ink font-mono text-sm focus:outline-none focus:bg-brand-paper focus:border-brand-graphite"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="mono-tag text-xs text-cyan-300 uppercase">Total Chromatogram Area (uV*sec):</label>
+                  <label className="text-xs font-sans font-semibold text-brand-graphite uppercase tracking-wider block">Total Chromatogram Area (uV*sec):</label>
                   <input
                     type="number"
                     value={totalArea}
                     onChange={(e) => setTotalArea(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-white/15 text-white font-mono text-sm focus:outline-none focus:border-cyan-500"
+                    className="w-full px-4 py-3 rounded-xl bg-brand-canvas border border-brand-border text-brand-ink font-mono text-sm focus:outline-none focus:bg-brand-paper focus:border-brand-graphite"
                   />
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-900 border border-white/10 font-mono flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-brand-canvas border border-brand-border flex items-center justify-between">
                 <div>
-                  <div className="text-[10px] text-slate-400">CALCULATED HPLC PURITY %</div>
-                  <div className="text-3xl font-bold text-emerald-400 mt-1">{calculatedPurity()}%</div>
+                  <div className="text-[10px] text-brand-steel uppercase font-medium font-sans">CALCULATED HPLC PURITY %</div>
+                  <div className="text-3xl font-bold font-mono text-brand-mineral mt-1">{calculatedPurity()}%</div>
                 </div>
                 <div className="text-right">
-                  <span className="px-3 py-1 rounded bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/30">
-                    CONFORMS TO STANDARD
+                  <span className="px-3 py-1 rounded bg-brand-paper text-brand-mineral text-xs font-bold border border-brand-border font-sans">
+                    Peak Ratio Integration
                   </span>
                 </div>
               </div>
@@ -166,33 +168,33 @@ export const ToolsHub: React.FC = () => {
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="mono-tag text-xs text-cyan-300 uppercase">Vial Quantity Required:</label>
+                  <label className="text-xs font-sans font-semibold text-brand-graphite uppercase tracking-wider block">Vial Quantity Required:</label>
                   <input
                     type="number"
                     value={vialCount}
                     onChange={(e) => setVialCount(parseInt(e.target.value) || 1)}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-white/15 text-white font-mono text-sm focus:outline-none focus:border-cyan-500"
+                    className="w-full px-4 py-3 rounded-xl bg-brand-canvas border border-brand-border text-brand-ink font-mono text-sm focus:outline-none focus:bg-brand-paper focus:border-brand-graphite"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="mono-tag text-xs text-cyan-300 uppercase">Unit Vial Price ($):</label>
+                  <label className="text-xs font-sans font-semibold text-brand-graphite uppercase tracking-wider block">Unit Price ($):</label>
                   <input
                     type="number"
                     value={unitPrice}
                     onChange={(e) => setUnitPrice(parseFloat(e.target.value) || 1)}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-white/15 text-white font-mono text-sm focus:outline-none focus:border-cyan-500"
+                    className="w-full px-4 py-3 rounded-xl bg-brand-canvas border border-brand-border text-brand-ink font-mono text-sm focus:outline-none focus:bg-brand-paper focus:border-brand-graphite"
                   />
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-900 border border-white/10 font-mono flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-brand-canvas border border-brand-border flex items-center justify-between">
                 <div>
-                  <div className="text-[10px] text-slate-400">ESTIMATED INSTITUTIONAL TOTAL</div>
-                  <div className="text-3xl font-bold text-cyan-400 mt-1">${calculatedTotal}</div>
+                  <div className="text-[10px] text-brand-steel uppercase font-medium font-sans">ESTIMATED TOTAL</div>
+                  <div className="text-3xl font-bold font-mono text-brand-ink mt-1"></div>
                 </div>
-                <div className="text-right text-xs text-slate-400 space-y-1">
-                  <div>Tier Discount: {vialCount >= 50 ? '15%' : vialCount >= 20 ? '10%' : 'Standard'}</div>
-                  <div className="text-emerald-400 font-bold">Includes Batch COA Packet</div>
+                <div className="text-right text-xs text-brand-steel space-y-1 font-sans">
+                  <div>Volume Tier: {vialCount >= 50 ? '15%' : vialCount >= 20 ? '10%' : 'Standard'}</div>
+                  <div className="text-brand-mineral font-semibold">Lot COA Documentation Included</div>
                 </div>
               </div>
             </div>

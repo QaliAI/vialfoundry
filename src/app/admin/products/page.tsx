@@ -74,7 +74,7 @@ export default function AdminProductsPage() {
             });
             setIsCreating(true);
           }}
-          className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-display font-bold text-xs hover:bg-cyan-400"
+          className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-primary text-brand-paper font-display font-bold text-xs hover:bg-brand-graphite"
         >
           <Plus className="w-4 h-4" />
           <span>New Product</span>
@@ -140,7 +140,7 @@ export default function AdminProductsPage() {
           </div>
 
           <div className="flex space-x-3 pt-2">
-            <button type="submit" className="px-5 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold">
+            <button type="submit" className="px-5 py-2 rounded-xl bg-brand-primary text-brand-paper font-bold">
               Save Product
             </button>
             <button
@@ -174,7 +174,7 @@ export default function AdminProductsPage() {
               <tr key={p.id} className="text-slate-300 hover:bg-white/5">
                 <td className="p-4 font-bold text-white">{p.name}</td>
                 <td className="p-4 text-slate-400">{p.sku}</td>
-                <td className="p-4 text-cyan-400">{p.category}</td>
+                <td className="p-4 text-brand-paper">{p.category}</td>
                 <td className="p-4 text-white font-bold">${p.price.toFixed(2)}</td>
                 <td className="p-4 text-emerald-400 font-bold">{p.purityPercentage}%</td>
                 <td className="p-4 text-slate-300">{p.lotNumber}</td>
@@ -182,7 +182,7 @@ export default function AdminProductsPage() {
                 <td className="p-4 text-right space-x-2">
                   <button
                     onClick={() => { setEditingProduct(p); setFormData(p); }}
-                    className="p-1.5 rounded bg-slate-900 border border-white/10 hover:border-cyan-400 text-cyan-300"
+                    className="p-1.5 rounded bg-slate-900 border border-white/10 hover:border-brand-graphite text-brand-paper"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>

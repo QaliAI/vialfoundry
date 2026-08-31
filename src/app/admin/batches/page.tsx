@@ -65,7 +65,7 @@ export default function AdminBatchesPage() {
         </div>
         <button
           onClick={() => setIsCreating(true)}
-          className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-display font-bold text-xs hover:bg-cyan-400"
+          className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-primary text-brand-paper font-display font-bold text-xs hover:bg-brand-graphite"
         >
           <Plus className="w-4 h-4" />
           <span>New Batch Record</span>
@@ -143,7 +143,7 @@ export default function AdminBatchesPage() {
           </div>
 
           <div className="flex space-x-3 pt-2">
-            <button type="submit" className="px-5 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold">
+            <button type="submit" className="px-5 py-2 rounded-xl bg-brand-primary text-brand-paper font-bold">
               Save Batch Record
             </button>
             <button
@@ -174,7 +174,7 @@ export default function AdminBatchesPage() {
           <tbody className="divide-y divide-white/5 bg-slate-950/60">
             {Object.values(batches).map(b => (
               <tr key={b.lotNumber} className="text-slate-300">
-                <td className="p-4 font-bold text-cyan-300">{b.lotNumber}</td>
+                <td className="p-4 font-bold text-brand-paper">{b.lotNumber}</td>
                 <td className="p-4 font-bold text-white">{b.productName}</td>
                 <td className="p-4 text-slate-400">{b.testingLab}</td>
                 <td className="p-4 text-emerald-400 font-bold">{b.purity.toFixed(2)}%</td>

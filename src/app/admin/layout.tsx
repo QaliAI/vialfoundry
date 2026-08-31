@@ -4,8 +4,9 @@ import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Package, Layers, FileCheck, ShoppingCart,
-  Users, Tag, Share2, BarChart3, Settings, LogOut, ArrowLeft
+  Users, Tag, Share2, Settings, LogOut, ArrowLeft
 } from 'lucide-react';
+import { BrandLogo } from '../../components/BrandLogo';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -39,24 +40,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="min-h-screen flex bg-slate-950 text-slate-100 font-sans">
+    <div className="min-h-screen flex bg-brand-ink text-slate-100 font-sans">
       {/* Admin Sidebar */}
-      <aside className="w-64 bg-slate-900 border-r border-white/10 flex flex-col justify-between p-4 flex-shrink-0">
+      <aside className="w-64 bg-brand-ink border-r border-brand-graphite/40 flex flex-col justify-between p-4 flex-shrink-0">
         <div className="space-y-6">
           
           {/* Logo Header */}
-          <div className="flex items-center space-x-3 px-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center text-slate-950 font-bold font-mono">
-              VF
-            </div>
-            <div>
-              <span className="font-display font-bold text-sm text-white block leading-none">
-                VIAL FOUNDRY
-              </span>
-              <span className="mono-tag text-[9px] text-cyan-400 uppercase tracking-widest block mt-0.5">
-                Admin Console
-              </span>
-            </div>
+          <div className="px-2 py-1">
+            <BrandLogo variant="compact" size="md" inverted={true} />
+            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mt-2">
+              Admin Console
+            </span>
           </div>
 
           {/* Navigation Links */}
@@ -68,10 +62,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <button
                   key={item.path}
                   onClick={() => router.push(item.path)}
-                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-mono font-semibold transition-all ${
+                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-sans font-medium transition-all ${
                     isActive
-                      ? 'bg-cyan-500/10 border border-cyan-500/40 text-cyan-300'
-                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                      ? 'bg-brand-graphite text-white font-semibold shadow-xs'
+                      : 'text-slate-400 hover:text-white hover:bg-brand-graphite/40'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -83,17 +77,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
 
         {/* Footer Actions */}
-        <div className="space-y-2 pt-4 border-t border-white/10">
+        <div className="space-y-2 pt-4 border-t border-brand-graphite/40">
           <button
             onClick={() => router.push('/')}
-            className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-mono text-slate-400 hover:text-white hover:bg-slate-800"
+            className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-sans text-slate-400 hover:text-white hover:bg-brand-graphite/40"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>View Live Site</span>
           </button>
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-mono text-rose-400 hover:bg-rose-500/10"
+            className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-sans text-rose-400 hover:bg-rose-500/10"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Sign Out</span>
@@ -102,7 +96,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto p-8 bg-[#08090B]">
+      <main className="flex-1 overflow-y-auto p-8 bg-brand-ink/95">
         {children}
       </main>
     </div>

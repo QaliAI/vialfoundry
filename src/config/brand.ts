@@ -1,4 +1,4 @@
-export interface BrandPaymentMethods {
+﻿export interface BrandPaymentMethods {
   manualInvoice: boolean;
   zelle: {
     enabled: boolean;
@@ -74,17 +74,17 @@ export const vialFoundryBrandConfig: BrandConfig = {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean),
-  logoUrl: "/brand/vialfoundry-logo.svg",
+  logoUrl: "/brand/logo-horizontal.svg",
   faviconUrl: "/favicon.ico",
-  primaryColor: "#08090B",
-  accentColor: "#06b6d4",
+  primaryColor: "#1B1D1F",
+  accentColor: "#28463E",
   currency: "USD",
   emailSenderName: process.env.EMAIL_SENDER_NAME || "Vial Foundry Procurement",
   emailSenderDomain: process.env.EMAIL_SENDER_DOMAIN || "vialfoundry.com",
   researchUseOnlyDisclaimer:
     "All Vial Foundry materials and reference standards are strictly synthesized and supplied for qualified in vitro laboratory and analytical research. Not for human, veterinary, therapeutic, or diagnostic administration.",
   checkoutNotice:
-    "Orders submit a formal research procurement request. Formal quotes, invoices, and secure payment verification instructions will be issued promptly.",
+    "Orders submit a formal research procurement request. Formal quotes, invoices, and payment instructions will be issued upon review.",
   paymentMethods: {
     manualInvoice: true,
     zelle: {
@@ -119,13 +119,13 @@ export const vialFoundryBrandConfig: BrandConfig = {
     {
       id: "priority",
       name: "Priority Air (2-Day)",
-      description: "Expedited cold-chain transit with guaranteed delivery window.",
+      description: "Expedited cold-chain transit with tracking notification.",
       costCents: 3500,
     },
     {
       id: "express",
       name: "Express Overnight (1-Day)",
-      description: "Next-day priority delivery with thermal ice insulation.",
+      description: "Next-day priority delivery with thermal insulation.",
       costCents: 6500,
     },
   ],
@@ -139,7 +139,7 @@ export const vialFoundryBrandConfig: BrandConfig = {
     },
     {
       code: "RESEARCH25",
-      name: "Research $25 Discount on orders $200+",
+      name: "Research  Discount on orders +",
       fixedDiscountCents: 2500,
       minSubtotalCents: 20000,
       enabled: true,

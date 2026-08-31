@@ -81,7 +81,7 @@ export default function AdminInventoryPage() {
         {/* Right: Audit Log */}
         <div className="lg:col-span-4 glass-panel p-6 rounded-2xl border border-white/10 space-y-4">
           <h3 className="font-display text-base font-bold text-white flex items-center space-x-2">
-            <Layers className="w-4 h-4 text-cyan-400" />
+            <Layers className="w-4 h-4 text-brand-paper" />
             <span>Transaction Audit Log</span>
           </h3>
 

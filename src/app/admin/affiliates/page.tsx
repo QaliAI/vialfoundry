@@ -206,7 +206,7 @@ export default function AdminAffiliatesPage() {
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-display font-bold text-xs hover:bg-cyan-400 transition-all shadow-lg"
+          className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-primary text-brand-paper font-display font-bold text-xs hover:bg-brand-graphite transition-all shadow-lg"
         >
           <Plus className="w-4 h-4" />
           <span>New Affiliate Partner</span>
@@ -214,7 +214,7 @@ export default function AdminAffiliatesPage() {
       </div>
 
       {actionMessage && (
-        <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-mono flex items-center space-x-2">
+        <div className="p-3 rounded-xl bg-brand-mineral/20 border border-brand-mineral/40 text-brand-paper text-xs font-mono flex items-center space-x-2">
           <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
           <span>{actionMessage}</span>
         </div>
@@ -225,7 +225,7 @@ export default function AdminAffiliatesPage() {
         <div className="glass-panel p-5 rounded-2xl border border-white/10 space-y-2">
           <div className="flex items-center justify-between">
             <span className="mono-tag text-[10px] text-slate-400">ACTIVE PARTNERS</span>
-            <Users className="w-4 h-4 text-cyan-400" />
+            <Users className="w-4 h-4 text-brand-paper" />
           </div>
           <div className="font-mono text-3xl font-bold text-white">{affiliates.length}</div>
           <div className="text-[10px] text-slate-400">Enrolled in Program</div>
@@ -243,7 +243,7 @@ export default function AdminAffiliatesPage() {
         <div className="glass-panel p-5 rounded-2xl border border-white/10 space-y-2">
           <div className="flex items-center justify-between">
             <span className="mono-tag text-[10px] text-slate-400">ATTRIBUTION WINDOW</span>
-            <Share2 className="w-4 h-4 text-cyan-400" />
+            <Share2 className="w-4 h-4 text-brand-paper" />
           </div>
           <div className="font-mono text-3xl font-bold text-white">30 Days</div>
           <div className="text-[10px] text-slate-400">Cookie: vf_ref_partner</div>
@@ -256,7 +256,7 @@ export default function AdminAffiliatesPage() {
           onClick={() => setActiveTab('partners')}
           className={`px-4 py-2 rounded-xl font-bold transition-all ${
             activeTab === 'partners'
-              ? 'bg-cyan-500 text-slate-950'
+              ? 'bg-brand-primary text-brand-paper'
               : 'bg-slate-900 border border-white/10 text-slate-400 hover:text-white'
           }`}
         >
@@ -266,7 +266,7 @@ export default function AdminAffiliatesPage() {
           onClick={() => setActiveTab('applications')}
           className={`px-4 py-2 rounded-xl font-bold transition-all flex items-center space-x-2 ${
             activeTab === 'applications'
-              ? 'bg-cyan-500 text-slate-950'
+              ? 'bg-brand-primary text-brand-paper'
               : 'bg-slate-900 border border-white/10 text-slate-400 hover:text-white'
           }`}
         >
@@ -299,7 +299,7 @@ export default function AdminAffiliatesPage() {
                 <tr key={a.id} className="text-slate-300 hover:bg-white/[0.02]">
                   <td className="p-4 font-bold text-white">{a.name}</td>
                   <td className="p-4 text-slate-400">{a.email}</td>
-                  <td className="p-4 font-bold text-cyan-300">{a.referral_code}</td>
+                  <td className="p-4 font-bold text-brand-paper">{a.referral_code}</td>
                   <td className="p-4 text-emerald-400 font-bold">
                     {bpsToPercent(a.commission_rate_bps || 1000)}%
                   </td>
@@ -314,7 +314,7 @@ export default function AdminAffiliatesPage() {
                   <td className="p-4 text-right">
                     <button
                       onClick={() => handleCopyLink(a.referral_code)}
-                      className="px-3 py-1 rounded bg-slate-900 border border-white/10 hover:border-cyan-500 text-cyan-300 text-[10px] flex items-center space-x-1 ml-auto"
+                      className="px-3 py-1 rounded bg-slate-900 border border-white/10 hover:border-brand-graphite text-brand-paper text-[10px] flex items-center space-x-1 ml-auto"
                     >
                       {copiedCode === a.referral_code ? (
                         <>
@@ -363,7 +363,7 @@ export default function AdminAffiliatesPage() {
                       <div className="font-bold text-white">{app.name}</div>
                       <div className="text-[10px] text-slate-400">{app.email}</div>
                     </td>
-                    <td className="p-4 text-cyan-300">{app.website || '—'}</td>
+                    <td className="p-4 text-brand-paper">{app.website || '—'}</td>
                     <td className="p-4 text-slate-400 max-w-xs truncate">{app.audience || '—'}</td>
                     <td className="p-4 text-slate-300 uppercase text-[10px]">{app.payout_method || '—'}</td>
                     <td className="p-4">
@@ -419,7 +419,7 @@ export default function AdminAffiliatesPage() {
                   value={newName}
                   onChange={e => setNewName(e.target.value)}
                   placeholder="Dr. Jordan Hayes"
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white focus:outline-none focus:border-cyan-500"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white focus:outline-none focus:border-brand-graphite"
                 />
               </div>
 
@@ -430,7 +430,7 @@ export default function AdminAffiliatesPage() {
                   value={newEmail}
                   onChange={e => setNewEmail(e.target.value)}
                   placeholder="jordan@researchlab.org"
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white focus:outline-none focus:border-cyan-500"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white focus:outline-none focus:border-brand-graphite"
                 />
               </div>
 
@@ -442,7 +442,7 @@ export default function AdminAffiliatesPage() {
                     value={newCode}
                     onChange={e => setNewCode(e.target.value)}
                     placeholder="HAYES10"
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white focus:outline-none focus:border-cyan-500 uppercase"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white focus:outline-none focus:border-brand-graphite uppercase"
                   />
                 </div>
                 <div className="space-y-1">
@@ -451,7 +451,7 @@ export default function AdminAffiliatesPage() {
                     type="number" step="0.5" required
                     value={newPercent}
                     onChange={e => setNewPercent(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white focus:outline-none focus:border-cyan-500"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white focus:outline-none focus:border-brand-graphite"
                   />
                 </div>
               </div>
@@ -466,7 +466,7 @@ export default function AdminAffiliatesPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs"
+                  className="px-4 py-2 rounded-xl bg-brand-primary text-brand-paper font-bold text-xs"
                 >
                   Create Partner
                 </button>

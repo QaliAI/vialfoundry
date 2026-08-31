@@ -1,4 +1,4 @@
-/** @type {import('tailwindcss').Config} */
+﻿/** @type {import('tailwindcss').Config} */
 export default {
   content: [
     "./index.html",
@@ -9,23 +9,27 @@ export default {
     extend: {
       colors: {
         brand: {
-          bg: '#FAFAF9',
-          surface: '#FFFFFF',
-          card: '#FFFFFF',
-          border: 'rgba(0, 0, 0, 0.08)',
-          'border-strong': '#CBD5E1',
-          teal: '#0891B2',
-          'teal-light': '#ECFEFF',
-          'teal-dark': '#0E7490',
-          'teal-glow': 'rgba(8, 145, 178, 0.15)',
-          slate: '#475569',
-          text: '#0F172A',
-          muted: '#64748B',
-          accent: '#0284C7',
-          gold: '#D97706',
-          amber: '#F59E0B',
-          dark: '#0F172A',
-          'dark-surface': '#1E293B'
+          canvas: 'var(--brand-canvas)',
+          paper: 'var(--brand-paper)',
+          ink: 'var(--brand-ink)',
+          graphite: 'var(--brand-graphite)',
+          steel: 'var(--brand-steel)',
+          metal: 'var(--brand-metal)',
+          mineral: 'var(--brand-mineral)',
+          primary: 'var(--brand-primary)',
+          'primary-hover': 'var(--brand-primary-hover)',
+          accent: 'var(--brand-accent)',
+          'accent-hover': 'var(--brand-accent-hover)',
+          bronze: 'var(--brand-bronze)',
+          surface: 'var(--brand-surface)',
+          'surface-muted': 'var(--brand-surface-muted)',
+          text: 'var(--brand-text)',
+          'text-muted': 'var(--brand-text-muted)',
+          border: 'var(--brand-border)',
+          'border-strong': 'var(--brand-border-strong)',
+          success: 'var(--brand-success)',
+          warning: 'var(--brand-warning)',
+          danger: 'var(--brand-danger)',
         }
       },
       fontFamily: {
@@ -34,10 +38,12 @@ export default {
         display: ['Outfit', 'Inter', 'sans-serif'],
       },
       boxShadow: {
-        'subtle': '0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04)',
-        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
-        'card-hover': '0 12px 24px -4px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04)',
-        'elevated': '0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04)',
+        '2xs': '0 1px 2px 0 rgba(27, 29, 31, 0.03)',
+        'xs': '0 1px 3px 0 rgba(27, 29, 31, 0.04), 0 1px 2px -1px rgba(27, 29, 31, 0.04)',
+        'subtle': '0 1px 3px 0 rgba(27, 29, 31, 0.04), 0 1px 2px -1px rgba(27, 29, 31, 0.04)',
+        'card': '0 2px 5px -1px rgba(27, 29, 31, 0.05), 0 1px 3px -1px rgba(27, 29, 31, 0.04)',
+        'card-hover': '0 10px 20px -3px rgba(27, 29, 31, 0.07), 0 4px 6px -2px rgba(27, 29, 31, 0.03)',
+        'elevated': '0 20px 25px -5px rgba(27, 29, 31, 0.08), 0 8px 10px -6px rgba(27, 29, 31, 0.04)',
       },
       animation: {
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -46,4 +52,3 @@ export default {
   },
   plugins: [],
 }
-
