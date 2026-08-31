@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ShoppingBag, ShieldCheck, Database, Menu, X, ChevronRight } from 'lucide-react';
+import { Search, ShoppingBag, ShieldCheck, Menu, X, ChevronRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 interface NavbarProps {
@@ -14,33 +14,33 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const navItems = [
-    { label: 'Catalog', path: '/catalog' },
+    { label: 'Shop', path: '/catalog' },
+    { label: 'Lab Results / COAs', path: '/verify' },
     { label: 'Quality', path: '/quality' },
-    { label: 'Batch Verification', path: '/verify' },
-    { label: 'Research Resources', path: '/resources' },
     { label: 'About', path: '/about' },
+    { label: 'Resources', path: '/resources' },
     { label: 'Contact', path: '/contact' },
   ];
 
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-200 ${
           isScrolled
-            ? 'bg-[#08090B]/90 backdrop-blur-xl border-b border-white/10 shadow-2xl py-3'
-            : 'bg-gradient-to-b from-[#08090B]/90 to-transparent py-5'
+            ? 'bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm py-3.5'
+            : 'bg-[#FAFAF9]/90 backdrop-blur-sm border-b border-slate-200/60 py-4'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
-            {/* Logo */}
+            {/* Brand Logo */}
             <button
               onClick={() => {
                 navigate('/');
@@ -48,22 +48,20 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
               }}
               className="flex items-center space-x-3 group text-left focus:outline-none"
             >
-              <div className="relative w-9 h-9 rounded-lg bg-gradient-to-br from-slate-800 to-slate-900 border border-white/20 flex items-center justify-center shadow-lg group-hover:border-cyan-500/50 transition-colors">
-                <div className="w-4 h-4 rounded-sm border border-cyan-400/80 bg-cyan-500/10 flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse" />
-                </div>
+              <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center shadow-sm group-hover:bg-cyan-700 transition-colors">
+                <div className="w-3.5 h-3.5 rounded-[2px] bg-cyan-400" />
               </div>
-              <div>
-                <span className="font-display text-lg font-bold tracking-tight text-white block leading-none">
-                  VIAL <span className="text-cyan-400 font-light">FOUNDRY</span>
+              <div className="flex flex-col">
+                <span className="font-display text-lg sm:text-xl font-bold tracking-tight text-slate-900 leading-none">
+                  VIAL <span className="text-cyan-700 font-semibold">FOUNDRY</span>
                 </span>
-                <span className="mono-tag text-[9px] text-slate-400 tracking-widest block uppercase mt-0.5">
-                  Precision Materials
+                <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest leading-tight mt-0.5">
+                  Research Materials
                 </span>
               </div>
             </button>
 
-            {/* Desktop Navigation */}
+            {/* Desktop Navigation Links */}
             <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
               {navItems.map((item) => {
                 const isActive = currentPath === item.path;
@@ -71,10 +69,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
                   <button
                     key={item.path}
                     onClick={() => navigate(item.path)}
-                    className={`px-3 py-1.5 rounded-md text-xs font-medium tracking-wide transition-all ${
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                       isActive
-                        ? 'text-cyan-300 bg-cyan-500/10 border border-cyan-500/30'
-                        : 'text-slate-300 hover:text-white hover:bg-white/5'
+                        ? 'text-cyan-800 bg-cyan-50 font-semibold'
+                        : 'text-slate-600 hover:text-slate-950 hover:bg-slate-100/70'
                     }`}
                   >
                     {item.label}
@@ -83,39 +81,39 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
               })}
             </nav>
 
-            {/* Actions */}
+            {/* Actions: Search & Cart */}
             <div className="flex items-center space-x-2 sm:space-x-3">
               {/* Quick Search */}
               <button
                 onClick={() => setIsSearchOpen(true)}
-                className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-white/10 text-slate-400 hover:text-white hover:border-white/20 text-xs transition-colors"
+                className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200/80 border border-slate-200/80 text-slate-600 hover:text-slate-900 text-xs font-medium transition-colors"
                 title="Search products & lot documentation"
               >
-                <Search className="w-3.5 h-3.5" />
+                <Search className="w-3.5 h-3.5 text-slate-500" />
                 <span className="hidden sm:inline">Search...</span>
-                <kbd className="hidden lg:inline-block px-1.5 py-0.5 text-[9px] font-mono bg-slate-800 text-slate-400 rounded border border-slate-700">
+                <kbd className="hidden lg:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-white text-slate-500 rounded border border-slate-300">
                   ⌘K
                 </kbd>
               </button>
 
-              {/* Verify Badge Shortcut */}
+              {/* Lab Results / Lot Lookup Badge */}
               <button
                 onClick={() => navigate('/verify')}
-                className="hidden lg:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 text-xs font-mono font-medium transition-colors"
+                className="hidden lg:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 hover:bg-emerald-100 text-xs font-mono font-medium transition-colors"
               >
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                 <span>LOT LOOKUP</span>
               </button>
 
-              {/* Cart */}
+              {/* Cart Button */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="relative p-2 rounded-lg bg-slate-900/80 border border-white/10 text-slate-300 hover:text-white hover:border-white/20 transition-colors"
+                className="relative p-2 rounded-lg bg-slate-100 hover:bg-slate-200/80 border border-slate-200/80 text-slate-700 hover:text-slate-950 transition-colors"
                 aria-label="Shopping Cart"
               >
                 <ShoppingBag className="w-4 h-4" />
                 {totalItems > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-cyan-500 text-slate-950 font-mono font-bold text-[10px] rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                  <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-cyan-600 text-white font-mono font-bold text-[10px] rounded-full flex items-center justify-center shadow-sm">
                     {totalItems}
                   </span>
                 )}
@@ -124,7 +122,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
               {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-lg bg-slate-900/80 border border-white/10 text-slate-300 hover:text-white"
+                className="md:hidden p-2 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-950"
                 aria-label="Toggle Mobile Menu"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -136,9 +134,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
 
       {/* Mobile Drawer Navigation */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-30 bg-[#08090B]/95 backdrop-blur-2xl pt-24 px-6 md:hidden flex flex-col justify-between pb-12 animate-in fade-in duration-200">
-          <div className="space-y-3">
-            <div className="mono-tag text-xs text-cyan-400 tracking-wider uppercase mb-2">Navigation</div>
+        <div className="fixed inset-0 z-30 bg-white/98 pt-20 px-6 md:hidden flex flex-col justify-between pb-10 animate-in fade-in duration-150">
+          <div className="space-y-2">
+            <div className="text-xs font-mono font-semibold text-slate-400 uppercase tracking-wider mb-2">Navigation</div>
             {navItems.map((item) => (
               <button
                 key={item.path}
@@ -148,30 +146,30 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
                 }}
                 className={`w-full flex items-center justify-between p-3.5 rounded-xl border text-left font-medium transition-all ${
                   currentPath === item.path
-                    ? 'bg-cyan-500/10 border-cyan-500/40 text-cyan-300'
-                    : 'bg-slate-900/50 border-white/5 text-slate-200 hover:border-white/15'
+                    ? 'bg-cyan-50 border-cyan-300 text-cyan-900 font-semibold'
+                    : 'bg-slate-50 border-slate-200/80 text-slate-800 hover:border-slate-300'
                 }`}
               >
                 <span>{item.label}</span>
-                <ChevronRight className="w-4 h-4 text-slate-500" />
+                <ChevronRight className="w-4 h-4 text-slate-400" />
               </button>
             ))}
           </div>
 
-          <div className="space-y-3 pt-6 border-t border-white/10">
+          <div className="space-y-3 pt-6 border-t border-slate-200">
             <button
               onClick={() => {
                 navigate('/verify');
                 setMobileMenuOpen(false);
               }}
-              className="w-full flex items-center justify-center space-x-2 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-sm font-semibold"
+              className="w-full flex items-center justify-center space-x-2 py-3 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 font-mono text-sm font-semibold"
             >
-              <ShieldCheck className="w-4 h-4" />
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
               <span>VERIFY BATCH DOCUMENTATION</span>
             </button>
 
-            <div className="text-center text-xs text-slate-500 font-mono pt-2">
-              RUO — RESEARCH USE ONLY
+            <div className="text-center text-xs text-slate-500 font-mono pt-1">
+              FOR RESEARCH USE ONLY · NOT FOR HUMAN USE
             </div>
           </div>
         </div>
@@ -179,3 +177,4 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
     </>
   );
 };
+

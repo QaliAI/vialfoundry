@@ -5,8 +5,8 @@ import { Percent, TrendingUp, Wallet, CheckCircle2, Users, ShieldCheck } from 'l
 
 const BENEFITS = [
   { icon: Percent, title: 'Competitive commission', body: 'Earn a generous commission on every qualified order from your referrals.' },
-  { icon: TrendingUp, title: 'High-converting catalog', body: 'Premium, batch-documented research materials researchers trust and reorder.' },
-  { icon: Wallet, title: 'Flexible payouts', body: 'Get paid via CashApp, crypto, Zelle, or bank transfer on a regular schedule.' },
+  { icon: TrendingUp, title: 'High-converting catalog', body: 'Standardized, batch-documented research materials researchers trust and reorder.' },
+  { icon: Wallet, title: 'Flexible payouts', body: 'Get paid via CashApp, crypto, Zelle, or direct bank transfer on a regular schedule.' },
 ];
 
 export const AffiliatesPage: React.FC = () => {
@@ -28,15 +28,15 @@ export const AffiliatesPage: React.FC = () => {
   };
 
   return (
-    <div className="pt-28 pb-20 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+    <div className="pt-28 pb-20 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 bg-[#FAFAF9]">
       <div className="text-center max-w-2xl mx-auto space-y-3">
-        <div className="mono-tag text-xs text-cyan-400 font-semibold uppercase tracking-wider">
-          Partner Program
+        <div className="text-xs font-mono font-bold text-cyan-800 uppercase tracking-wider">
+          PARTNER PROGRAM
         </div>
-        <h1 className="font-display text-4xl font-extrabold text-white">Join the Vial Foundry Affiliate Program</h1>
-        <p className="text-slate-400 text-sm font-light">
-          Refer researchers and labs to precision-built, batch-documented research materials and earn
-          commission on every qualified order. Apply below — approvals are quick.
+        <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Vial Foundry Affiliate Partner Program</h1>
+        <p className="text-slate-600 text-sm sm:text-base font-normal leading-relaxed">
+          Refer qualified researchers and laboratory procurement teams to precision-tested, lot-documented research materials and earn
+          commission on verified orders.
         </p>
       </div>
 
@@ -44,12 +44,12 @@ export const AffiliatesPage: React.FC = () => {
         {BENEFITS.map((b) => {
           const Icon = b.icon;
           return (
-            <div key={b.title} className="glass-card p-6 rounded-2xl border border-white/10 space-y-3">
-              <div className="w-10 h-10 rounded-lg bg-slate-900 border border-white/10 flex items-center justify-center">
-                <Icon className="w-5 h-5 text-cyan-400" />
+            <div key={b.title} className="storefront-card p-6 sm:p-8 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-3">
+              <div className="w-10 h-10 rounded-lg bg-cyan-50 border border-cyan-200 flex items-center justify-center text-cyan-800">
+                <Icon className="w-5 h-5" />
               </div>
-              <h3 className="font-display text-base font-bold text-white">{b.title}</h3>
-              <p className="text-xs text-slate-400 font-light leading-relaxed">{b.body}</p>
+              <h3 className="font-display text-base font-bold text-slate-900">{b.title}</h3>
+              <p className="text-xs text-slate-600 font-normal leading-relaxed">{b.body}</p>
             </div>
           );
         })}
@@ -57,79 +57,79 @@ export const AffiliatesPage: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <div className="lg:col-span-5 space-y-4">
-          <div className="glass-panel p-6 rounded-2xl border border-white/10 space-y-4">
-            <h3 className="font-display text-lg font-bold text-white flex items-center gap-2">
-              <Users className="w-4 h-4 text-cyan-400" /> Who it&apos;s for
+          <div className="storefront-card p-6 sm:p-8 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-4">
+            <h3 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2">
+              <Users className="w-4 h-4 text-cyan-800" /> Program Scope
             </h3>
-            <ul className="space-y-2 text-xs font-mono text-slate-300">
-              {['Research educators & content creators', 'Lab supply reviewers & communities', 'Newsletter and forum operators'].map((x) => (
+            <ul className="space-y-2 text-xs font-mono text-slate-700">
+              {['Research educators & analytical creators', 'Laboratory supply directories & communities', 'Academic newsletters & scientific journals'].map((x) => (
                 <li key={x} className="flex items-start space-x-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
                   <span>{x}</span>
                 </li>
               ))}
             </ul>
           </div>
-          <div className="p-4 rounded-xl bg-slate-900 border border-white/10 text-xs font-mono text-slate-400 leading-relaxed flex items-start space-x-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-            <span>Affiliates must promote all products as research use only (RUO). No health, dosing, or human-use claims.</span>
+          <div className="p-4 rounded-xl bg-slate-100 border border-slate-200 text-xs font-mono text-slate-600 leading-relaxed flex items-start space-x-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+            <span>Affiliates must promote all products strictly as research use only (RUO). No medical, diagnostic, or human-use claims are permitted.</span>
           </div>
         </div>
 
-        <div className="lg:col-span-7 glass-panel p-8 rounded-2xl border border-white/10">
+        <div className="lg:col-span-7 storefront-card p-8 rounded-2xl bg-white border border-slate-200 shadow-2xs">
           {submitted ? (
             <div className="py-12 text-center space-y-3">
-              <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />
-              <h3 className="font-display text-xl font-bold text-white">Application Received</h3>
-              <p className="text-xs font-mono text-slate-400">
-                Thanks for applying. Our team will review your application and follow up by email with your
-                referral link and terms.
+              <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto" />
+              <h3 className="font-display text-xl font-bold text-slate-900">Application Received</h3>
+              <p className="text-xs font-mono text-slate-600">
+                Thanks for applying. Our partner operations team will review your application and follow up by email with your
+                custom referral attribution code.
               </p>
             </div>
           ) : (
             <form onSubmit={submit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="mono-tag text-xs text-slate-300 uppercase">Full Name</label>
+                  <label className="text-xs font-mono text-slate-700 uppercase font-semibold">Full Name</label>
                   <input
                     type="text" required value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-white/15 text-white text-xs font-mono focus:outline-none focus:border-cyan-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-xs font-mono focus:outline-none focus:bg-white focus:border-cyan-600"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="mono-tag text-xs text-slate-300 uppercase">Email</label>
+                  <label className="text-xs font-mono text-slate-700 uppercase font-semibold">Email</label>
                   <input
                     type="email" required value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-white/15 text-white text-xs font-mono focus:outline-none focus:border-cyan-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-xs font-mono focus:outline-none focus:bg-white focus:border-cyan-600"
                   />
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="mono-tag text-xs text-slate-300 uppercase">Website / Social</label>
+                <label className="text-xs font-mono text-slate-700 uppercase font-semibold">Website / Channel</label>
                 <input
                   type="text" value={form.website}
                   onChange={(e) => setForm({ ...form, website: e.target.value })}
                   placeholder="https://…"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-white/15 text-white text-xs font-mono focus:outline-none focus:border-cyan-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-xs font-mono focus:outline-none focus:bg-white focus:border-cyan-600"
                 />
               </div>
               <div className="space-y-1">
-                <label className="mono-tag text-xs text-slate-300 uppercase">Audience / How you&apos;ll promote</label>
+                <label className="text-xs font-mono text-slate-700 uppercase font-semibold">Audience Description</label>
                 <textarea
                   rows={3} value={form.audience}
                   onChange={(e) => setForm({ ...form, audience: e.target.value })}
-                  placeholder="Tell us about your audience and channels…"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-white/15 text-white text-xs font-mono focus:outline-none focus:border-cyan-500"
+                  placeholder="Describe your audience, channels, and research focus…"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-xs font-mono focus:outline-none focus:bg-white focus:border-cyan-600"
                 />
               </div>
               <div className="space-y-1">
-                <label className="mono-tag text-xs text-slate-300 uppercase">Preferred Payout</label>
+                <label className="text-xs font-mono text-slate-700 uppercase font-semibold">Preferred Payout Channel</label>
                 <select
                   value={form.payoutMethod}
                   onChange={(e) => setForm({ ...form, payoutMethod: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-white/15 text-white text-xs font-mono focus:outline-none focus:border-cyan-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-xs font-mono focus:outline-none focus:bg-white focus:border-cyan-600 cursor-pointer"
                 >
                   <option>CashApp</option>
                   <option>Crypto (BTC/USDC)</option>
@@ -139,7 +139,7 @@ export const AffiliatesPage: React.FC = () => {
               </div>
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-xl bg-cyan-500 text-slate-950 font-display font-bold text-xs hover:bg-cyan-400 transition-all shadow-lg"
+                className="w-full py-3.5 rounded-xl bg-cyan-700 hover:bg-cyan-800 text-white font-display font-bold text-xs shadow-sm transition-all"
               >
                 Apply to the Affiliate Program
               </button>
@@ -150,3 +150,4 @@ export const AffiliatesPage: React.FC = () => {
     </div>
   );
 };
+

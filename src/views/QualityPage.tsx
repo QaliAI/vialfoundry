@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Target, Search, FileCheck, Truck, Lock, Cpu, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import { FoundryStandard } from '../components/FoundryStandard';
 
 export const QualityPage: React.FC = () => {
@@ -15,27 +15,27 @@ export const QualityPage: React.FC = () => {
   ];
 
   return (
-    <div className="pt-28 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+    <div className="pt-28 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 bg-[#FAFAF9]">
       
       <div className="space-y-4 text-center max-w-3xl mx-auto">
-        <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono font-bold">
+        <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-cyan-50 border border-cyan-200 text-cyan-800 text-xs font-mono font-bold">
           <ShieldCheck className="w-4 h-4" />
           <span>QUALITY ASSURANCE FRAMEWORK</span>
         </div>
-        <h1 className="font-display text-4xl font-extrabold text-white">
+        <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
           The 8 Pillars of Material Integrity
         </h1>
-        <p className="text-slate-400 text-sm font-light">
-          Our quality assurance framework establishes complete analytical transparency at every phase of production.
+        <p className="text-slate-600 text-sm sm:text-base font-normal leading-relaxed">
+          Our quality assurance framework establishes complete analytical transparency at every phase of production and dispatch.
         </p>
       </div>
 
       {/* Grid of Pillars */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {qualityPillars.map((p, i) => (
-          <div key={i} className="glass-card p-6 rounded-2xl border border-white/10 space-y-3">
-            <h3 className="font-display text-base font-bold text-white">{p.title}</h3>
-            <p className="text-xs text-slate-400 font-light leading-relaxed">{p.desc}</p>
+          <div key={i} className="storefront-card p-6 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-3">
+            <h3 className="font-display text-base font-bold text-slate-900">{p.title}</h3>
+            <p className="text-xs text-slate-600 font-normal leading-relaxed">{p.desc}</p>
           </div>
         ))}
       </div>
@@ -45,3 +45,4 @@ export const QualityPage: React.FC = () => {
     </div>
   );
 };
+

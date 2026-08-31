@@ -4,13 +4,11 @@ import { TrustBand } from '../components/TrustBand';
 import { ProductCard } from '../components/ProductCard';
 import { FoundryStandard } from '../components/FoundryStandard';
 import { BatchVerificationEngine } from '../components/BatchVerificationEngine';
-import { ToolsHub } from '../components/ToolsHub';
-import { TrustStrip } from '../components/TrustStrip';
 import { PRODUCTS } from '../data/products';
 import { BATCH_RECORDS } from '../data/batches';
 import { Product } from '../types';
 import { COAModal } from '../components/COAModal';
-import { ArrowRight, Sparkles, FileText, ChevronRight } from 'lucide-react';
+import { ArrowRight, ChevronRight, BookOpen, Layers } from 'lucide-react';
 import { RESEARCH_ARTICLES } from '../data/articles';
 
 interface HomePageProps {
@@ -22,40 +20,52 @@ interface HomePageProps {
 export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, onSelectArticle }) => {
   const [activeCOALot, setActiveCOALot] = useState<string | null>(null);
 
-  const featuredProducts = PRODUCTS.slice(0, 4);
+  // Featured 4 Best Sellers / Popular Reference Standards
+  const bestSellers = PRODUCTS.slice(0, 4);
+
+  // Product categories for discovery
+  const categories = [
+    { title: 'Reference Standards', desc: 'Synthesized peptide standards for analytical assay validation and chromatography.', count: '8 Standards', path: '/catalog' },
+    { title: 'Analytical Standards', desc: 'High-purity receptor agonists with calibrated retention times and mass verification.', count: '4 Standards', path: '/catalog' },
+    { title: 'Single Compounds', desc: 'Characterized individual peptide compounds and metabolic cofactors.', count: '6 Compounds', path: '/catalog' },
+    { title: 'Laboratory Supplies', desc: 'USP-grade reconstitution water and chromatography mobile phase solvents.', count: '2 Supplies', path: '/catalog' }
+  ];
 
   return (
-    <div className="space-y-0">
-      {/* Hero Section */}
+    <div className="space-y-0 bg-[#FAFAF9]">
+      {/* 1. Hero Section (2-Column Physical Showcase) */}
       <Hero navigate={navigate} />
 
-      {/* Trust Band */}
+      {/* 2. Trust Bar (4 Points) */}
       <TrustBand />
 
-      {/* Featured Catalog Section */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-12 gap-4">
-          <div className="space-y-2">
-            <div className="mono-tag text-xs text-cyan-400 font-semibold uppercase tracking-wider">
-              FEATURED CATALOG
+      {/* 3. Best Sellers / Featured Products Section */}
+      <section className="py-16 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-10 gap-4">
+          <div className="space-y-1.5">
+            <div className="text-xs font-mono font-bold text-cyan-800 uppercase tracking-wider">
+              CORE CATALOG
             </div>
-            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-white">
-              Precision reference materials.
+            <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Featured Reference Standards
             </h2>
+            <p className="text-slate-600 text-sm">
+              Standardized research materials in stock and ready for immediate insulated dispatch.
+            </p>
           </div>
 
           <button
             onClick={() => navigate('/catalog')}
-            className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-slate-900 border border-white/15 text-white hover:border-cyan-500/40 hover:text-cyan-300 transition-all font-display text-xs font-bold"
+            className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-800 hover:bg-slate-50 hover:border-slate-400 transition-all font-display text-xs font-bold shadow-2xs"
           >
-            <span>View All Materials</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>View Full Catalog</span>
+            <ArrowRight className="w-4 h-4 text-cyan-700" />
           </button>
         </div>
 
-        {/* Product Cards Grid */}
+        {/* Product Cards Grid (4 across) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredProducts.map((product) => (
+          {bestSellers.map((product) => (
             <ProductCard
               key={product.id}
               product={product}
@@ -66,92 +76,99 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
         </div>
       </section>
 
-      {/* The Foundry Standard Section */}
-      <FoundryStandard />
+      {/* Category Discovery Grid */}
+      <section className="py-12 bg-white border-y border-slate-200/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-10 space-y-2">
+            <div className="text-xs font-mono font-bold text-cyan-800 uppercase tracking-wider">
+              CATALOG DIVISIONS
+            </div>
+            <h3 className="font-display text-2xl font-bold text-slate-900">
+              Browse by Research Category
+            </h3>
+          </div>
 
-      {/* Signature Feature: Batch Verification Engine */}
-      <BatchVerificationEngine />
-
-      {/* Visual Brand Story Section */}
-      <section className="relative py-32 overflow-hidden bg-slate-950 border-t border-white/10">
-        <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            poster="/assets/videos/story-bg-poster.jpg"
-            className="w-full h-full object-cover"
-          >
-            <source src="/assets/videos/story-bg.mp4" type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-950" />
-        </div>
-
-        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <span className="mono-tag text-xs text-cyan-400 font-semibold uppercase tracking-widest">
-            THE VIAL FOUNDRY CONCEPT
-          </span>
-          <blockquote className="font-display text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-snug">
-            &ldquo;Vial Foundry was built around a simple idea: research materials should be presented with the same precision used to evaluate them.&rdquo;
-          </blockquote>
-          <p className="text-slate-400 text-sm font-light max-w-2xl mx-auto">
-            From HPLC peak area integration to temperature-controlled cold storage, we build standards for researchers who demand complete transparency.
-          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {categories.map((cat, idx) => (
+              <div
+                key={idx}
+                onClick={() => navigate(cat.path)}
+                className="storefront-card p-6 rounded-2xl border border-slate-200/90 bg-[#FAFAF9] hover:bg-white hover:border-cyan-600/40 hover:shadow-card-hover transition-all cursor-pointer group flex flex-col justify-between"
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-mono font-semibold text-cyan-800">{cat.count}</span>
+                    <Layers className="w-4 h-4 text-slate-400 group-hover:text-cyan-700 transition-colors" />
+                  </div>
+                  <h4 className="font-display text-base font-bold text-slate-900 group-hover:text-cyan-800 transition-colors">
+                    {cat.title}
+                  </h4>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    {cat.desc}
+                  </p>
+                </div>
+                <div className="pt-4 mt-4 border-t border-slate-200/60 flex items-center text-xs font-display font-semibold text-cyan-800 group-hover:text-cyan-900">
+                  <span>Explore category</span>
+                  <ChevronRight className="w-3.5 h-3.5 ml-1 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Analytical Tools Hub */}
-      <ToolsHub />
+      {/* 4. Quality / The Foundry Standard Section */}
+      <FoundryStandard navigate={navigate} />
 
-      {/* Social proof */}
-      <div className="border-t border-white/10">
-        <TrustStrip />
-      </div>
+      {/* 5. Batch Verification Engine Section */}
+      <BatchVerificationEngine />
 
-      {/* Research Resources Section */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-white/10">
-        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-12 gap-4">
-          <div className="space-y-2">
-            <div className="mono-tag text-xs text-cyan-400 font-semibold uppercase tracking-wider">
-              RESEARCH RESOURCES
+      {/* 6. Research Resources & Documentation Articles */}
+      <section className="py-16 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-200/80">
+        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-10 gap-4">
+          <div className="space-y-1.5">
+            <div className="text-xs font-mono font-bold text-cyan-800 uppercase tracking-wider">
+              RESEARCH INSIGHTS
             </div>
-            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-white">
-              Documentation & quality insights.
+            <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Analytical Documentation & Protocols
             </h2>
+            <p className="text-slate-600 text-sm">
+              Technical guides on interpreting chromatograms, SPPS synthesis purity, and analytical methods.
+            </p>
           </div>
 
           <button
             onClick={() => navigate('/resources')}
-            className="flex items-center space-x-2 text-xs font-mono text-cyan-400 hover:text-cyan-300"
+            className="flex items-center space-x-1.5 text-xs font-display font-semibold text-cyan-800 hover:text-cyan-900"
           >
-            <span>Explore All Articles</span>
+            <span>Explore All Resources</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {RESEARCH_ARTICLES.map((article) => (
+          {RESEARCH_ARTICLES.filter((a) => a.slug !== 'reconstitution-of-lyophilized-peptides').slice(0, 3).map((article) => (
             <div
               key={article.slug}
               onClick={() => onSelectArticle(article.slug)}
-              className="glass-card p-6 rounded-2xl border border-white/10 space-y-4 flex flex-col justify-between cursor-pointer group"
+              className="storefront-card p-6 sm:p-7 rounded-2xl border border-slate-200/90 bg-white space-y-4 flex flex-col justify-between cursor-pointer group hover:border-cyan-600/40 hover:shadow-card-hover transition-all"
             >
               <div className="space-y-3">
-                <div className="flex items-center justify-between font-mono text-[10px] text-slate-400">
-                  <span className="text-cyan-400">{article.category}</span>
+                <div className="flex items-center justify-between font-mono text-[11px] text-slate-500">
+                  <span className="text-cyan-800 font-semibold">{article.category}</span>
                   <span>{article.readTime}</span>
                 </div>
-                <h3 className="font-display text-lg font-bold text-white group-hover:text-cyan-300 transition-colors">
+                <h3 className="font-display text-lg font-bold text-slate-900 group-hover:text-cyan-800 transition-colors leading-snug">
                   {article.title}
                 </h3>
-                <p className="text-xs text-slate-400 font-light line-clamp-3 leading-relaxed">
+                <p className="text-xs text-slate-600 font-normal line-clamp-3 leading-relaxed">
                   {article.excerpt}
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs font-mono text-cyan-400 font-semibold group-hover:text-cyan-300">
-                <span>Read Article</span>
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-display font-bold text-cyan-800 group-hover:text-cyan-900">
+                <span>Read Technical Guide</span>
                 <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
@@ -169,3 +186,4 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
     </div>
   );
 };
+

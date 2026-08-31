@@ -1,76 +1,67 @@
 import React, { useState } from 'react';
-import { Target, Search, FileCheck, Truck, ShieldCheck, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Target, Search, FileCheck, Truck, ShieldCheck, CheckCircle2, ChevronRight, ArrowRight } from 'lucide-react';
 
-export const FoundryStandard: React.FC = () => {
+interface FoundryStandardProps {
+  navigate?: (path: string) => void;
+}
+
+export const FoundryStandard: React.FC<FoundryStandardProps> = ({ navigate }) => {
   const [activeStep, setActiveStep] = useState(0);
 
   const pillars = [
     {
       id: 'source',
       step: '01',
-      title: 'Source',
-      subtitle: 'Qualified Chemical Synthesis',
+      title: 'Synthesis & Raw Materials',
+      subtitle: 'Qualified Precursor Verification',
       icon: Target,
-      desc: 'Every compound begins with qualified solid-phase synthesis (SPPS) or enzymatic crystallization. We enforce strict raw material precursor purity standards before manufacturing begins.',
+      desc: 'Every compound begins with qualified solid-phase peptide synthesis (SPPS) or enzymatic crystallization. We enforce strict precursor optical purity checks before manufacturing begins.',
       metrics: ['Vendor Audit Standardized', 'Precursor HPLC Inspection', 'Raw Ingredient Purity > 99%']
     },
     {
       id: 'verify',
       step: '02',
-      title: 'Verify',
-      subtitle: 'Independent HPLC & LC-MS Testing',
+      title: 'Dual Analytical Testing',
+      subtitle: 'RP-HPLC & Mass Spectrometry',
       icon: Search,
-      desc: 'Finished lots undergo independent reverse-phase liquid chromatography and mass spectrometry. We verify both total peak area purity and exact molecular mass.',
-      metrics: ['214nm Peak Integration', 'ESI-MS Mass Confirmation', 'Heavy Metals & Endotoxin Test']
+      desc: 'Finished lots undergo independent reverse-phase liquid chromatography (RP-HPLC) for chromatographic purity and electrospray ionization mass spectrometry (ESI-MS) for exact mass confirmation.',
+      metrics: ['214nm Peak Integration', 'ESI-MS Molecular Mass Match', 'Endotoxin & Solvent Screening']
     },
     {
       id: 'document',
       step: '03',
-      title: 'Document',
-      subtitle: 'Open Lot Traceability Records',
+      title: 'Lot Documentation',
+      subtitle: 'Public Certificates of Analysis',
       icon: FileCheck,
-      desc: 'Batch records are published to our open lot search index. Researchers can look up any lot number to view or download full PDF certificates of analysis.',
-      metrics: ['Public Lot Database', 'Digital PDF Export', 'Archival Chromatogram Logs']
+      desc: 'Batch records are published directly to our open lot search portal. Researchers can search any lot code to inspect chromatograms, peak integration tables, and download official PDF records.',
+      metrics: ['Public Lot Search Portal', 'Digital PDF COA Export', 'Archival Chromatogram Logs']
     },
     {
       id: 'deliver',
       step: '04',
-      title: 'Deliver',
-      subtitle: 'Desiccated Cold Chain Fulfillment',
+      title: 'Cold Storage & Logistics',
+      subtitle: 'Desiccated -20°C Vault Storage',
       icon: Truck,
-      desc: 'Materials are stored in desiccated vacuum environments at -20°C and dispatched in temperature-stable insulated packaging for maximum stability.',
-      metrics: ['-20°C Nitrogen Storage', 'Insulated Express Shipping', 'Real-Time Inventory Status']
+      desc: 'Materials are sealed with fluoropolymer septa under nitrogen flush, stored at -20°C in climate-controlled vaults, and dispatched in insulated packaging for thermal stability.',
+      metrics: ['-20°C Nitrogen Storage', 'Insulated Express Fulfillment', 'Real-Time Inventory Levels']
     }
   ];
 
   return (
-    <section className="py-24 bg-slate-950/80 border-t border-white/10 relative overflow-hidden">
-      {/* Background Micro Video Loop */}
-      <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          poster="/assets/videos/macro-glass-poster.jpg"
-          className="w-full h-full object-cover filter grayscale"
-        >
-          <source src="/assets/videos/macro-glass.mp4" type="video/mp4" />
-        </video>
-      </div>
-
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-slate-900 border border-cyan-500/30 text-cyan-300 text-xs">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span className="mono-tag text-[11px] uppercase tracking-wider">THE FOUNDRY STANDARD</span>
+    <section className="py-20 sm:py-24 bg-[#FAFAF9] border-t border-slate-200/80 relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Section Header */}
+        <div className="max-w-3xl space-y-3 mb-14">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-mono font-semibold">
+            <ShieldCheck className="w-3.5 h-3.5 text-cyan-700" />
+            <span>THE FOUNDRY STANDARD</span>
           </div>
-          <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-white">
-            Precision engineering at every stage.
+          <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            Quality assurance and testing discipline.
           </h2>
-          <p className="text-slate-400 text-sm sm:text-base font-light">
-            Our operational framework bridges chemical manufacturing discipline with transparent analytical verification.
+          <p className="text-slate-600 text-base font-normal leading-relaxed">
+            Our operational framework bridges chemical manufacturing standards with independent analytical testing and public lot documentation.
           </p>
         </div>
 
@@ -80,7 +71,6 @@ export const FoundryStandard: React.FC = () => {
           {/* Left Column: Interactive Step Selector */}
           <div className="lg:col-span-5 space-y-3">
             {pillars.map((pillar, idx) => {
-              const Icon = pillar.icon;
               const isActive = activeStep === idx;
               return (
                 <button
@@ -88,61 +78,81 @@ export const FoundryStandard: React.FC = () => {
                   onClick={() => setActiveStep(idx)}
                   className={`w-full text-left p-5 rounded-2xl border transition-all flex items-center justify-between group ${
                     isActive
-                      ? 'bg-slate-900 border-cyan-500/50 shadow-xl shadow-cyan-500/10'
-                      : 'bg-slate-900/40 border-white/5 hover:border-white/15'
+                      ? 'bg-white border-cyan-600/60 shadow-card ring-1 ring-cyan-600/20'
+                      : 'bg-white/60 border-slate-200 hover:bg-white hover:border-slate-300'
                   }`}
                 >
                   <div className="flex items-center space-x-4">
-                    <span className={`font-mono text-sm font-bold ${isActive ? 'text-cyan-400' : 'text-slate-400'}`}>
+                    <span className={`font-mono text-sm font-bold ${isActive ? 'text-cyan-700' : 'text-slate-400'}`}>
                       {pillar.step}
                     </span>
                     <div>
-                      <h3 className={`font-display text-base font-bold ${isActive ? 'text-white' : 'text-slate-300'}`}>
+                      <h3 className={`font-display text-base font-bold ${isActive ? 'text-slate-900' : 'text-slate-700'}`}>
                         {pillar.title}
                       </h3>
-                      <p className="text-xs text-slate-400 font-light">{pillar.subtitle}</p>
+                      <p className="text-xs text-slate-500">{pillar.subtitle}</p>
                     </div>
                   </div>
-                  <ChevronRight className={`w-4 h-4 transition-transform ${isActive ? 'text-cyan-400 translate-x-1' : 'text-slate-600'}`} />
+                  <ChevronRight className={`w-4 h-4 transition-transform ${isActive ? 'text-cyan-700 translate-x-1' : 'text-slate-400'}`} />
                 </button>
               );
             })}
           </div>
 
-          {/* Right Column: Active Pillar Card Display */}
+          {/* Right Column: Active Pillar Detail Card */}
           <div className="lg:col-span-7">
-            <div className="glass-panel h-full rounded-2xl p-8 border border-white/10 flex flex-col justify-between space-y-6">
+            <div className="storefront-card h-full rounded-2xl p-8 sm:p-10 border border-slate-200/90 bg-white flex flex-col justify-between space-y-8 shadow-sm">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="mono-tag text-xs text-cyan-400 font-semibold tracking-wider">
-                    PILLAR {pillars[activeStep].step} — {pillars[activeStep].title.toUpperCase()}
+                  <span className="text-xs font-mono font-bold text-cyan-800 tracking-wider uppercase">
+                    STAGE {pillars[activeStep].step} — {pillars[activeStep].title.toUpperCase()}
                   </span>
-                  <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
-                    {React.createElement(pillars[activeStep].icon, { className: 'w-6 h-6' })}
+                  <div className="p-2.5 rounded-xl bg-cyan-50 border border-cyan-200 text-cyan-700">
+                    {React.createElement(pillars[activeStep].icon, { className: 'w-5 h-5' })}
                   </div>
                 </div>
 
-                <h3 className="font-display text-2xl font-bold text-white">
+                <h3 className="font-display text-2xl sm:text-3xl font-bold text-slate-900">
                   {pillars[activeStep].subtitle}
                 </h3>
 
-                <p className="text-sm text-slate-300 font-light leading-relaxed">
+                <p className="text-sm sm:text-base text-slate-600 font-normal leading-relaxed">
                   {pillars[activeStep].desc}
                 </p>
               </div>
 
-              {/* Metrics Checklist */}
-              <div className="pt-6 border-t border-white/10 space-y-2">
-                <div className="mono-tag text-[10px] text-slate-400 uppercase">VERIFICATION GUARANTEES</div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+              {/* Guarantees Checklist */}
+              <div className="pt-6 border-t border-slate-100 space-y-3">
+                <div className="text-[11px] font-mono font-semibold text-slate-500 uppercase tracking-wider">Verification Standards</div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {pillars[activeStep].metrics.map((metric, i) => (
-                    <div key={i} className="p-3 rounded-xl bg-slate-900/80 border border-white/10 flex items-center space-x-2 text-xs font-mono text-slate-200">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                      <span className="line-clamp-2">{metric}</span>
+                    <div key={i} className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center space-x-2 text-xs font-mono text-slate-800">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                      <span className="leading-snug">{metric}</span>
                     </div>
                   ))}
                 </div>
               </div>
+
+              {/* CTA */}
+              {navigate && (
+                <div className="pt-2 flex items-center space-x-4">
+                  <button
+                    onClick={() => navigate('/verify')}
+                    className="inline-flex items-center space-x-2 text-xs font-bold text-cyan-800 hover:text-cyan-900 font-display"
+                  >
+                    <span>Inspect Lot Database</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                  <span className="text-slate-300">·</span>
+                  <button
+                    onClick={() => navigate('/quality')}
+                    className="inline-flex items-center space-x-2 text-xs font-medium text-slate-600 hover:text-slate-900"
+                  >
+                    <span>Read Full Quality Protocol</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -151,3 +161,4 @@ export const FoundryStandard: React.FC = () => {
     </section>
   );
 };
+

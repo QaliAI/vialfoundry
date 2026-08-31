@@ -23,7 +23,7 @@ function mapDbReview(r: DbReview): Review {
   };
 }
 
-/** Fetch published reviews from Supabase; fall back to the static set on any error. */
+/** Fetch published verified reviews from Supabase. Returns empty array if no real reviews exist. */
 export async function fetchReviews(productSlug?: string): Promise<Review[]> {
   try {
     const supabase = createClient();
@@ -37,14 +37,10 @@ export async function fetchReviews(productSlug?: string): Promise<Review[]> {
 
     const { data, error } = await query;
     if (error || !data || data.length === 0) {
-      return productSlug
-        ? STATIC_REVIEWS.filter((r) => r.productSlug === productSlug)
-        : STATIC_REVIEWS;
+      return [];
     }
     return (data as DbReview[]).map(mapDbReview);
   } catch {
-    return productSlug
-      ? STATIC_REVIEWS.filter((r) => r.productSlug === productSlug)
-      : STATIC_REVIEWS;
+    return [];
   }
 }

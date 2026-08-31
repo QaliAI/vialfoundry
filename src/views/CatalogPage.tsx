@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { PRODUCTS } from '../data/products';
-import { ProductCategory, Product } from '../types';
+import { Product } from '../types';
 import { ProductCard } from '../components/ProductCard';
 import { BATCH_RECORDS } from '../data/batches';
 import { COAModal } from '../components/COAModal';
-import { Search, Filter, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
+import { Search, ArrowUpDown } from 'lucide-react';
 
 interface CatalogPageProps {
   onSelectProduct: (product: Product) => void;
@@ -13,7 +13,7 @@ interface CatalogPageProps {
 export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'name' | 'purity' | 'price-asc' | 'price-desc'>('purity');
+  const [sortBy, setSortBy] = useState<'name' | 'purity' | 'price-asc' | 'price-desc'>('name');
   const [activeCOALot, setActiveCOALot] = useState<string | null>(null);
 
   const categories = ['All', 'Reference Materials', 'Analytical Standards', 'Single Compounds', 'Specialty Materials', 'Lab Supplies'];
@@ -39,23 +39,23 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct }) => 
   }, [selectedCategory, searchQuery, sortBy]);
 
   return (
-    <div className="pt-28 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+    <div className="pt-28 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 bg-[#FAFAF9]">
       
       {/* Header Banner */}
       <div className="space-y-3">
-        <div className="mono-tag text-xs text-cyan-400 font-semibold uppercase tracking-wider">
+        <div className="text-xs font-mono font-bold text-cyan-800 uppercase tracking-wider">
           MATERIALS CATALOG
         </div>
-        <h1 className="font-display text-4xl font-extrabold text-white">
-          Research Materials & Standards
+        <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+          Research Materials & Analytical Standards
         </h1>
-        <p className="text-slate-400 text-sm font-light max-w-2xl">
-          Browse verified chemical reference materials, analytical standards, and purified single compounds. All products include batch documentation and HPLC reports.
+        <p className="text-slate-600 text-sm sm:text-base font-normal max-w-2xl leading-relaxed">
+          Standardized peptide reference materials, analytical standards, and purified single compounds. Every SKU is supported by physical HPLC and ESI-MS lot documentation.
         </p>
       </div>
 
       {/* Filter & Controls Bar */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900/80 border border-white/10">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs">
         
         {/* Category Pills */}
         <div className="flex items-center space-x-1.5 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
@@ -65,8 +65,8 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct }) => 
               onClick={() => setSelectedCategory(cat)}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
                 selectedCategory === cat
-                  ? 'bg-cyan-500 text-slate-950 font-bold shadow-md'
-                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  ? 'bg-cyan-700 text-white font-bold shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
               {cat}
@@ -77,25 +77,25 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct }) => 
         {/* Search & Sort Controls */}
         <div className="flex items-center space-x-3">
           <div className="relative flex-1 md:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search catalog..."
-              className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-slate-950 border border-white/10 text-white placeholder-slate-500 text-xs font-mono focus:outline-none focus:border-cyan-500"
+              placeholder="Search compounds or CAS..."
+              className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-slate-50 border border-slate-300 text-slate-900 placeholder-slate-400 text-xs font-mono focus:outline-none focus:bg-white focus:border-cyan-600"
             />
           </div>
 
-          <div className="flex items-center space-x-1.5 bg-slate-950 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-300">
-            <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+          <div className="flex items-center space-x-1.5 bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-700">
+            <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-transparent text-slate-200 focus:outline-none cursor-pointer"
+              className="bg-transparent text-slate-800 focus:outline-none cursor-pointer text-xs"
             >
+              <option value="name">Name (A-Z)</option>
               <option value="purity">Purity (High to Low)</option>
-              <option value="name">Alphabetical (A-Z)</option>
               <option value="price-asc">Price (Low to High)</option>
               <option value="price-desc">Price (High to Low)</option>
             </select>
@@ -106,14 +106,14 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct }) => 
 
       {/* Catalog Grid */}
       {filteredProducts.length === 0 ? (
-        <div className="text-center py-20 bg-slate-900/40 rounded-2xl border border-white/10 space-y-3">
-          <p className="text-slate-400 font-mono text-sm">No materials match your current category and search criteria.</p>
+        <div className="text-center py-20 bg-white rounded-2xl border border-slate-200 space-y-3 shadow-2xs">
+          <p className="text-slate-600 font-mono text-sm">No materials match your current category and search criteria.</p>
           <button
             onClick={() => {
               setSelectedCategory('All');
               setSearchQuery('');
             }}
-            className="px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs"
+            className="px-4 py-2 rounded-xl bg-cyan-700 text-white font-bold text-xs"
           >
             Reset Filters
           </button>
@@ -142,3 +142,4 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct }) => 
     </div>
   );
 };
+

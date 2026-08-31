@@ -23,9 +23,9 @@ const TABS: { key: TabKey; label: string; icon: React.ElementType }[] = [
 
 const SpecRow: React.FC<{ label: string; value?: string | number }> = ({ label, value }) =>
   value === undefined || value === '' ? null : (
-    <div className="flex justify-between gap-4 py-2.5 border-b border-white/5">
-      <span className="text-slate-400 text-[11px] uppercase tracking-wide font-mono">{label}</span>
-      <span className="text-slate-100 text-xs font-mono text-right break-all">{value}</span>
+    <div className="flex justify-between gap-4 py-2.5 border-b border-slate-100">
+      <span className="text-slate-500 text-xs font-mono">{label}</span>
+      <span className="text-slate-900 text-xs font-mono font-medium text-right break-all">{value}</span>
     </div>
   );
 
@@ -33,7 +33,7 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
   const [active, setActive] = useState<TabKey>('overview');
 
   return (
-    <div className="border-t border-white/10 pt-10">
+    <div className="border-t border-slate-200 pt-10">
       {/* Tab bar */}
       <div className="flex flex-wrap gap-2 mb-8">
         {TABS.map(({ key, label, icon: Icon }) => (
@@ -42,8 +42,8 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
             onClick={() => setActive(key)}
             className={`inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-display font-bold transition-all ${
               active === key
-                ? 'bg-cyan-500 text-slate-950'
-                : 'bg-slate-900 border border-white/10 text-slate-300 hover:text-white hover:border-cyan-500/40'
+                ? 'bg-cyan-700 text-white shadow-2xs'
+                : 'bg-white border border-slate-200 text-slate-700 hover:text-slate-950 hover:bg-slate-50'
             }`}
           >
             <Icon className="w-3.5 h-3.5" />
@@ -52,18 +52,18 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
         ))}
       </div>
 
-      <div className="max-w-3xl">
+      <div className="max-w-3xl bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-2xs">
         {active === 'overview' && (
           <div className="space-y-6">
-            <p className="text-sm text-slate-300 font-light leading-relaxed">{product.description}</p>
-            <div className="space-y-2">
-              <h4 className="mono-tag text-xs font-semibold text-cyan-400 uppercase tracking-wider">
-                Quality Assurance &amp; Technical Notes
+            <p className="text-sm text-slate-600 font-normal leading-relaxed">{product.description}</p>
+            <div className="space-y-3">
+              <h4 className="text-xs font-mono font-bold text-cyan-800 uppercase tracking-wider">
+                Quality Assurance & Technical Notes
               </h4>
-              <ul className="space-y-2 text-xs font-mono text-slate-300">
+              <ul className="space-y-2 text-xs font-mono text-slate-700">
                 {product.technicalNotes.map((note, i) => (
                   <li key={i} className="flex items-start space-x-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
                     <span>{note}</span>
                   </li>
                 ))}
@@ -73,16 +73,16 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
         )}
 
         {active === 'specifications' && (
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             <SpecRow label="Product Name" value={product.name} />
             <SpecRow label="SKU" value={product.sku} />
-            <SpecRow label="CAS Number" value={product.casNumber} />
+            <SpecRow label="CAS Registry" value={product.casNumber} />
             <SpecRow label="Molecular Formula" value={product.chemicalFormula} />
             <SpecRow label="Molecular Weight" value={product.molecularWeight} />
-            <SpecRow label="Sequence" value={product.sequence} />
+            <SpecRow label="Amino Acid Sequence" value={product.sequence} />
             <SpecRow label="Purity (RP-HPLC)" value={`${product.purityPercentage}%`} />
             <SpecRow label="Presentation" value={product.size} />
-            <SpecRow label="Appearance" value={product.appearance} />
+            <SpecRow label="Physical Appearance" value={product.appearance} />
             <SpecRow label="Solubility" value={product.solubility} />
             <SpecRow label="Category" value={product.category} />
           </div>
@@ -100,25 +100,27 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
                   <SpecRow label="Testing Date" value={batchRecord.testingDate} />
                   <SpecRow label="Expiry Date" value={batchRecord.expiryDate} />
                 </div>
-                <p className="text-xs text-slate-400 font-light leading-relaxed">{batchRecord.labNotes}</p>
+                <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  {batchRecord.labNotes}
+                </p>
                 {onViewCOA && (
                   <button
                     onClick={onViewCOA}
-                    className="inline-flex items-center space-x-2 px-5 py-3 rounded-xl bg-slate-800 border border-white/15 text-white font-display font-bold text-xs hover:border-cyan-500/40 transition-all"
+                    className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-cyan-700 hover:bg-cyan-800 text-white font-display font-bold text-xs transition-all shadow-sm"
                   >
-                    <FileCheck className="w-4 h-4 text-cyan-400" />
-                    <span>View Full HPLC Certificate of Analysis</span>
+                    <FileCheck className="w-4 h-4" />
+                    <span>View Full Interactive COA</span>
                   </button>
                 )}
                 <button
                   onClick={() => navigate('/verify')}
-                  className="block text-[11px] font-mono text-cyan-400 hover:text-cyan-300"
+                  className="block text-xs font-mono text-cyan-800 hover:text-cyan-900 font-semibold"
                 >
-                  → Independently verify this lot in the Batch Verification portal
+                  → Verify this lot in the public Batch Verification portal
                 </button>
               </>
             ) : (
-              <p className="text-xs text-slate-400 font-mono">
+              <p className="text-xs text-slate-500 font-mono">
                 Documentation for this lot is being finalized. Contact support for the current COA.
               </p>
             )}
@@ -126,55 +128,53 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
         )}
 
         {active === 'storage' && (
-          <div className="space-y-4 text-sm text-slate-300 font-light leading-relaxed">
-            <div className="p-4 rounded-xl bg-slate-900 border border-white/10">
-              <span className="mono-tag text-[10px] text-cyan-400 uppercase block mb-1">Storage Conditions</span>
-              <span className="text-slate-100 text-sm">{product.storageConditions}</span>
+          <div className="space-y-4 text-sm text-slate-600 font-normal leading-relaxed">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <span className="text-[11px] font-mono font-bold text-cyan-800 uppercase block mb-1">Storage Conditions</span>
+              <span className="text-slate-900 font-medium text-sm">{product.storageConditions}</span>
             </div>
-            <ul className="space-y-2 text-xs font-mono text-slate-300">
+            <ul className="space-y-2 text-xs font-mono text-slate-700">
               <li className="flex items-start space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                <span>Allow sealed vials to reach room temperature before opening to avoid condensation.</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                <span>Allow sealed vials to reach room temperature before opening to prevent moisture condensation.</span>
               </li>
               <li className="flex items-start space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                <span>Reconstitute with an appropriate sterile solvent per your protocol; avoid vigorous agitation.</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                <span>Reconstitute with sterile bacteriostatic water or qualified buffers per analytical protocol.</span>
               </li>
               <li className="flex items-start space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                <span>Aliquot reconstituted material to minimize freeze-thaw cycles.</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                <span>Aliquot reconstituted solution to minimize unnecessary freeze-thaw cycles.</span>
               </li>
             </ul>
-            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-200/90 text-xs leading-relaxed">
-              For research use only. Not for human or veterinary use. Handle in a controlled laboratory
-              environment following your institution&apos;s safety procedures.
+            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs leading-relaxed">
+              For laboratory research use only. Not for human, veterinary, or clinical use.
             </div>
           </div>
         )}
 
         {active === 'references' && (
-          <div className="space-y-4 text-sm text-slate-300 font-light leading-relaxed">
+          <div className="space-y-4 text-sm text-slate-600 font-normal leading-relaxed">
             <p>
-              Analytical identity and purity were established using industry-standard chromatographic and
-              mass-spectrometric methods{batchRecord ? ` (${batchRecord.analyticalMethod})` : ''}.
+              Analytical identity and purity were established using validated reverse-phase liquid chromatography (RP-HPLC) and electrospray ionization mass spectrometry (ESI-MS){batchRecord ? ` (${batchRecord.analyticalMethod})` : ''}.
             </p>
             <div className="space-y-2">
-              <h4 className="mono-tag text-xs font-semibold text-cyan-400 uppercase tracking-wider">
-                Related Reading
+              <h4 className="text-xs font-mono font-bold text-cyan-800 uppercase tracking-wider">
+                Related Research Guides
               </h4>
               <ul className="space-y-2 text-xs">
                 <li>
-                  <button onClick={() => navigate('/resources')} className="text-cyan-400 hover:text-cyan-300">
+                  <button onClick={() => navigate('/resources')} className="text-cyan-800 hover:text-cyan-900 font-medium">
                     → How to read a Certificate of Analysis (COA) and HPLC chromatogram
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => navigate('/resources')} className="text-cyan-400 hover:text-cyan-300">
+                  <button onClick={() => navigate('/resources')} className="text-cyan-800 hover:text-cyan-900 font-medium">
                     → Reconstitution and storage best practices for lyophilized peptides
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => navigate('/quality')} className="text-cyan-400 hover:text-cyan-300">
+                  <button onClick={() => navigate('/quality')} className="text-cyan-800 hover:text-cyan-900 font-medium">
                     → The Foundry Standard: our analytical testing protocol
                   </button>
                 </li>
@@ -186,3 +186,4 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
     </div>
   );
 };
+

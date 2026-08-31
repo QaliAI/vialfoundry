@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <defs>
+    <!-- Background studio lighting -->
+    <radialGradient id="bg-grad-mots-c" cx="50%" cy="45%" r="55%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="65%" stop-color="#F8FAFC" />
+      <stop offset="100%" stop-color="#EEF2F6" />
+    </radialGradient>
+    
+    <!-- Floor reflection shadow -->
+    <radialGradient id="drop-shadow-mots-c" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="rgba(15, 23, 42, 0.18)" />
+      <stop offset="60%" stop-color="rgba(15, 23, 42, 0.04)" />
+      <stop offset="100%" stop-color="transparent" />
+    </radialGradient>
+
+    <!-- Glass Bottle Body Gradient -->
+    <linearGradient id="glass-body-mots-c" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="rgba(255, 255, 255, 0.85)" />
+      <stop offset="15%" stop-color="rgba(240, 249, 255, 0.45)" />
+      <stop offset="40%" stop-color="rgba(255, 255, 255, 0.15)" />
+      <stop offset="70%" stop-color="rgba(255, 255, 255, 0.35)" />
+      <stop offset="90%" stop-color="rgba(224, 242, 254, 0.55)" />
+      <stop offset="100%" stop-color="rgba(255, 255, 255, 0.90)" />
+    </linearGradient>
+
+    <!-- Glass Specular Highlight -->
+    <linearGradient id="specular-mots-c" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="rgba(255, 255, 255, 0.95)" />
+      <stop offset="50%" stop-color="rgba(255, 255, 255, 0.1)" />
+      <stop offset="100%" stop-color="rgba(255, 255, 255, 0.6)" />
+    </linearGradient>
+
+    <!-- Aluminum Crimp Seal -->
+    <linearGradient id="crimp-grad-mots-c" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#CBD5E1" />
+      <stop offset="25%" stop-color="#F1F5F9" />
+      <stop offset="50%" stop-color="#94A3B8" />
+      <stop offset="75%" stop-color="#E2E8F0" />
+      <stop offset="100%" stop-color="#64748B" />
+    </linearGradient>
+
+    <!-- Flip Top Cap -->
+    <linearGradient id="cap-grad-mots-c" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0891B2" stop-opacity="0.9" />
+      <stop offset="30%" stop-color="#FFFFFF" stop-opacity="0.4" />
+      <stop offset="70%" stop-color="#0891B2" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#0F172A" stop-opacity="0.5" />
+    </linearGradient>
+
+    <!-- Lyophilized Cake / Liquid Fill Gradient -->
+    <linearGradient id="cake-grad-mots-c" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#E2E8F0" />
+    </linearGradient>
+
+    <!-- Label Paper Gradient -->
+    <linearGradient id="label-paper-mots-c" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F8FAFC" />
+      <stop offset="5%" stop-color="#FFFFFF" />
+      <stop offset="92%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#E2E8F0" />
+    </linearGradient>
+  </defs>
+
+  <!-- Studio Background Canvas -->
+  <rect width="800" height="800" fill="url(#bg-grad-mots-c)" rx="16" />
+
+  <!-- Shadow below bottle -->
+  <ellipse cx="400" cy="690" rx="150" ry="32" fill="url(#drop-shadow-mots-c)" />
+  <ellipse cx="400" cy="686" rx="100" ry="18" fill="rgba(15, 23, 42, 0.25)" />
+
+  <!-- VIAL STRUCTURE -->
+  <g id="vial-assembly" transform="translate(0, -20)">
+    
+    <!-- Flip Cap (Top) -->
+    <rect x="330" y="160" width="140" height="28" rx="10" fill="url(#cap-grad-mots-c)" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.15))" />
+    <rect x="335" y="163" width="130" height="6" rx="3" fill="rgba(255,255,255,0.45)" />
+
+    <!-- Rubber Stopper Neck -->
+    <rect x="350" y="186" width="100" height="16" rx="4" fill="#334155" />
+
+    <!-- Aluminum Crimp Collar -->
+    <rect x="338" y="198" width="124" height="34" rx="6" fill="url(#crimp-grad-mots-c)" stroke="#94A3B8" stroke-width="1" />
+    <line x1="338" y1="214" x2="462" y2="214" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" />
+
+    <!-- Glass Neck & Body -->
+    <path d="M 346 230 L 346 265 Q 346 310 270 330 L 270 650 Q 270 675 300 675 L 500 675 Q 530 675 530 650 L 530 330 Q 454 310 454 265 L 454 230 Z" 
+          fill="url(#glass-body-mots-c)" 
+          stroke="rgba(148, 163, 184, 0.4)" 
+          stroke-width="1.5" />
+
+    <!-- Inner Lyophilized Pellet / Powder Plug at bottom -->
+    
+    <path d="M 276 565 Q 276 550 400 550 Q 524 550 524 565 L 524 645 Q 524 668 500 668 L 300 668 Q 276 668 276 645 Z" 
+          fill="url(#cake-grad-mots-c)" 
+          opacity="0.95" />
+    <ellipse cx="400" cy="565" rx="118" ry="12" fill="#FFFFFF" opacity="0.6" />
+    
+
+    <!-- BRANDED LABORATORY LABEL (Wrapped onto Vial) -->
+    <g id="label-wrap" transform="translate(0, 0)">
+      <!-- Label Background Base -->
+      <rect x="276" y="345" width="248" height="200" rx="4" fill="url(#label-paper-mots-c)" stroke="#CBD5E1" stroke-width="1" filter="drop-shadow(0 2px 5px rgba(0,0,0,0.06))" />
+      
+      <!-- Top Brand Cyan Bar -->
+      <rect x="276" y="345" width="248" height="6" fill="#0891B2" />
+
+      <!-- Brand Logo / Wordmark Header -->
+      <g transform="translate(294, 368)">
+        <rect x="0" y="0" width="14" height="14" rx="3" fill="#0F172A" />
+        <rect x="3.5" y="3.5" width="7" height="7" rx="1" fill="#06B6D4" />
+        <text x="20" y="11" font-family="'Outfit', 'Inter', sans-serif" font-size="11" font-weight="800" fill="#0F172A" letter-spacing="0.5">VIAL FOUNDRY</text>
+        <text x="108" y="11" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="600" fill="#0891B2" letter-spacing="1">RUO</text>
+      </g>
+
+      <!-- Label Divider Line -->
+      <line x1="294" y1="392" x2="506" y2="392" stroke="#E2E8F0" stroke-width="1" />
+
+      <!-- Main Product Name -->
+      <text x="294" y="422" font-family="'Outfit', 'Inter', sans-serif" font-size="22" font-weight="800" fill="#0F172A" letter-spacing="-0.5">MOTS-c</text>
+      
+      <!-- Product Presentation / Size Subhead -->
+      <text x="294" y="442" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700" fill="#0891B2" letter-spacing="0.2">10 MG LYOPHILIZED VIAL</text>
+
+      <!-- Technical Metadata Grid -->
+      <g transform="translate(294, 464)">
+        <rect x="0" y="0" width="102" height="28" rx="3" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="0.75" />
+        <text x="8" y="11" font-family="'JetBrains Mono', monospace" font-size="7" font-weight="600" fill="#64748B">CAS REGISTRY</text>
+        <text x="8" y="23" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="700" fill="#0F172A">1627580-64-6</text>
+
+        <rect x="110" y="0" width="102" height="28" rx="3" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="0.75" />
+        <text x="118" y="11" font-family="'JetBrains Mono', monospace" font-size="7" font-weight="600" fill="#64748B">SKU IDENTIFIER</text>
+        <text x="118" y="23" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="700" fill="#0F172A">VF-SKU-1018</text>
+      </g>
+
+      <!-- Bottom Compliance Strip -->
+      <g transform="translate(294, 508)">
+        <rect x="0" y="0" width="212" height="24" rx="3" fill="#0F172A" />
+        <text x="106" y="15" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="700" fill="#FFFFFF" text-anchor="middle" letter-spacing="0.6">FOR RESEARCH USE ONLY · NOT FOR HUMAN USE</text>
+      </g>
+
+      <!-- Left / Right 3D Label Curvature Overlays -->
+      <rect x="276" y="345" width="14" height="200" fill="url(#specular-mots-c)" opacity="0.2" />
+      <rect x="510" y="345" width="14" height="200" fill="rgba(0,0,0,0.08)" />
+    </g>
+
+    <!-- Glass Specular Vertical Highlight Strip -->
+    <path d="M 284 330 L 284 660 Q 284 668 296 668 L 306 668 Q 296 668 296 655 L 296 330 Z" fill="url(#specular-mots-c)" opacity="0.8" />
+    <path d="M 512 330 L 512 660 Q 512 668 504 668 L 496 668 Q 504 668 504 655 L 504 330 Z" fill="rgba(255,255,255,0.4)" />
+    
+    <!-- Base Curved Glass Rim -->
+    <path d="M 270 650 Q 270 675 300 675 L 500 675 Q 530 675 530 650 Q 400 665 270 650 Z" fill="rgba(203, 213, 225, 0.5)" />
+  </g>
+</svg>

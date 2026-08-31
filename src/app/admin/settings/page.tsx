@@ -9,7 +9,7 @@ export default function AdminSettingsPage() {
     companyName: 'Vial Foundry',
     supportEmail: 'support@vialfoundry.com',
     freeShippingThreshold: 150.00,
-    announcementBar: 'RUO COMPLIANT — BATCH HPLC DOCUMENTATION ARCHIVED ON EVERY LOT',
+    announcementBar: 'FOR RESEARCH USE ONLY — BATCH HPLC DOCUMENTATION ARCHIVED ON EVERY LOT',
     ruoNoticeText: 'Materials sold by Vial Foundry are intended exclusively for in vitro laboratory research.',
   });
 

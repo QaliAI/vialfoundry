@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, FileCheck, ShoppingBag, ArrowUpRight, CheckCircle2 } from 'lucide-react';
+import { ShoppingBag, FileCheck, Check } from 'lucide-react';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
 
@@ -17,115 +17,103 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const { addToCart } = useCart();
 
   return (
-    <div className="glass-card rounded-2xl overflow-hidden flex flex-col justify-between group relative">
+    <div className="storefront-card rounded-2xl overflow-hidden flex flex-col justify-between group bg-white border border-slate-200/90 hover:border-cyan-600/40 hover:shadow-card-hover transition-all duration-200">
       {/* Top Image Container */}
-      <div className="relative aspect-square w-full bg-gradient-to-b from-slate-900/90 to-slate-950/90 p-6 flex items-center justify-center overflow-hidden">
-        {/* Background Radial Glow */}
-        <div className="absolute inset-0 bg-radial-gradient opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
-        
-        {/* Purity Badge Top Left */}
+      <div 
+        onClick={() => onViewProduct(product)}
+        className="relative aspect-square w-full bg-[#F8FAFC] p-6 flex items-center justify-center overflow-hidden cursor-pointer border-b border-slate-100"
+      >
+        {/* Subtle Category Pill Top Left */}
         <div className="absolute top-3 left-3 z-10">
-          <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-[10px] font-bold backdrop-blur-md">
-            <ShieldCheck className="w-3 h-3" />
-            <span>{product.purityPercentage}% HPLC</span>
+          <span className="text-[10px] font-mono font-medium text-slate-600 bg-white/90 border border-slate-200/80 px-2 py-0.5 rounded shadow-2xs">
+            {product.category}
           </span>
         </div>
 
-        {/* Lot Number Tag Top Right */}
-        <div className="absolute top-3 right-3 z-10">
-          <span className="mono-tag text-[9px] text-slate-400 bg-slate-900/80 border border-white/10 px-2 py-0.5 rounded backdrop-blur-md">
-            {product.lotNumber}
-          </span>
-        </div>
-
-        {/* Vial Product Image (dark studio shot blends with the card surface) */}
+        {/* Product Vial Image */}
         <img
           src={product.image}
           alt={product.name}
-          className="relative z-10 max-h-52 object-contain filter drop-shadow-xl transform group-hover:scale-105 transition-transform duration-500"
+          className="relative z-10 max-h-56 w-full object-contain filter drop-shadow-sm group-hover:scale-[1.03] transition-transform duration-300"
           loading="lazy"
         />
-
-        {/* Quick View Button */}
-        <button
-          onClick={() => onViewProduct(product)}
-          className="absolute inset-0 z-20 flex items-center justify-center bg-slate-950/60 opacity-0 group-hover:opacity-100 backdrop-blur-sm transition-opacity duration-300"
-        >
-          <span className="px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-display text-xs font-bold shadow-lg flex items-center space-x-1">
-            <span>Inspect Technical Specs</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
-          </span>
-        </button>
       </div>
 
       {/* Product Details Section */}
-      <div className="p-5 space-y-4 flex-1 flex flex-col justify-between">
-        <div className="space-y-2">
-          {/* Category */}
-          <div className="flex items-center justify-between">
-            <span className="mono-tag text-[9px] text-cyan-400 uppercase tracking-widest">
-              {product.category}
-            </span>
-            <span className="text-[10px] text-slate-400 font-mono">{product.size}</span>
+      <div className="p-5 space-y-3.5 flex-1 flex flex-col justify-between bg-white">
+        <div className="space-y-1.5">
+          {/* Size / Presentation */}
+          <div className="text-xs font-mono text-cyan-800 font-medium">
+            {product.size}
           </div>
 
-          {/* Title */}
+          {/* Product Title */}
           <h3
             onClick={() => onViewProduct(product)}
-            className="font-display text-base font-bold text-white hover:text-cyan-300 transition-colors cursor-pointer line-clamp-1"
+            className="font-display text-base font-bold text-slate-900 hover:text-cyan-700 transition-colors cursor-pointer line-clamp-1 leading-snug"
           >
             {product.name}
           </h3>
 
-          {/* Chemical Formula / CAS */}
-          <div className="mono-tag text-[10px] text-slate-400 space-x-2">
-            <span>CAS: {product.casNumber}</span>
-            <span>•</span>
-            <span>MW: {product.molecularWeight}</span>
-          </div>
+          {/* Brief Factual Subtext */}
+          <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+            {product.description}
+          </p>
         </div>
 
         {/* Pricing & Cart Action Bar */}
-        <div className="pt-3 border-t border-white/10 flex items-center justify-between">
+        <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
           <div>
-            <div className="font-mono text-lg font-bold text-white">
+            <div className="font-mono text-lg font-bold text-slate-900">
               ${product.price.toFixed(2)}
             </div>
             {product.inStock ? (
-              <div className="text-[9px] text-slate-400 font-mono flex items-center space-x-1">
-                <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400" />
-                <span>In Stock ({product.stockCount} Vials)</span>
+              <div className="text-[11px] text-emerald-700 font-medium flex items-center space-x-1 mt-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span>In Stock</span>
               </div>
             ) : (
-              <div className="text-[9px] text-amber-400 font-mono">Out of Stock</div>
+              <div className="text-[11px] text-amber-600 font-medium">Out of Stock</div>
             )}
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1.5">
             {product.coaAvailable && onViewCOA && (
               <button
-                onClick={() => onViewCOA(product.lotNumber)}
-                className="p-2 rounded-lg bg-slate-900 border border-white/10 text-slate-400 hover:text-cyan-300 hover:border-cyan-500/40 transition-colors"
-                title="View HPLC Certificate of Analysis"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewCOA(product.lotNumber);
+                }}
+                className="px-2.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 text-xs font-mono font-medium transition-colors"
+                title="View HPLC Lab Results"
               >
-                <FileCheck className="w-4 h-4" />
+                <FileCheck className="w-3.5 h-3.5" />
               </button>
             )}
 
             {product.inStock ? (
               <button
-                onClick={() => addToCart(product)}
-                className="flex items-center space-x-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-white/15 text-slate-100 hover:bg-cyan-500 hover:text-slate-950 hover:border-cyan-400 transition-all font-medium text-xs shadow-md"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  addToCart(product);
+                }}
+                className="flex items-center space-x-1.5 px-3.5 py-2 rounded-lg bg-cyan-700 hover:bg-cyan-800 text-white font-medium text-xs shadow-sm transition-all"
               >
                 <ShoppingBag className="w-3.5 h-3.5" />
                 <span>Add</span>
               </button>
             ) : (
               <button
-                onClick={() => onViewProduct(product)}
-                className="flex items-center space-x-1.5 px-3 py-2 rounded-lg bg-slate-900 border border-amber-500/30 text-amber-400 hover:bg-amber-500 hover:text-slate-950 transition-all font-medium text-xs shadow-md"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewProduct(product);
+                }}
+                className="px-3 py-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs font-medium transition-all"
               >
-                <span>Notify Me</span>
+                <span>Notify</span>
               </button>
             )}
           </div>
@@ -134,3 +122,4 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     </div>
   );
 };
+

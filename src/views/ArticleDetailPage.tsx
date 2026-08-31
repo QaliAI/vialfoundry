@@ -1,6 +1,6 @@
 import React from 'react';
 import { RESEARCH_ARTICLES } from '../data/articles';
-import { ArrowLeft, Clock, User, Tag, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Clock, User, Tag } from 'lucide-react';
 
 interface ArticleDetailPageProps {
   slug: string;
@@ -12,9 +12,9 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({ slug, navi
 
   if (!article) {
     return (
-      <div className="pt-32 text-center text-slate-400 font-mono">
+      <div className="pt-32 text-center text-slate-500 font-mono">
         Article not found.{' '}
-        <button onClick={() => navigate('/resources')} className="text-cyan-400 underline">
+        <button onClick={() => navigate('/resources')} className="text-cyan-800 underline">
           Return to Resources
         </button>
       </div>
@@ -24,7 +24,7 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({ slug, navi
   const renderInline = (text: string) =>
     text.split(/(\*\*[^*]+\*\*)/g).map((chunk, idx) =>
       chunk.startsWith('**') && chunk.endsWith('**') ? (
-        <strong key={idx} className="text-white font-semibold">
+        <strong key={idx} className="text-slate-900 font-bold">
           {chunk.slice(2, -2)}
         </strong>
       ) : (
@@ -33,19 +33,19 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({ slug, navi
     );
 
   return (
-    <div className="pt-28 pb-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+    <div className="pt-28 pb-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 bg-[#FAFAF9]">
       
       <button
         onClick={() => navigate('/resources')}
-        className="inline-flex items-center space-x-2 text-xs font-mono text-slate-400 hover:text-white transition-colors"
+        className="inline-flex items-center space-x-2 text-xs font-mono font-medium text-slate-500 hover:text-slate-900 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         <span>Back to Resources</span>
       </button>
 
-      <div className="space-y-4 border-b border-white/10 pb-6">
-        <div className="flex items-center space-x-3 text-xs font-mono text-slate-400">
-          <span className="text-cyan-400 font-bold">{article.category}</span>
+      <div className="space-y-4 border-b border-slate-200 pb-6">
+        <div className="flex items-center space-x-3 text-xs font-mono text-slate-500">
+          <span className="text-cyan-800 font-bold uppercase">{article.category}</span>
           <span>•</span>
           <span className="flex items-center space-x-1">
             <Clock className="w-3.5 h-3.5" />
@@ -55,21 +55,21 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({ slug, navi
           <span>{article.date}</span>
         </div>
 
-        <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-white leading-tight">
+        <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight tracking-tight">
           {article.title}
         </h1>
 
-        <div className="flex items-center space-x-2 text-xs font-mono text-slate-400">
+        <div className="flex items-center space-x-2 text-xs font-mono text-slate-500">
           <User className="w-3.5 h-3.5" />
           <span>Written by {article.author}</span>
         </div>
       </div>
 
-      <div className="glass-panel p-8 sm:p-10 rounded-2xl border border-white/10 space-y-6 text-sm text-slate-300 font-light leading-relaxed">
+      <div className="storefront-card p-8 sm:p-12 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-6 text-sm sm:text-base text-slate-700 font-normal leading-relaxed">
         {article.content.map((paragraph, i) => {
           if (paragraph.startsWith('### ')) {
             return (
-              <h3 key={i} className="font-display text-xl font-bold text-white pt-4">
+              <h3 key={i} className="font-display text-xl font-bold text-slate-900 pt-4">
                 {paragraph.replace('### ', '')}
               </h3>
             );
@@ -79,9 +79,9 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({ slug, navi
       </div>
 
       <div className="flex flex-wrap items-center gap-2 pt-4">
-        <Tag className="w-4 h-4 text-slate-500" />
+        <Tag className="w-4 h-4 text-slate-400" />
         {article.tags.map((t) => (
-          <span key={t} className="px-2.5 py-1 rounded bg-slate-900 border border-white/10 text-xs font-mono text-slate-400">
+          <span key={t} className="px-2.5 py-1 rounded-md bg-white border border-slate-200 text-xs font-mono text-slate-600 shadow-2xs">
             {t}
           </span>
         ))}
@@ -90,3 +90,4 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({ slug, navi
     </div>
   );
 };
+
