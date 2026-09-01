@@ -19,7 +19,7 @@ export default function AdminCustomersPage() {
 
       <div className="glass-panel p-6 rounded-2xl border border-white/10 space-y-4 font-mono text-xs">
         <h3 className="font-display text-base font-bold text-white flex items-center space-x-2">
-          <Mail className="w-4 h-4 text-cyan-400" />
+          <Mail className="w-4 h-4 text-brand-paper" />
           <span>Email Subscribers ({subscribers.length})</span>
         </h3>
 

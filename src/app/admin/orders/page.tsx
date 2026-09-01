@@ -149,7 +149,7 @@ export default function AdminOrdersPage() {
         </div>
         <button
           onClick={loadOrders}
-          className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-white/10 hover:border-cyan-500 text-cyan-300 text-xs font-mono"
+          className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-white/10 hover:border-brand-graphite text-brand-paper text-xs font-mono"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           <span>Refresh</span>
@@ -157,7 +157,7 @@ export default function AdminOrdersPage() {
       </div>
 
       {actionMessage && (
-        <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-mono flex items-center space-x-2">
+        <div className="p-3 rounded-xl bg-brand-mineral/20 border border-brand-mineral/40 text-brand-paper text-xs font-mono flex items-center space-x-2">
           <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
           <span>{actionMessage}</span>
         </div>
@@ -172,7 +172,7 @@ export default function AdminOrdersPage() {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search by order # or customer..."
-            className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+            className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-brand-graphite"
           />
         </div>
 
@@ -183,7 +183,7 @@ export default function AdminOrdersPage() {
               onClick={() => setStatusFilter(st)}
               className={`px-3 py-1.5 rounded-lg uppercase text-[10px] font-bold whitespace-nowrap transition-all ${
                 statusFilter === st
-                  ? 'bg-cyan-500 text-slate-950'
+                  ? 'bg-brand-primary text-brand-paper'
                   : 'bg-slate-900 border border-white/10 text-slate-400 hover:text-white'
               }`}
             >
@@ -211,7 +211,7 @@ export default function AdminOrdersPage() {
           <tbody className="divide-y divide-white/5 bg-slate-950/60">
             {filteredOrders.map(o => (
               <tr key={o.id} className="text-slate-300 hover:bg-white/[0.02]">
-                <td className="p-4 font-bold text-cyan-300">{o.order_number}</td>
+                <td className="p-4 font-bold text-brand-paper">{o.order_number}</td>
                 <td className="p-4">
                   <div className="font-bold text-white">{o.customer_name}</div>
                   <div className="text-[10px] text-slate-400">{o.customer_email}</div>
@@ -220,12 +220,12 @@ export default function AdminOrdersPage() {
                   {o.manual_order_items?.map(i => `${i.product_name} (×${i.quantity})`).join(', ') || 'Reference Standard'}
                 </td>
                 <td className="p-4 text-white font-bold">${(o.total_amount / 100).toFixed(2)}</td>
-                <td className="p-4 uppercase text-[10px] text-cyan-400 font-bold">{o.preferred_payment_method}</td>
+                <td className="p-4 uppercase text-[10px] text-brand-paper font-bold">{o.preferred_payment_method}</td>
                 <td className="p-4">
                   <select
                     value={o.status}
                     onChange={(e) => handleUpdateStatus(o.id, e.target.value)}
-                    className="bg-slate-900 border border-white/15 rounded px-2 py-1 text-[10px] font-bold text-white focus:outline-none focus:border-cyan-500"
+                    className="bg-slate-900 border border-white/15 rounded px-2 py-1 text-[10px] font-bold text-white focus:outline-none focus:border-brand-graphite"
                   >
                     <option value="new">new</option>
                     <option value="invoice_sent">invoice_sent</option>
@@ -246,11 +246,11 @@ export default function AdminOrdersPage() {
                         value={trackingInput}
                         onChange={e => setTrackingInput(e.target.value)}
                         placeholder="USPS Tracking #..."
-                        className="px-2 py-1 rounded bg-slate-900 border border-cyan-500 text-white text-[10px] w-32"
+                        className="px-2 py-1 rounded bg-slate-900 border border-brand-graphite text-white text-[10px] w-32"
                       />
                       <button
                         onClick={() => handleSaveTracking(o.id)}
-                        className="px-2 py-1 rounded bg-cyan-500 text-slate-950 font-bold text-[10px]"
+                        className="px-2 py-1 rounded bg-brand-primary text-brand-paper font-bold text-[10px]"
                       >
                         Save
                       </button>
@@ -265,7 +265,7 @@ export default function AdminOrdersPage() {
                           setEditingTrackingId(o.id);
                           setTrackingInput(o.tracking_number || '');
                         }}
-                        className="text-[10px] text-cyan-400 underline hover:text-cyan-300"
+                        className="text-[10px] text-brand-paper underline hover:text-brand-paper"
                       >
                         {o.tracking_number ? 'Edit' : 'Add'}
                       </button>
@@ -276,7 +276,7 @@ export default function AdminOrdersPage() {
                   <button
                     onClick={() => handleResendOrderEmail(o.id)}
                     title="Resend Verification Email"
-                    className="p-1.5 rounded bg-slate-900 border border-white/10 hover:border-cyan-500 text-cyan-300"
+                    className="p-1.5 rounded bg-slate-900 border border-white/10 hover:border-brand-graphite text-brand-paper"
                   >
                     <Mail className="w-3.5 h-3.5" />
                   </button>

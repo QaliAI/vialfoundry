@@ -20,19 +20,33 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    if (typeof window === 'undefined') return [];
-    const saved = localStorage.getItem('vf_cart');
-    return saved ? JSON.parse(saved) : [];
-  });
+  // Start empty so the first client render matches the server's. Reading
+  // localStorage during render instead produced a hydration mismatch that threw on
+  // every page with the cart badge, including checkout.
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [hydrated, setHydrated] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('vf_cart', JSON.stringify(cart));
+    try {
+      const saved = localStorage.getItem('vf_cart');
+      if (saved) setCart(JSON.parse(saved));
+    } catch {
+      /* corrupt or unavailable storage: start with an empty cart */
     }
-  }, [cart]);
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    // Don't persist the pre-hydration empty cart over a saved one.
+    if (!hydrated) return;
+    try {
+      localStorage.setItem('vf_cart', JSON.stringify(cart));
+    } catch {
+      /* storage full or blocked: the cart still works for this session */
+    }
+  }, [cart, hydrated]);
 
   const addToCart = (product: Product, quantity = 1) => {
     if (!product.inStock || product.stockCount <= 0) return;

@@ -78,10 +78,82 @@ if (catalogValid) {
   logPass("Product Schema Integrity", "All products have valid SKU, price, CAS, and RUO data");
 }
 
-if (unmappedLots === 0 && bContent.includes("generateBatch") && bContent.includes("HANDCRAFTED_BATCHES")) {
-  logPass("COA / Lot Mapping", `All ${products.length} products map to verified analytical batch records`);
+// -------------------------------------------------------------
+// 1b. SCIENTIFIC CLAIM INTEGRITY (P0/P5)
+//
+// Analytical results shown to buyers must trace to a supplied document. These
+// checks fail the build if record generation returns, and fail when public copy
+// asserts a quantitative or scientific claim with no configured data behind it.
+// -------------------------------------------------------------
+console.log("\n1b. Scientific Claim Integrity");
+
+const GENERATOR_MARKERS = ["generateBatch", "seededPick", "seededNumber", "HANDCRAFTED_BATCHES"];
+const reintroduced = GENERATOR_MARKERS.filter((m) => bContent.includes(m));
+if (reintroduced.length === 0) {
+  logPass("No synthetic batch generation", "src/data/batches.ts derives status only from supplied records");
 } else {
-  logFail("COA / Lot Mapping", `${unmappedLots} products lack verified batch records`);
+  logFail("Synthetic batch generation detected", `src/data/batches.ts contains: ${reintroduced.join(", ")}`);
+}
+
+// Count records the operator has actually supplied.
+const vContent = fs.readFileSync(path.resolve("src/data/verified-batch-records.ts"), "utf8");
+const verifiedLots = (vContent.match(/^\s{2}'[A-Z0-9-]+':\s*\{/gm) || []).length;
+const lotsInCatalog = products.filter((p) => p.lotNumber).length;
+
+if (verifiedLots === 0) {
+  logWarn(
+    "Authentic COA coverage",
+    `0 of ${lotsInCatalog} catalog lots have a supplied certificate — the storefront correctly shows "documentation pending" for all of them`
+  );
+} else {
+  logPass("Authentic COA coverage", `${verifiedLots} of ${lotsInCatalog} catalog lots have a supplied certificate`);
+}
+
+if (unmappedLots > 0) {
+  logWarn("Lot numbering", `${unmappedLots} products have no lot number and will show "no lot record"`);
+} else {
+  logPass("Lot numbering", `All ${products.length} products carry a lot number`);
+}
+
+// Public copy must not assert testing or archives that no configured data supports.
+const UNSUPPORTED_CLAIMS = [
+  { pattern: /Third-Party Tested/i, why: "asserts independent testing for the whole catalog" },
+  { pattern: /every batch record is archived/i, why: "asserts a complete public archive" },
+  { pattern: /Every lot is backed by a Certificate of Analysis/i, why: "asserts universal COA coverage" },
+  { pattern: /100% (of )?(lots|batches|purity)/i, why: "absolute quantitative claim" },
+  { pattern: /all lots (are )?tested/i, why: "asserts universal testing" },
+  { pattern: /Janoshik/i, why: "names a real third-party laboratory in source copy" },
+];
+
+const claimHits = [];
+function scanDir(dir) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      scanDir(full);
+    } else if (/\.(ts|tsx)$/.test(entry.name)) {
+      const text = fs.readFileSync(full, "utf8");
+      for (const { pattern, why } of UNSUPPORTED_CLAIMS) {
+        if (pattern.test(text)) claimHits.push(`${full} — ${why}`);
+      }
+    }
+  }
+}
+scanDir(path.resolve("src"));
+
+if (claimHits.length === 0) {
+  logPass("Public claim scan", "No unsupported universal or quantitative claims in src/");
+} else {
+  for (const hit of claimHits) logFail("Unsupported public claim", hit);
+}
+
+// A verified record without a named issuer is unattributable and must not ship.
+const recordBlocks = vContent.split(/^\s{2}'[A-Z0-9-]+':\s*\{/gm).slice(1);
+const unattributed = recordBlocks.filter((b) => !/issuedBy\s*:/.test(b.split("\n  }")[0])).length;
+if (unattributed === 0) {
+  logPass("Record attribution", "Every supplied record names its issuing laboratory");
+} else {
+  logFail("Record attribution", `${unattributed} supplied record(s) do not name an issuing laboratory`);
 }
 
 // -------------------------------------------------------------

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { BellRing, CheckCircle2, Loader2 } from 'lucide-react';
@@ -25,21 +25,20 @@ export const RestockNotify: React.FC<{ product: Product }> = ({ product }) => {
   };
 
   return (
-    <div className="p-5 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-4">
+    <div className="p-5 rounded-2xl bg-brand-canvas border border-brand-border space-y-4">
       <div className="flex items-center space-x-2">
-        <span className="text-[11px] font-mono font-bold text-amber-800 uppercase tracking-wider">
+        <span className="text-[11px] font-sans font-semibold text-brand-metal uppercase tracking-wider">
           Currently Out of Stock
         </span>
       </div>
-      <p className="text-xs text-slate-600 font-normal">
-        This lot is being re-manufactured and independently re-tested. Enter your email to be notified the moment a
-        new verified lot of <span className="font-semibold text-slate-900">{product.name}</span> is available.
+      <p className="text-xs text-brand-steel font-normal leading-relaxed">
+        This reference standard is currently in production. Enter your institutional email to be notified when a new lot of <span className="font-semibold text-brand-ink">{product.name}</span> is archived and available.
       </p>
 
       {status === 'done' ? (
-        <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-mono flex items-center space-x-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-          <span>You&apos;re on the list. We&apos;ll notify you when this lot returns.</span>
+        <div className="p-3 rounded-xl bg-brand-paper border border-brand-border text-brand-mineral text-xs font-sans flex items-center space-x-2">
+          <CheckCircle2 className="w-4 h-4 text-brand-accent" />
+          <span>You have been added to the notification list for this lot.</span>
         </div>
       ) : (
         <form onSubmit={submit} className="flex items-center space-x-2">
@@ -49,12 +48,12 @@ export const RestockNotify: React.FC<{ product: Product }> = ({ product }) => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your institutional email..."
-            className="flex-1 px-4 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 text-xs font-mono focus:outline-none focus:border-amber-600"
+            className="flex-1 px-4 py-2.5 rounded-xl bg-brand-paper border border-brand-border text-brand-ink placeholder-brand-steel text-xs font-sans focus:outline-none focus:border-brand-graphite"
           />
           <button
             type="submit"
             disabled={status === 'loading'}
-            className="px-5 py-2.5 rounded-xl bg-amber-600 text-white font-display font-bold text-xs hover:bg-amber-700 transition-all flex items-center space-x-1.5 disabled:opacity-60 shadow-2xs"
+            className="px-5 py-2.5 rounded-xl bg-brand-primary text-brand-paper font-display font-bold text-xs hover:bg-brand-graphite transition-all flex items-center space-x-1.5 disabled:opacity-60 shadow-2xs"
           >
             {status === 'loading' ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -66,11 +65,10 @@ export const RestockNotify: React.FC<{ product: Product }> = ({ product }) => {
         </form>
       )}
       {status === 'error' && (
-        <p className="text-[11px] font-mono text-red-600">
-          Something went wrong. Please email support@vialfoundry.com.
+        <p className="text-[11px] font-sans text-brand-danger">
+          Unable to submit notification request. Please contact support@vialfoundry.com.
         </p>
       )}
     </div>
   );
 };
-

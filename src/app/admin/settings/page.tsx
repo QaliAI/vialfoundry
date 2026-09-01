@@ -87,7 +87,7 @@ export default function AdminSettingsPage() {
 
         <button
           type="submit"
-          className="px-6 py-3 rounded-xl bg-cyan-500 text-slate-950 font-display font-bold text-xs hover:bg-cyan-400 transition-all flex items-center space-x-2 shadow-lg"
+          className="px-6 py-3 rounded-xl bg-brand-primary text-brand-paper font-display font-bold text-xs hover:bg-brand-graphite transition-all flex items-center space-x-2 shadow-lg"
         >
           <Save className="w-4 h-4" />
           <span>Save Settings</span>

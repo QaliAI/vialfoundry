@@ -1,5 +1,5 @@
-import React from 'react';
-import { ArrowRight, ShieldCheck, FileCheck } from 'lucide-react';
+﻿import React from 'react';
+import { ArrowRight, FileCheck, ShieldCheck } from 'lucide-react';
 
 interface HeroProps {
   navigate: (path: string) => void;
@@ -8,33 +8,35 @@ interface HeroProps {
 
 export const Hero: React.FC<HeroProps> = ({ navigate }) => {
   return (
-    <section className="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden bg-gradient-to-b from-[#FAFAF9] via-white to-[#F8FAFC] border-b border-slate-200/80">
+    <section className="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden bg-brand-canvas border-b border-brand-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-12 items-center">
           
           {/* Left Hero Column */}
           <div className="lg:col-span-6 space-y-6 text-left">
             {/* Credibility Eyebrow */}
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium">
-              <span className="w-2 h-2 rounded-full bg-cyan-600" />
-              <span className="font-mono text-[11px] uppercase tracking-wider text-slate-700">FOR RESEARCH USE ONLY · LABORATORY GRADE</span>
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-paper border border-brand-border text-brand-ink text-xs font-sans font-medium shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-brand-accent" />
+              <span className="tracking-wider uppercase text-[11px] text-brand-graphite font-semibold">
+                For Research Use Only
+              </span>
             </div>
 
             {/* Headline */}
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-[52px] font-extrabold text-slate-900 tracking-tight leading-[1.12]">
-              Precision reference materials. <span className="text-cyan-700">Verified by independent analysis.</span>
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-[50px] font-extrabold text-brand-ink tracking-tight leading-[1.12]">
+              Precision research materials. <span className="text-brand-graphite font-bold">Documented by lot.</span>
             </h1>
 
             {/* Subtitle */}
-            <p className="text-base sm:text-lg text-slate-600 max-w-xl font-normal leading-relaxed">
-              Carefully synthesized peptide standards and biochemical compounds supported by lot-specific HPLC chromatograms, mass spectrometry reports, and full batch traceability.
+            <p className="text-base sm:text-lg text-brand-steel max-w-xl font-normal leading-relaxed">
+              Synthesized peptide standards and biochemical compounds delivered with lot-specific analytical documentation and cold-chain integrity.
             </p>
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 pt-2">
               <button
                 onClick={() => navigate('/catalog')}
-                className="flex items-center justify-center space-x-2 px-7 py-3.5 rounded-xl bg-cyan-700 hover:bg-cyan-800 text-white font-medium text-sm shadow-sm transition-all font-display"
+                className="flex items-center justify-center space-x-2 px-7 py-3.5 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-semibold text-sm shadow-xs transition-all"
               >
                 <span>Shop Research Materials</span>
                 <ArrowRight className="w-4 h-4" />
@@ -42,33 +44,33 @@ export const Hero: React.FC<HeroProps> = ({ navigate }) => {
 
               <button
                 onClick={() => navigate('/verify')}
-                className="flex items-center justify-center space-x-2 px-6 py-3.5 rounded-xl bg-white border border-slate-300 text-slate-800 font-medium text-sm hover:bg-slate-50 hover:border-slate-400 transition-all shadow-2xs font-display"
+                className="flex items-center justify-center space-x-2 px-6 py-3.5 rounded-xl bg-brand-paper border border-brand-border text-brand-ink font-display font-semibold text-sm hover:bg-brand-surface-muted hover:border-brand-border-strong transition-all shadow-2xs"
               >
-                <FileCheck className="w-4 h-4 text-cyan-700" />
-                <span>View Lab Results & COAs</span>
+                <FileCheck className="w-4 h-4 text-brand-accent" />
+                <span>Check a lot&apos;s documentation</span>
               </button>
             </div>
 
-            {/* Trust Micro-Points */}
-            <div className="pt-8 grid grid-cols-3 gap-4 border-t border-slate-200 max-w-lg">
+            {/* Factual micro-points. Each one is verifiable from the site itself. */}
+            <div className="pt-6 grid grid-cols-3 gap-4 border-t border-brand-border/80 max-w-lg">
               <div>
-                <div className="text-[11px] font-mono font-medium text-slate-500 uppercase tracking-wider">HPLC PURITY</div>
-                <div className="font-mono text-lg font-bold text-slate-900 mt-0.5">≥ 99.0%</div>
+                <div className="text-[11px] font-sans font-medium text-brand-steel uppercase tracking-wider">Traceability</div>
+                <div className="font-sans text-sm font-semibold text-brand-ink mt-0.5">Lot-numbered vials</div>
               </div>
               <div>
-                <div className="text-[11px] font-mono font-medium text-slate-500 uppercase tracking-wider">MASS CONFIRMATION</div>
-                <div className="font-mono text-lg font-bold text-cyan-800 mt-0.5">ESI-MS</div>
+                <div className="text-[11px] font-sans font-medium text-brand-steel uppercase tracking-wider">Documentation</div>
+                <div className="font-sans text-sm font-semibold text-brand-ink mt-0.5">Status shown per lot</div>
               </div>
               <div>
-                <div className="text-[11px] font-mono font-medium text-slate-500 uppercase tracking-wider">BATCH ARCHIVES</div>
-                <div className="font-mono text-lg font-bold text-emerald-700 mt-0.5">100% PUBLIC</div>
+                <div className="text-[11px] font-sans font-medium text-brand-steel uppercase tracking-wider">Dispatch</div>
+                <div className="font-sans text-sm font-semibold text-brand-ink mt-0.5">Insulated cold packing</div>
               </div>
             </div>
           </div>
 
           {/* Right Hero Column: Physical Product Showcase */}
           <div className="lg:col-span-6 relative flex items-center justify-center">
-            <div className="relative w-full max-w-lg rounded-2xl overflow-hidden bg-white border border-slate-200/90 shadow-card p-4">
+            <div className="relative w-full max-w-lg rounded-2xl overflow-hidden bg-brand-paper border border-brand-border shadow-card p-4 sm:p-6">
               <img
                 src="/assets/vials/products/hero-product-composition.svg"
                 alt="Vial Foundry Research Reference Materials"
@@ -83,4 +85,3 @@ export const Hero: React.FC<HeroProps> = ({ navigate }) => {
     </section>
   );
 };
-

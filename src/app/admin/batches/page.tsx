@@ -10,17 +10,17 @@ export default function AdminBatchesPage() {
   const [batches, setBatches] = useState<Record<string, BatchRecord>>(BATCH_RECORDS);
   const [isCreating, setIsCreating] = useState(false);
 
+  // Every field starts empty. Defaults here would end up transcribed onto a public
+  // record, so the operator must copy each value off the certificate in front of them.
   const [formData, setFormData] = useState({
     lotNumber: '',
     productId: PRODUCTS[0].id,
-    productName: PRODUCTS[0].name,
-    casNumber: PRODUCTS[0].casNumber,
-    manufacturingDate: '2026-07-01',
-    testingDate: '2026-08-01',
-    testingLab: 'Janoshik Analytical Laboratories',
-    analyticalMethod: 'HPLC-UV / LC-MS' as const,
-    purity: 99.70,
-    labNotes: 'RP-HPLC Integration demonstrates peak area purity. Mass confirmed via LC-MS.'
+    manufacturingDate: '',
+    testingDate: '',
+    issuedBy: '',
+    analyticalMethod: '',
+    purity: '',
+    labNotes: '',
   });
 
   const handleCreateBatch = (e: React.FormEvent) => {
@@ -28,28 +28,20 @@ export default function AdminBatchesPage() {
     const lot = formData.lotNumber.toUpperCase().trim() || `LOT-VF-${Math.floor(1000 + Math.random()*9000)}`;
     const selProd = PRODUCTS.find(p => p.id === formData.productId) || PRODUCTS[0];
 
+    // Transcription only: a blank field stays absent rather than becoming a default,
+    // and no peak or chromatogram data is derived from the purity figure.
+    const purity = parseFloat(formData.purity);
     const newBatch: BatchRecord = {
       lotNumber: lot,
       productId: selProd.id,
       productName: selProd.name,
+      issuedBy: formData.issuedBy.trim(),
       casNumber: selProd.casNumber,
-      manufacturingDate: formData.manufacturingDate,
-      testingDate: formData.testingDate,
-      expiryDate: '2028-08-01',
-      testingLab: formData.testingLab,
-      analyticalMethod: formData.analyticalMethod,
-      purity: formData.purity,
-      identityVerified: true,
-      appearancePass: true,
-      massVerificationPass: true,
-      labNotes: formData.labNotes,
-      peaks: [
-        { peakNo: 1, retentionTime: 14.5, area: 120000, height: 13000, areaPercent: formData.purity },
-        { peakNo: 2, retentionTime: 18.2, area: 300, height: 40, areaPercent: 100 - formData.purity }
-      ],
-      chromatogramPoints: [
-        { time: 0, signal: 5 }, { time: 14.5, signal: 3500 }, { time: 25, signal: 10 }
-      ]
+      manufacturingDate: formData.manufacturingDate || undefined,
+      testingDate: formData.testingDate || undefined,
+      analyticalMethod: formData.analyticalMethod.trim() || undefined,
+      purity: Number.isFinite(purity) ? purity : undefined,
+      labNotes: formData.labNotes.trim() || undefined,
     };
 
     setBatches(prev => ({ ...prev, [lot]: newBatch }));
@@ -61,11 +53,11 @@ export default function AdminBatchesPage() {
       <div className="flex items-center justify-between border-b border-white/10 pb-4">
         <div>
           <h1 className="font-display text-2xl font-bold text-white">Batch & COA Document Management</h1>
-          <p className="text-xs font-mono text-slate-400">Manage verified lot records and COA documents powering the public verification portal</p>
+          <p className="text-xs font-mono text-slate-400">Transcribe certificates you physically hold. Anything not entered here shows publicly as documentation pending.</p>
         </div>
         <button
           onClick={() => setIsCreating(true)}
-          className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-display font-bold text-xs hover:bg-cyan-400"
+          className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-primary text-brand-paper font-display font-bold text-xs hover:bg-brand-graphite"
         >
           <Plus className="w-4 h-4" />
           <span>New Batch Record</span>
@@ -104,27 +96,28 @@ export default function AdminBatchesPage() {
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1">
-              <label className="text-slate-300">Testing Lab</label>
+              <label className="text-slate-300">Issued By (exactly as printed)</label>
               <input
                 type="text" required
-                value={formData.testingLab}
-                onChange={e => setFormData({ ...formData, testingLab: e.target.value })}
+                value={formData.issuedBy}
+                onChange={e => setFormData({ ...formData, issuedBy: e.target.value })}
+                placeholder="Laboratory named on the certificate"
                 className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-slate-300">Reported Purity %</label>
+              <label className="text-slate-300">Reported Purity % (leave blank if not stated)</label>
               <input
-                type="number" step="0.01" required
+                type="number" step="0.01"
                 value={formData.purity}
-                onChange={e => setFormData({ ...formData, purity: parseFloat(e.target.value) })}
+                onChange={e => setFormData({ ...formData, purity: e.target.value })}
                 className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white"
               />
             </div>
             <div className="space-y-1">
               <label className="text-slate-300">Testing Date</label>
               <input
-                type="date" required
+                type="date"
                 value={formData.testingDate}
                 onChange={e => setFormData({ ...formData, testingDate: e.target.value })}
                 className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white"
@@ -133,7 +126,7 @@ export default function AdminBatchesPage() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-slate-300">Analytical Remarks & Notes</label>
+            <label className="text-slate-300">Notes, copied verbatim from the certificate</label>
             <textarea
               rows={3}
               value={formData.labNotes}
@@ -143,7 +136,7 @@ export default function AdminBatchesPage() {
           </div>
 
           <div className="flex space-x-3 pt-2">
-            <button type="submit" className="px-5 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold">
+            <button type="submit" className="px-5 py-2 rounded-xl bg-brand-primary text-brand-paper font-bold">
               Save Batch Record
             </button>
             <button
@@ -164,25 +157,24 @@ export default function AdminBatchesPage() {
             <tr>
               <th className="p-4">Lot Code</th>
               <th className="p-4">Product</th>
-              <th className="p-4">Testing Lab</th>
+              <th className="p-4">Issued By</th>
               <th className="p-4">Purity</th>
               <th className="p-4">Test Date</th>
-              <th className="p-4">Identity</th>
+              <th className="p-4">Method</th>
               <th className="p-4 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5 bg-slate-950/60">
             {Object.values(batches).map(b => (
               <tr key={b.lotNumber} className="text-slate-300">
-                <td className="p-4 font-bold text-cyan-300">{b.lotNumber}</td>
+                <td className="p-4 font-bold text-brand-paper">{b.lotNumber}</td>
                 <td className="p-4 font-bold text-white">{b.productName}</td>
-                <td className="p-4 text-slate-400">{b.testingLab}</td>
-                <td className="p-4 text-emerald-400 font-bold">{b.purity.toFixed(2)}%</td>
-                <td className="p-4 text-slate-400">{b.testingDate}</td>
-                <td className="p-4 text-emerald-400 flex items-center space-x-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>ESI-MS PASS</span>
+                <td className="p-4 text-slate-400">{b.issuedBy}</td>
+                <td className="p-4 text-emerald-400 font-bold">
+                  {b.purity !== undefined ? `${b.purity.toFixed(2)}%` : '—'}
                 </td>
+                <td className="p-4 text-slate-400">{b.testingDate || '—'}</td>
+                <td className="p-4 text-slate-400">{b.analyticalMethod || '—'}</td>
                 <td className="p-4 text-right space-x-2">
                   <button
                     onClick={() => {

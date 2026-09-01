@@ -50,7 +50,7 @@ export default function AdminDiscountsPage() {
           placeholder="Discount Value (%)"
           className="px-3.5 py-2.5 rounded-xl bg-slate-950 border border-white/15 text-white focus:outline-none"
         />
-        <button type="submit" className="px-5 py-2.5 rounded-xl bg-cyan-500 text-slate-950 font-bold flex items-center space-x-1">
+        <button type="submit" className="px-5 py-2.5 rounded-xl bg-brand-primary text-brand-paper font-bold flex items-center space-x-1">
           <Plus className="w-4 h-4" />
           <span>Add Code</span>
         </button>
@@ -71,7 +71,7 @@ export default function AdminDiscountsPage() {
           <tbody className="divide-y divide-white/5 bg-slate-950/60">
             {discounts.map(d => (
               <tr key={d.code} className="text-slate-300">
-                <td className="p-4 font-bold text-cyan-300">{d.code}</td>
+                <td className="p-4 font-bold text-brand-paper">{d.code}</td>
                 <td className="p-4 text-slate-400">{d.desc}</td>
                 <td className="p-4 text-white">{d.type}</td>
                 <td className="p-4 text-emerald-400 font-bold">{d.value}</td>

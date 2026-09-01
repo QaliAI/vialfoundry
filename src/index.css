@@ -1,15 +1,41 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
     color-scheme: light;
+    
+    /* Core Temporary Brand Palette */
+    --brand-canvas: #F2EFE7;
+    --brand-paper: #FFFDF8;
+    --brand-ink: #1B1D1F;
+    --brand-graphite: #34383B;
+    --brand-steel: #777C80;
+    --brand-metal: #A47342;
+    --brand-mineral: #28463E;
+
+    /* Semantic Tokens */
+    --brand-primary: #1B1D1F;
+    --brand-primary-hover: #34383B;
+    --brand-accent: #28463E;
+    --brand-accent-hover: #1E352F;
+    --brand-bronze: #A47342;
+    --brand-background: #F2EFE7;
+    --brand-surface: #FFFDF8;
+    --brand-surface-muted: #E8E4D9;
+    --brand-text: #1B1D1F;
+    --brand-text-muted: #777C80;
+    --brand-border: #E0DACD;
+    --brand-border-strong: #C4BCAC;
+    --brand-success: #28463E;
+    --brand-warning: #A47342;
+    --brand-danger: #991B1B;
   }
   
   body {
-    background-color: #FAFAF9;
-    color: #0F172A;
+    background-color: var(--brand-canvas);
+    color: var(--brand-ink);
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
@@ -19,56 +45,37 @@
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Outfit', 'Inter', system-ui, sans-serif;
     letter-spacing: -0.02em;
-    color: #0F172A;
+    color: var(--brand-ink);
   }
 }
 
-/* Premium Card & Container Styles */
+/* Reusable Semantic Components */
 .storefront-card {
-  background-color: #FFFFFF;
-  border: 1px solid rgba(0, 0, 0, 0.07);
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+  background-color: var(--brand-paper);
+  border: 1px solid var(--brand-border);
+  box-shadow: 0 1px 3px 0 rgba(27, 29, 31, 0.03), 0 1px 2px -1px rgba(27, 29, 31, 0.03);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .storefront-card:hover {
-  border-color: rgba(8, 145, 178, 0.35);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+  border-color: var(--brand-border-strong);
+  box-shadow: 0 10px 20px -3px rgba(27, 29, 31, 0.06), 0 4px 6px -2px rgba(27, 29, 31, 0.02);
 }
 
 .storefront-panel {
-  background-color: #FFFFFF;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+  background-color: var(--brand-paper);
+  border: 1px solid var(--brand-border);
+  box-shadow: 0 1px 3px 0 rgba(27, 29, 31, 0.04);
 }
 
 /* Dark section contrast cards */
 .dark-panel {
-  background-color: #0F172A;
-  color: #F8FAFC;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: var(--brand-ink);
+  color: var(--brand-paper);
+  border: 1px solid rgba(255, 253, 248, 0.12);
 }
 
-/* Backward-compatible classes mapped to clean styles */
-.glass-panel {
-  background-color: #FFFFFF;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
-}
-
-.glass-card {
-  background-color: #FFFFFF;
-  border: 1px solid rgba(0, 0, 0, 0.07);
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.glass-card:hover {
-  border-color: rgba(8, 145, 178, 0.35);
-  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.06);
-}
-
-/* Monospace technical tags (used selectively for Lot, SKU, CAS, MW) */
+/* Monospace technical tags (used exclusively for Lot, SKU, CAS, MW) */
 .mono-tag {
   font-family: 'JetBrains Mono', monospace;
   letter-spacing: -0.01em;
@@ -80,14 +87,14 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #F1F5F9;
+  background: var(--brand-canvas);
 }
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+  background: var(--brand-border-strong);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: var(--brand-steel);
 }
 
 /* Reduced motion preference */
@@ -99,4 +106,3 @@
     scroll-behavior: auto !important;
   }
 }
-

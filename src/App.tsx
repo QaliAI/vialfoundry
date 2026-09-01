@@ -13,11 +13,13 @@ import { AboutPage } from './views/AboutPage';
 import { ResourcesPage } from './views/ResourcesPage';
 import { ArticleDetailPage } from './views/ArticleDetailPage';
 import { ContactPage } from './views/ContactPage';
+import { AffiliatesPage } from './views/AffiliatesPage';
 import { Product } from './types';
 import { PRODUCTS } from './data/products';
 
 export function App() {
   const [currentPath, setCurrentPath] = useState<string>(() => {
+    if (typeof window === 'undefined') return '/';
     const hash = window.location.hash.replace('#', '');
     return hash || '/';
   });
@@ -84,6 +86,8 @@ export function App() {
         return <ResourcesPage onSelectArticle={handleSelectArticle} />;
       case '/contact':
         return <ContactPage />;
+      case '/affiliates':
+        return <AffiliatesPage />;
       case '/':
       default:
         return (
@@ -98,7 +102,7 @@ export function App() {
 
   return (
     <CartProvider>
-      <div className="min-h-screen flex flex-col justify-between bg-[#08090B] text-slate-100 font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
+      <div className="min-h-screen flex flex-col justify-between bg-brand-canvas text-brand-ink font-sans selection:bg-brand-mineral selection:text-white">
         <Navbar currentPath={currentPath} navigate={navigate} />
 
         <main className="flex-1">

@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { Hero } from '../components/Hero';
 import { TrustBand } from '../components/TrustBand';
 import { ProductCard } from '../components/ProductCard';
 import { FoundryStandard } from '../components/FoundryStandard';
 import { BatchVerificationEngine } from '../components/BatchVerificationEngine';
 import { PRODUCTS } from '../data/products';
-import { BATCH_RECORDS } from '../data/batches';
-import { Product } from '../types';
+import { getBatchRecord } from '../data/batches';
+import { Product, ProductCategory } from '../types';
 import { COAModal } from '../components/COAModal';
-import { ArrowRight, ChevronRight, BookOpen, Layers } from 'lucide-react';
+import { ArrowRight, ChevronRight, Layers } from 'lucide-react';
 import { RESEARCH_ARTICLES } from '../data/articles';
 
 interface HomePageProps {
@@ -23,16 +23,35 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
   // Featured 4 Best Sellers / Popular Reference Standards
   const bestSellers = PRODUCTS.slice(0, 4);
 
-  // Product categories for discovery
-  const categories = [
-    { title: 'Reference Standards', desc: 'Synthesized peptide standards for analytical assay validation and chromatography.', count: '8 Standards', path: '/catalog' },
-    { title: 'Analytical Standards', desc: 'High-purity receptor agonists with calibrated retention times and mass verification.', count: '4 Standards', path: '/catalog' },
-    { title: 'Single Compounds', desc: 'Characterized individual peptide compounds and metabolic cofactors.', count: '6 Compounds', path: '/catalog' },
-    { title: 'Laboratory Supplies', desc: 'USP-grade reconstitution water and chromatography mobile phase solvents.', count: '2 Supplies', path: '/catalog' }
-  ];
+  // Category tiles. Counts are derived from the catalog so they cannot drift, and
+  // each tile carries its category through to the catalog's own filter.
+  const CATEGORY_BLURBS: Record<ProductCategory, string> = {
+    'Reference Materials': 'Synthesized peptide standards for assay validation.',
+    'Analytical Standards': 'Acylated peptide reference materials.',
+    'Single Compounds': 'Individual peptides and metabolic standards.',
+    'Specialty Materials': 'Less commonly stocked research compounds.',
+    'Lab Supplies': 'Diluents and chromatography solvents.',
+  };
+
+  const categories = useMemo(
+    () =>
+      (Object.keys(CATEGORY_BLURBS) as ProductCategory[])
+        .map((title) => {
+          const count = PRODUCTS.filter((p) => p.category === title).length;
+          return {
+            title,
+            desc: CATEGORY_BLURBS[title],
+            count: `${count} ${count === 1 ? 'item' : 'items'}`,
+            path: `/catalog?category=${encodeURIComponent(title)}`,
+          };
+        })
+        .filter((c) => !c.count.startsWith('0 ')),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
   return (
-    <div className="space-y-0 bg-[#FAFAF9]">
+    <div className="space-y-0 bg-brand-canvas">
       {/* 1. Hero Section (2-Column Physical Showcase) */}
       <Hero navigate={navigate} />
 
@@ -43,23 +62,23 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
       <section className="py-16 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-10 gap-4">
           <div className="space-y-1.5">
-            <div className="text-xs font-mono font-bold text-cyan-800 uppercase tracking-wider">
-              CORE CATALOG
+            <div className="text-xs font-sans font-semibold text-brand-steel uppercase tracking-wider">
+              Catalog Highlights
             </div>
-            <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-brand-ink tracking-tight">
               Featured Reference Standards
             </h2>
-            <p className="text-slate-600 text-sm">
-              Standardized research materials in stock and ready for immediate insulated dispatch.
+            <p className="text-brand-steel text-sm">
+              Standardized research materials available for institutional procurement.
             </p>
           </div>
 
           <button
             onClick={() => navigate('/catalog')}
-            className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-800 hover:bg-slate-50 hover:border-slate-400 transition-all font-display text-xs font-bold shadow-2xs"
+            className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-brand-paper border border-brand-border text-brand-ink hover:bg-brand-surface-muted hover:border-brand-border-strong transition-all font-display text-xs font-semibold shadow-2xs"
           >
             <span>View Full Catalog</span>
-            <ArrowRight className="w-4 h-4 text-cyan-700" />
+            <ArrowRight className="w-4 h-4 text-brand-accent" />
           </button>
         </div>
 
@@ -77,39 +96,39 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
       </section>
 
       {/* Category Discovery Grid */}
-      <section className="py-12 bg-white border-y border-slate-200/80">
+      <section className="py-12 bg-brand-paper border-y border-brand-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-10 space-y-2">
-            <div className="text-xs font-mono font-bold text-cyan-800 uppercase tracking-wider">
-              CATALOG DIVISIONS
+            <div className="text-xs font-sans font-semibold text-brand-steel uppercase tracking-wider">
+              Product Divisions
             </div>
-            <h3 className="font-display text-2xl font-bold text-slate-900">
-              Browse by Research Category
+            <h3 className="font-display text-2xl font-bold text-brand-ink">
+              Browse by Material Category
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
             {categories.map((cat, idx) => (
               <div
                 key={idx}
                 onClick={() => navigate(cat.path)}
-                className="storefront-card p-6 rounded-2xl border border-slate-200/90 bg-[#FAFAF9] hover:bg-white hover:border-cyan-600/40 hover:shadow-card-hover transition-all cursor-pointer group flex flex-col justify-between"
+                className="storefront-card p-6 rounded-2xl border border-brand-border bg-brand-paper hover:bg-brand-surface-muted/50 hover:border-brand-border-strong hover:shadow-card-hover transition-all cursor-pointer group flex flex-col justify-between"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-mono font-semibold text-cyan-800">{cat.count}</span>
-                    <Layers className="w-4 h-4 text-slate-400 group-hover:text-cyan-700 transition-colors" />
+                    <span className="text-[11px] font-sans font-semibold text-brand-graphite">{cat.count}</span>
+                    <Layers className="w-4 h-4 text-brand-steel group-hover:text-brand-ink transition-colors" />
                   </div>
-                  <h4 className="font-display text-base font-bold text-slate-900 group-hover:text-cyan-800 transition-colors">
+                  <h4 className="font-display text-base font-bold text-brand-ink group-hover:text-brand-graphite transition-colors">
                     {cat.title}
                   </h4>
-                  <p className="text-xs text-slate-600 leading-relaxed">
+                  <p className="text-xs text-brand-steel leading-relaxed">
                     {cat.desc}
                   </p>
                 </div>
-                <div className="pt-4 mt-4 border-t border-slate-200/60 flex items-center text-xs font-display font-semibold text-cyan-800 group-hover:text-cyan-900">
+                <div className="pt-4 mt-4 border-t border-brand-border/60 flex items-center text-xs font-display font-semibold text-brand-ink group-hover:text-brand-graphite">
                   <span>Explore category</span>
-                  <ChevronRight className="w-3.5 h-3.5 ml-1 group-hover:translate-x-1 transition-transform" />
+                  <ChevronRight className="w-3.5 h-3.5 ml-1 group-hover:translate-x-1 transition-transform text-brand-accent" />
                 </div>
               </div>
             ))}
@@ -120,30 +139,30 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
       {/* 4. Quality / The Foundry Standard Section */}
       <FoundryStandard navigate={navigate} />
 
-      {/* 5. Batch Verification Engine Section */}
-      <BatchVerificationEngine />
+      {/* 5. Lot documentation lookup */}
+      <BatchVerificationEngine navigate={navigate} />
 
       {/* 6. Research Resources & Documentation Articles */}
-      <section className="py-16 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-200/80">
+      <section className="py-16 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-brand-border">
         <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-10 gap-4">
           <div className="space-y-1.5">
-            <div className="text-xs font-mono font-bold text-cyan-800 uppercase tracking-wider">
-              RESEARCH INSIGHTS
+            <div className="text-xs font-sans font-semibold text-brand-steel uppercase tracking-wider">
+              Technical Resources
             </div>
-            <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-brand-ink tracking-tight">
               Analytical Documentation & Protocols
             </h2>
-            <p className="text-slate-600 text-sm">
-              Technical guides on interpreting chromatograms, SPPS synthesis purity, and analytical methods.
+            <p className="text-brand-steel text-sm">
+              Guides on interpreting chromatograms, mass spectrometry data, and reference standard handling.
             </p>
           </div>
 
           <button
             onClick={() => navigate('/resources')}
-            className="flex items-center space-x-1.5 text-xs font-display font-semibold text-cyan-800 hover:text-cyan-900"
+            className="flex items-center space-x-1.5 text-xs font-display font-semibold text-brand-ink hover:text-brand-graphite"
           >
             <span>Explore All Resources</span>
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4 text-brand-accent" />
           </button>
         </div>
 
@@ -152,24 +171,24 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
             <div
               key={article.slug}
               onClick={() => onSelectArticle(article.slug)}
-              className="storefront-card p-6 sm:p-7 rounded-2xl border border-slate-200/90 bg-white space-y-4 flex flex-col justify-between cursor-pointer group hover:border-cyan-600/40 hover:shadow-card-hover transition-all"
+              className="storefront-card p-6 sm:p-7 rounded-2xl border border-brand-border bg-brand-paper space-y-4 flex flex-col justify-between cursor-pointer group hover:border-brand-border-strong hover:shadow-card-hover transition-all"
             >
               <div className="space-y-3">
-                <div className="flex items-center justify-between font-mono text-[11px] text-slate-500">
-                  <span className="text-cyan-800 font-semibold">{article.category}</span>
+                <div className="flex items-center justify-between font-sans text-[11px] text-brand-steel">
+                  <span className="text-brand-graphite font-semibold">{article.category}</span>
                   <span>{article.readTime}</span>
                 </div>
-                <h3 className="font-display text-lg font-bold text-slate-900 group-hover:text-cyan-800 transition-colors leading-snug">
+                <h3 className="font-display text-lg font-bold text-brand-ink group-hover:text-brand-graphite transition-colors leading-snug">
                   {article.title}
                 </h3>
-                <p className="text-xs text-slate-600 font-normal line-clamp-3 leading-relaxed">
+                <p className="text-xs text-brand-steel font-normal line-clamp-3 leading-relaxed">
                   {article.excerpt}
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-display font-bold text-cyan-800 group-hover:text-cyan-900">
+              <div className="pt-4 border-t border-brand-border/60 flex items-center justify-between text-xs font-display font-bold text-brand-ink group-hover:text-brand-graphite">
                 <span>Read Technical Guide</span>
-                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-brand-accent" />
               </div>
             </div>
           ))}
@@ -177,13 +196,12 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
       </section>
 
       {/* COA Modal if opened */}
-      {activeCOALot && BATCH_RECORDS[activeCOALot] && (
+      {activeCOALot && getBatchRecord(activeCOALot) && (
         <COAModal
-          batch={BATCH_RECORDS[activeCOALot]}
+          batch={getBatchRecord(activeCOALot)}
           onClose={() => setActiveCOALot(null)}
         />
       )}
     </div>
   );
 };
-
