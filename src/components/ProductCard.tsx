@@ -2,6 +2,9 @@ import React from 'react';
 import { ShoppingBag, FileCheck } from 'lucide-react';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
+import { getDocumentationStatus } from '../data/batches';
+import { DocumentationStatusBadge } from './DocumentationStatusBadge';
+import { trackEvent } from '../lib/analytics';
 
 interface ProductCardProps {
   product: Product;
@@ -15,6 +18,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onViewCOA
 }) => {
   const { addToCart } = useCart();
+  const docStatus = getDocumentationStatus(product);
 
   return (
     <div className="storefront-card rounded-2xl overflow-hidden flex flex-col justify-between group bg-brand-paper border border-brand-border hover:border-brand-border-strong hover:shadow-card-hover transition-all duration-200">
@@ -23,11 +27,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         onClick={() => onViewProduct(product)}
         className="relative aspect-square w-full bg-brand-canvas p-6 flex items-center justify-center overflow-hidden cursor-pointer border-b border-brand-border/60"
       >
-        {/* Subtle Category Tag Top Left */}
-        <div className="absolute top-3 left-3 z-10">
+        {/* Category tag and the lot's actual documentation status */}
+        <div className="absolute top-3 left-3 right-3 z-10 flex items-start justify-between gap-2">
           <span className="text-[10px] font-sans font-medium text-brand-graphite bg-brand-paper/95 border border-brand-border px-2 py-0.5 rounded shadow-2xs">
             {product.category}
           </span>
+          <DocumentationStatusBadge status={docStatus} className="bg-brand-paper/95 shadow-2xs" />
         </div>
 
         {/* Product Vial Image */}
@@ -78,7 +83,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </div>
 
           <div className="flex items-center space-x-1.5">
-            {product.coaAvailable && onViewCOA && (
+            {docStatus === 'verified' && onViewCOA && (
               <button
                 type="button"
                 onClick={(e) => {
@@ -99,6 +104,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   addToCart(product);
+                  trackEvent('add_to_cart', {
+                    productId: product.id,
+                    price: product.price,
+                    source: 'product_card',
+                    documentation: docStatus,
+                  });
                 }}
                 className="flex items-center space-x-1.5 px-3.5 py-2 rounded-lg bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-semibold text-xs shadow-xs transition-all"
                 aria-label={`Add ${product.name} to cart`}

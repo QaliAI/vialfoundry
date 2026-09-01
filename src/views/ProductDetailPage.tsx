@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Product } from '../types';
-import { BATCH_RECORDS } from '../data/batches';
+import { getBatchRecord, getDocumentationStatus } from '../data/batches';
 import { COAModal } from '../components/COAModal';
 import { useCart } from '../context/CartContext';
-import { FileCheck, ShoppingBag, ArrowLeft, CheckCircle2, Copy } from 'lucide-react';
+import { FileCheck, FileClock, ShoppingBag, ArrowLeft, CheckCircle2, Copy } from 'lucide-react';
 import { PRODUCTS } from '../data/products';
 import { ProductCard } from '../components/ProductCard';
 import { ProductTabs } from '../components/ProductTabs';
 import { RestockNotify } from '../components/RestockNotify';
 import { ReviewList } from '../components/ReviewList';
 import { productSlug } from '../lib/slug';
+import { DocumentationStatusBadge } from '../components/DocumentationStatusBadge';
+import { trackEvent } from '../lib/analytics';
 
 interface ProductDetailPageProps {
   product: Product;
@@ -28,7 +30,18 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   const [copiedSeq, setCopiedSeq] = useState(false);
   const maxQuantity = product.inStock ? product.stockCount : Infinity;
 
-  const batchRecord = BATCH_RECORDS[product.lotNumber];
+  const batchRecord = getBatchRecord(product.lotNumber) ?? undefined;
+  const docStatus = getDocumentationStatus(product);
+
+  useEffect(() => {
+    trackEvent('product_viewed', {
+      productId: product.id,
+      category: product.category,
+      price: product.price,
+      documentation: docStatus,
+      inStock: product.inStock,
+    });
+  }, [product.id, product.category, product.price, product.inStock, docStatus]);
 
   const handleCopySeq = () => {
     if (product.sequence) {
@@ -88,6 +101,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             <span className="text-[11px] font-mono text-brand-steel bg-brand-paper border border-brand-border px-2.5 py-1 rounded">
               LOT: {product.lotNumber}
             </span>
+            <DocumentationStatusBadge status={docStatus} size="md" className="bg-brand-paper" />
           </div>
 
           {/* Vial Image */}
@@ -166,20 +180,52 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                 <button
-                  onClick={() => addToCart(product, quantity)}
+                  onClick={() => {
+                    addToCart(product, quantity);
+                    trackEvent('add_to_cart', {
+                      productId: product.id,
+                      price: product.price,
+                      quantity,
+                      source: 'product_detail',
+                      documentation: docStatus,
+                    });
+                  }}
                   className="py-3.5 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-bold text-xs shadow-xs flex items-center justify-center space-x-2 transition-all"
                 >
                   <ShoppingBag className="w-4 h-4" />
                   <span>Add to Cart</span>
                 </button>
 
-                {batchRecord && (
+                {batchRecord ? (
                   <button
-                    onClick={() => setShowCOAModal(true)}
+                    type="button"
+                    onClick={() => {
+                      setShowCOAModal(true);
+                      trackEvent('documentation_viewed', {
+                        productId: product.id,
+                        source: 'product_detail',
+                      });
+                    }}
                     className="py-3.5 rounded-xl bg-brand-canvas hover:bg-brand-surface-muted border border-brand-border text-brand-ink font-display font-bold text-xs transition-all flex items-center justify-center space-x-2"
                   >
                     <FileCheck className="w-4 h-4 text-brand-accent" />
-                    <span>Inspect Lot COA</span>
+                    <span>Read the certificate</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      trackEvent('documentation_requested', {
+                        productId: product.id,
+                        lot: product.lotNumber,
+                        source: 'product_detail',
+                      });
+                      navigate('/contact');
+                    }}
+                    className="py-3.5 rounded-xl bg-brand-canvas hover:bg-brand-surface-muted border border-brand-border text-brand-graphite font-display font-bold text-xs transition-all flex items-center justify-center space-x-2"
+                  >
+                    <FileClock className="w-4 h-4" />
+                    <span>Ask about documentation</span>
                   </button>
                 )}
               </div>

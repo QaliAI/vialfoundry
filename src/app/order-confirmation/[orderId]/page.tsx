@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle2, ShieldCheck, ArrowRight } from 'lucide-react';
 import { getPaymentMethod } from '../../../data/payment';
 import { PaymentInstructions } from '../../../components/PaymentInstructions';
+import { trackEvent } from '../../../lib/analytics';
 
 function Confirmation() {
   const params = useParams();
@@ -21,6 +22,16 @@ function Confirmation() {
     ? storedOrder.totalCents / 100 
     : parseFloat(searchParams.get('total') || '0');
   const [copied, setCopied] = useState(false);
+
+  // Funnel exit. Confirms the buyer actually reached payment instructions.
+  useEffect(() => {
+    trackEvent('order_confirmed', {
+      orderId: orderId || null,
+      paymentMethod: method?.id ?? null,
+      total,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderId]);
 
   const copyHandle = () => {
     if (method) {

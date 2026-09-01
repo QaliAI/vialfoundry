@@ -22,19 +22,19 @@ export const FoundryStandard: React.FC<FoundryStandardProps> = ({ navigate }) =>
       id: 'verify',
       step: '02',
       title: 'Analytical Testing',
-      subtitle: 'HPLC & Mass Spectrometry',
+      subtitle: 'What We Publish',
       icon: Search,
-      desc: 'Production lots are evaluated using reverse-phase liquid chromatography (RP-HPLC) for chromatographic homogeneity and mass spectrometry for molecular mass confirmation.',
-      metrics: ['Chromatographic Profiling', 'Electrospray Mass Match', 'Analytical Data Archival']
+      desc: 'Where a lot has been analysed, we publish the certificate exactly as the issuing laboratory wrote it — method, date and results included. Where it has not, we say so rather than describing testing that did not happen.',
+      metrics: ['Certificate published verbatim', 'Issuing lab named', 'Untested lots labelled']
     },
     {
       id: 'document',
       step: '03',
       title: 'Lot Documentation',
-      subtitle: 'Searchable Batch Records',
+      subtitle: 'Searchable By Lot Number',
       icon: FileCheck,
-      desc: 'Lot-specific documentation is archived in our verification portal. Researchers can look up lot numbers to review chromatograms, integration tables, and certificate records.',
-      metrics: ['Batch Search Portal', 'Digital COA Access', 'Archival Data Logs']
+      desc: 'Any lot number can be looked up in the documentation portal. The lookup returns one of three answers: the certificate we hold, that documentation is pending, or that the lot is not ours.',
+      metrics: ['Lot lookup portal', 'Three explicit states', 'No inferred results']
     },
     {
       id: 'deliver',
@@ -63,7 +63,8 @@ export const FoundryStandard: React.FC<FoundryStandardProps> = ({ navigate }) =>
             Analytical standards and batch discipline.
           </h2>
           <p className="text-brand-steel text-base font-normal leading-relaxed">
-            Our operational framework combines standardized synthesis protocols with independent analytical testing and public lot documentation.
+            Traceability you can check rather than take on trust: every lot carries a number, and
+            the portal tells you exactly what documentation exists behind it.
           </p>
         </div>
 
@@ -143,7 +144,7 @@ export const FoundryStandard: React.FC<FoundryStandardProps> = ({ navigate }) =>
                     onClick={() => navigate('/verify')}
                     className="inline-flex items-center space-x-2 text-xs font-bold text-brand-ink hover:text-brand-graphite font-display"
                   >
-                    <span>Inspect Lot Database</span>
+                    <span>Look up a lot</span>
                     <ArrowRight className="w-4 h-4 text-brand-accent" />
                   </button>
                   <span className="text-brand-border-strong">·</span>

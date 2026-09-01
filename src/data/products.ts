@@ -17,11 +17,8 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     stockCount: 142,
     description: 'High-purity synthetic peptide fragment reference standard prepared via solid-phase peptide synthesis (SPPS) and purified by reverse-phase HPLC.',
-    technicalNotes: [
-      'Purity verified by RP-HPLC (>99.5% area)',
-      'Molecular mass confirmed via Electrospray Ionization LC-MS',
-      'Desiccated white lyophilized powder',
-      'Counter-ion content quantified by Ion Chromatography'
+    materialNotes: [
+      'Desiccated white lyophilized powder'
     ],
     storageConditions: 'Store at -20°C in a dry environment. Protect from ambient light.',
     appearance: 'White to off-white lyophilized cake / powder',
@@ -47,11 +44,7 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     stockCount: 96,
     description: 'Purified N-terminal acetylated synthetic peptide fragment standard intended for analytical chromatographic calibration.',
-    technicalNotes: [
-      'HPLC Purity: 99.48% peak area integration',
-      'ESI-MS m/z [M+4H]4+ = 1241.88 (theoretical 1241.88)',
-      'Residual TFA content < 1.2%'
-    ],
+    materialNotes: [],
     storageConditions: 'Store at -20°C long term. Keep container sealed tightly.',
     appearance: 'Fluffy white lyophilized powder',
     solubility: 'Soluble in aqueous buffers (pH 6.5–7.4)',
@@ -76,12 +69,7 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     stockCount: 68,
     description: 'Ultra-pure acylated GLP-1 receptor agonist peptide reference standard manufactured for chromatography, spectrometry, and assay validation.',
-    technicalNotes: [
-      'Analytical HPLC Purity: 99.78%',
-      'Mass Spectra matches structural identity',
-      'Water Content (Karl Fischer): < 3.8%',
-      'Heavy Metals: < 10 ppm'
-    ],
+    materialNotes: [],
     storageConditions: 'Store desiccated at -20°C',
     appearance: 'Dense white powder',
     solubility: 'Soluble in 0.1M PBS pH 7.4',
@@ -106,11 +94,7 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     stockCount: 54,
     description: 'Dual GIP/GLP-1 receptor co-agonist peptide reference standard produced under stringent quality control for reference analysis.',
-    technicalNotes: [
-      'Chromatographic purity > 99.8%',
-      'Single distinct peak on C18 RP-HPLC (214 nm)',
-      'Sequence verified by LC-MS/MS fragment analysis'
-    ],
+    materialNotes: [],
     storageConditions: 'Store at -20°C in dark vacuum container',
     appearance: 'White amorphous powder',
     solubility: 'Soluble in phosphate buffer pH 7.2',
@@ -135,11 +119,7 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     stockCount: 31,
     description: 'Triple agonist peptide reference compound for advanced analytical and biochemical research application.',
-    technicalNotes: [
-      'HPLC Purity: 99.52%',
-      'Confirmed molecular mass via ESI-MS',
-      'Batch traceability log included in COA library'
-    ],
+    materialNotes: [],
     storageConditions: 'Store at -20°C',
     appearance: 'White crystalline solid',
     solubility: 'Soluble in aqueous buffers',
@@ -164,9 +144,7 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     stockCount: 110,
     description: 'Growth hormone releasing factor fragment (GHRH 1-29 amide) derivative standard for chromatographic characterization.',
-    technicalNotes: [
-      'RP-HPLC purity: 99.35%',
-      'Identity verified by Mass Spectrometry',
+    materialNotes: [
       'Lyophilized from 0.1% acetic acid'
     ],
     storageConditions: 'Store at -20°C',
@@ -193,11 +171,7 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     stockCount: 125,
     description: 'Pentapeptide ghrelin receptor agonist analytical standard synthesized with high chemical precision.',
-    technicalNotes: [
-      'Purity by HPLC: 99.71%',
-      'ESI-MS [M+H]+ = 712.39',
-      'Net peptide content > 85%'
-    ],
+    materialNotes: [],
     storageConditions: 'Store at -20°C',
     appearance: 'White powder',
     solubility: 'Soluble in water and saline solutions',
@@ -221,11 +195,7 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     stockCount: 210,
     description: 'High-purity beta-nicotinamide adenine dinucleotide enzymatic cofactor reference material for spectral calibration.',
-    technicalNotes: [
-      'Purity: 99.89% enzymatic assay & HPLC',
-      'Absorbance ratio A260/A250 = 0.83 ± 0.02',
-      'Heavy metals < 5 ppm'
-    ],
+    materialNotes: [],
     storageConditions: 'Store at -20°C desiccated',
     appearance: 'White to pale yellow powder',
     solubility: 'Soluble in water (50 mg/mL)',
@@ -250,11 +220,7 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     stockCount: 88,
     description: 'Chelated copper tripeptide complex reference standard verified for stoichiometry and optical absorbance.',
-    technicalNotes: [
-      'HPLC Purity > 99.4%',
-      'Copper Content: 14.5% - 16.0% atomic absorption spectrometry',
-      'UV-Vis peak absorbance at 600 nm'
-    ],
+    materialNotes: [],
     storageConditions: 'Store at 4°C in dark container',
     appearance: 'Deep blue powder',
     solubility: 'Highly soluble in water',
@@ -278,9 +244,7 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     stockCount: 520,
     description: 'Ultra-pure USP-grade sterile water with 0.9% benzyl alcohol preservative for laboratory solution preparation and reconstitution assays.',
-    technicalNotes: [
-      'Endotoxin levels < 0.005 EU/mL',
-      'pH 5.7 (USP compliant range 4.5–7.0)',
+    materialNotes: [
       '0.22 micron sterile filtered into Type I borosilicate glass'
     ],
     storageConditions: 'Store at 15–25°C',
@@ -307,9 +271,7 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     stockCount: 102,
     description: 'Growth hormone releasing hormone (GHRH 1-29) analog analytical standard synthesized by SPPS and purified by preparative RP-HPLC.',
-    technicalNotes: [
-      'RP-HPLC purity: 99.44% area',
-      'Identity confirmed by ESI-MS',
+    materialNotes: [
       'Lyophilized from acetate buffer'
     ],
     storageConditions: 'Store at -20°C, protect from moisture.',
@@ -336,11 +298,7 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     stockCount: 44,
     description: 'Stabilized GHRH analog reference standard with N-terminal hexenoyl modification, characterized for chromatographic identity work.',
-    technicalNotes: [
-      'HPLC purity: 99.28%',
-      'Molecular mass confirmed by LC-MS',
-      'Residual TFA < 1.0%'
-    ],
+    materialNotes: [],
     storageConditions: 'Store at -20°C in dark, sealed vial.',
     appearance: 'White to off-white powder',
     solubility: 'Soluble in dilute acetic acid / water',
@@ -365,11 +323,7 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     stockCount: 96,
     description: 'Cyclic melanocortin receptor agonist heptapeptide analytical standard for chromatographic and spectrometric characterization.',
-    technicalNotes: [
-      'RP-HPLC purity: 99.56%',
-      'ESI-MS [M+H]+ = 1025.5',
-      'Net peptide content > 88%'
-    ],
+    materialNotes: [],
     storageConditions: 'Store at -20°C.',
     appearance: 'White to slightly yellow powder',
     solubility: 'Water soluble',
@@ -394,9 +348,7 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     stockCount: 118,
     description: 'Synthetic heptapeptide analog of tuftsin, supplied as an analytical reference material for peptide research.',
-    technicalNotes: [
-      'HPLC purity: 99.33%',
-      'Identity verified by mass spectrometry',
+    materialNotes: [
       'Acetate salt form'
     ],
     storageConditions: 'Store at -20°C.',
@@ -423,11 +375,7 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     stockCount: 90,
     description: 'ACTH(4-7) analog heptapeptide analytical standard characterized for HPLC method calibration.',
-    technicalNotes: [
-      'RP-HPLC purity: 99.61%',
-      'ESI-MS confirms molecular identity',
-      'Water content by Karl Fischer < 4.0%'
-    ],
+    materialNotes: [],
     storageConditions: 'Store desiccated at -20°C.',
     appearance: 'White amorphous powder',
     solubility: 'Soluble in water',
@@ -452,9 +400,7 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     stockCount: 140,
     description: 'Synthetic tetrapeptide analytical standard for peptide chromatography and stability research.',
-    technicalNotes: [
-      'HPLC purity: 99.47%',
-      'ESI-MS [M+H]+ = 391.1',
+    materialNotes: [
       'Lyophilized, low residual solvent'
     ],
     storageConditions: 'Store at -20°C.',
@@ -481,11 +427,7 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     stockCount: 58,
     description: 'N-terminal acetylated 28-residue peptide reference standard characterized for identity and purity.',
-    technicalNotes: [
-      'RP-HPLC purity: 99.38%',
-      'Mass verified by LC-MS/MS',
-      'Acetate counter-ion quantified'
-    ],
+    materialNotes: [],
     storageConditions: 'Store at -20°C, protect from light.',
     appearance: 'White lyophilized cake',
     solubility: 'Soluble in aqueous buffers pH 6-7',
@@ -510,11 +452,7 @@ export const PRODUCTS: Product[] = [
     inStock: false,
     stockCount: 0,
     description: 'Mitochondrial-derived 16-residue peptide analytical standard for advanced biochemical research.',
-    technicalNotes: [
-      'HPLC purity: 99.22%',
-      'Identity confirmed by ESI-MS',
-      'Residual TFA < 1.2%'
-    ],
+    materialNotes: [],
     storageConditions: 'Store at -20°C.',
     appearance: 'White to off-white powder',
     solubility: 'Soluble in water and dilute acetic acid',
@@ -539,11 +477,7 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     stockCount: 74,
     description: 'Human growth hormone fragment (176-191) analog reference standard for peptide identity research.',
-    technicalNotes: [
-      'RP-HPLC purity: 99.50%',
-      'Disulfide bridge verified',
-      'Mass confirmed by LC-MS'
-    ],
+    materialNotes: [],
     storageConditions: 'Store at -20°C.',
     appearance: 'White lyophilized powder',
     solubility: 'Soluble in sterile water',
@@ -567,11 +501,7 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     stockCount: 260,
     description: 'High-purity gradient-grade acetonitrile for reverse-phase HPLC mobile phase preparation and analytical chromatography.',
-    technicalNotes: [
-      'Purity (GC): >= 99.95%',
-      'UV cutoff: 190 nm (1 cm)',
-      'Water content < 0.02%'
-    ],
+    materialNotes: [],
     storageConditions: 'Store at 15-25°C, away from ignition sources.',
     appearance: 'Clear, colorless liquid',
     solubility: 'Miscible with water and most organic solvents',

@@ -9,6 +9,7 @@ import { calculateConfiguredPromoDiscount } from '../../lib/promotions/promotion
 import { getClientAffiliateCode } from '../../lib/affiliates/client-storage.mjs';
 import { PAYMENT_METHODS, PaymentMethodId, getPaymentMethod } from '../../data/payment';
 import { ShieldCheck, Lock, CheckCircle2, ShoppingBag, Truck } from 'lucide-react';
+import { trackEvent } from '../../lib/analytics';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -30,6 +31,14 @@ export default function CheckoutPage() {
       setAffiliateCode(detected);
     }
   }, []);
+
+  // Funnel entry. Fires once per checkout visit that has something to buy.
+  const cartCount = cart.length;
+  useEffect(() => {
+    if (cartCount === 0) return;
+    trackEvent('checkout_started', { items: cartCount, subtotal });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartCount > 0]);
 
   const selectedMethod = getPaymentMethod(paymentMethodId);
   const subtotalCents = Math.round(subtotal * 100);
@@ -150,6 +159,16 @@ export default function CheckoutPage() {
       }
 
       const orderNumber = data.orderNumber || `VF-${Date.now().toString().slice(-6)}`;
+
+      trackEvent('order_submitted', {
+        items: cart.length,
+        totalCents: data.totalAmount || grandTotalCents,
+        paymentMethod: paymentMethodId,
+        shippingMethod: shippingMethodId,
+        promoApplied: !!appliedDiscount,
+        affiliate: !!affiliateCode,
+      });
+
       clearCart();
 
       // Store authoritative order totals in sessionStorage for confirmation page

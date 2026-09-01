@@ -2,7 +2,11 @@
 import { BatchVerificationEngine } from '../components/BatchVerificationEngine';
 import { ShieldCheck } from 'lucide-react';
 
-export const BatchVerificationPage: React.FC = () => {
+interface BatchVerificationPageProps {
+  navigate?: (path: string) => void;
+}
+
+export const BatchVerificationPage: React.FC<BatchVerificationPageProps> = ({ navigate }) => {
   return (
     <div className="pt-28 pb-20 space-y-12 bg-brand-canvas">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 text-center">
@@ -13,14 +17,15 @@ export const BatchVerificationPage: React.FC = () => {
           </span>
         </div>
         <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-brand-ink tracking-tight">
-          Batch Traceability & Analytical Records
+          Lot documentation lookup
         </h1>
         <p className="text-brand-steel text-sm sm:text-base font-normal max-w-2xl mx-auto leading-relaxed">
-          Access liquid chromatography (HPLC) peak integration data, electrospray mass spectrometry reports, and certificates of analysis for any archived lot.
+          Enter a lot number to see exactly what documentation we hold for it. You will get one of
+          three answers, and one of them is that we do not have a certificate yet.
         </p>
       </div>
 
-      <BatchVerificationEngine />
+      <BatchVerificationEngine navigate={navigate} showHeader={false} />
     </div>
   );
 };

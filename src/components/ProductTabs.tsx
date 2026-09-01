@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CheckCircle2, FileCheck, FlaskConical, Snowflake, BookOpen, Info } from 'lucide-react';
+import { CheckCircle2, FileCheck, FlaskConical, Snowflake, BookOpen, Info, FileClock } from 'lucide-react';
 import { Product, BatchRecord } from '../types';
+import { trackEvent } from '../lib/analytics';
 
 interface ProductTabsProps {
   product: Product;
@@ -56,18 +57,31 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
         {active === 'overview' && (
           <div className="space-y-6">
             <p className="text-sm text-brand-steel font-normal leading-relaxed">{product.description}</p>
+
             <div className="space-y-3">
               <h4 className="text-xs font-sans font-semibold text-brand-graphite uppercase tracking-wider">
-                Handling & Technical Notes
+                What ships
               </h4>
               <ul className="space-y-2 text-xs font-sans text-brand-steel">
-                {product.technicalNotes.map((note, i) => (
+                <li className="flex items-start space-x-2">
+                  <CheckCircle2 className="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
+                  <span>{product.size}, lot {product.lotNumber}</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <CheckCircle2 className="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
+                  <span>{product.appearance}</span>
+                </li>
+                {product.materialNotes.map((note, i) => (
                   <li key={i} className="flex items-start space-x-2">
                     <CheckCircle2 className="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
                     <span>{note}</span>
                   </li>
                 ))}
               </ul>
+              <p className="text-xs text-brand-steel font-sans leading-relaxed pt-1">
+                Analytical results are not listed here. See the Documentation tab for what we hold
+                on this lot.
+              </p>
             </div>
           </div>
         )}
@@ -93,35 +107,65 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <SpecRow label="Lot Number" value={batchRecord.lotNumber} />
-                  <SpecRow label="Reported Purity" value={`${batchRecord.purity}%`} />
-                  <SpecRow label="Analytical Lab" value={batchRecord.testingLab} />
+                  <SpecRow
+                    label="Reported Purity"
+                    value={batchRecord.purity !== undefined ? `${batchRecord.purity}%` : undefined}
+                  />
+                  <SpecRow label="Issued By" value={batchRecord.issuedBy} />
                   <SpecRow label="Method" value={batchRecord.analyticalMethod} />
                   <SpecRow label="Testing Date" value={batchRecord.testingDate} />
                   <SpecRow label="Expiry Date" value={batchRecord.expiryDate} />
                 </div>
-                <p className="text-xs text-brand-steel leading-relaxed bg-brand-canvas p-3 rounded-lg border border-brand-border font-sans">
-                  {batchRecord.labNotes}
-                </p>
+                {batchRecord.labNotes && (
+                  <p className="text-xs text-brand-steel leading-relaxed bg-brand-canvas p-3 rounded-lg border border-brand-border font-sans">
+                    {batchRecord.labNotes}
+                  </p>
+                )}
                 {onViewCOA && (
                   <button
                     onClick={onViewCOA}
                     className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-semibold text-xs transition-all shadow-xs"
                   >
                     <FileCheck className="w-4 h-4" />
-                    <span>View Analytical COA</span>
+                    <span>Read the certificate</span>
                   </button>
                 )}
                 <button
                   onClick={() => navigate('/verify')}
                   className="block text-xs font-sans text-brand-ink hover:text-brand-graphite font-semibold"
                 >
-                  → Search this lot in the public verification portal
+                  → Look this lot up in the documentation portal
                 </button>
               </>
             ) : (
-              <p className="text-xs text-brand-steel font-sans">
-                Lot documentation for this reference standard is archived upon release. Contact support for current batch records.
-              </p>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3 p-4 rounded-xl bg-brand-canvas border border-brand-border">
+                  <FileClock className="w-5 h-5 text-brand-graphite flex-shrink-0 mt-0.5" />
+                  <div className="space-y-1.5">
+                    <p className="text-sm font-display font-bold text-brand-ink">
+                      Documentation pending for lot {product.lotNumber}
+                    </p>
+                    <p className="text-xs text-brand-steel font-sans leading-relaxed">
+                      We do not hold a certificate of analysis for this lot yet, so there is nothing
+                      to show you here. We would rather say that than publish figures we cannot
+                      evidence. Ask us before you order and we will tell you exactly what
+                      documentation ships with the current lot.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    trackEvent('documentation_requested', {
+                      productId: product.id,
+                      lot: product.lotNumber,
+                    });
+                    navigate('/contact');
+                  }}
+                  className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-semibold text-xs transition-all shadow-xs"
+                >
+                  <span>Ask about this lot&apos;s documentation</span>
+                </button>
+              </div>
             )}
           </div>
         )}
@@ -154,9 +198,19 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
 
         {active === 'references' && (
           <div className="space-y-4 text-sm text-brand-steel font-normal leading-relaxed">
-            <p>
-              Analytical identity and purity were established using reverse-phase liquid chromatography (RP-HPLC) and electrospray ionization mass spectrometry (ESI-MS){batchRecord ? ` (${batchRecord.analyticalMethod})` : ''}.
-            </p>
+            {batchRecord?.analyticalMethod ? (
+              <p>
+                Identity and purity for lot {batchRecord.lotNumber} were determined by{' '}
+                {batchRecord.analyticalMethod}, as stated on the certificate issued by{' '}
+                {batchRecord.issuedBy}.
+              </p>
+            ) : (
+              <p>
+                Analytical results for this lot are not published because we do not hold a
+                certificate for it. The guides below explain what to look for in a certificate when
+                one is supplied.
+              </p>
+            )}
             <div className="space-y-2">
               <h4 className="text-xs font-sans font-semibold text-brand-graphite uppercase tracking-wider">
                 Related Research Guides

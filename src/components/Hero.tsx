@@ -47,23 +47,23 @@ export const Hero: React.FC<HeroProps> = ({ navigate }) => {
                 className="flex items-center justify-center space-x-2 px-6 py-3.5 rounded-xl bg-brand-paper border border-brand-border text-brand-ink font-display font-semibold text-sm hover:bg-brand-surface-muted hover:border-brand-border-strong transition-all shadow-2xs"
               >
                 <FileCheck className="w-4 h-4 text-brand-accent" />
-                <span>View Lab Results & COAs</span>
+                <span>Check a lot&apos;s documentation</span>
               </button>
             </div>
 
-            {/* Clean Factual Trust Micro-Points */}
+            {/* Factual micro-points. Each one is verifiable from the site itself. */}
             <div className="pt-6 grid grid-cols-3 gap-4 border-t border-brand-border/80 max-w-lg">
               <div>
-                <div className="text-[11px] font-sans font-medium text-brand-steel uppercase tracking-wider">Verification</div>
-                <div className="font-sans text-sm font-semibold text-brand-ink mt-0.5">Third-Party Tested</div>
+                <div className="text-[11px] font-sans font-medium text-brand-steel uppercase tracking-wider">Traceability</div>
+                <div className="font-sans text-sm font-semibold text-brand-ink mt-0.5">Lot-numbered vials</div>
               </div>
               <div>
                 <div className="text-[11px] font-sans font-medium text-brand-steel uppercase tracking-wider">Documentation</div>
-                <div className="font-sans text-sm font-semibold text-brand-ink mt-0.5">Lot-Specific COAs</div>
+                <div className="font-sans text-sm font-semibold text-brand-ink mt-0.5">Status shown per lot</div>
               </div>
               <div>
                 <div className="text-[11px] font-sans font-medium text-brand-steel uppercase tracking-wider">Dispatch</div>
-                <div className="font-sans text-sm font-semibold text-brand-ink mt-0.5">Cold-Chain Packed</div>
+                <div className="font-sans text-sm font-semibold text-brand-ink mt-0.5">Insulated cold packing</div>
               </div>
             </div>
           </div>

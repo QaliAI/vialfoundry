@@ -1,12 +1,12 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { Hero } from '../components/Hero';
 import { TrustBand } from '../components/TrustBand';
 import { ProductCard } from '../components/ProductCard';
 import { FoundryStandard } from '../components/FoundryStandard';
 import { BatchVerificationEngine } from '../components/BatchVerificationEngine';
 import { PRODUCTS } from '../data/products';
-import { BATCH_RECORDS } from '../data/batches';
-import { Product } from '../types';
+import { getBatchRecord } from '../data/batches';
+import { Product, ProductCategory } from '../types';
 import { COAModal } from '../components/COAModal';
 import { ArrowRight, ChevronRight, Layers } from 'lucide-react';
 import { RESEARCH_ARTICLES } from '../data/articles';
@@ -23,13 +23,32 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
   // Featured 4 Best Sellers / Popular Reference Standards
   const bestSellers = PRODUCTS.slice(0, 4);
 
-  // Product categories for discovery
-  const categories = [
-    { title: 'Reference Standards', desc: 'Synthesized peptide standards for analytical assay validation and chromatography.', count: '8 Standards', path: '/catalog' },
-    { title: 'Analytical Standards', desc: 'Acylated peptide reference materials with calibrated retention metrics.', count: '4 Standards', path: '/catalog' },
-    { title: 'Single Compounds', desc: 'Individual peptide compounds and metabolic reference standards.', count: '6 Compounds', path: '/catalog' },
-    { title: 'Laboratory Supplies', desc: 'Reconstitution diluents and chromatography mobile phase solvents.', count: '2 Supplies', path: '/catalog' }
-  ];
+  // Category tiles. Counts are derived from the catalog so they cannot drift, and
+  // each tile carries its category through to the catalog's own filter.
+  const CATEGORY_BLURBS: Record<ProductCategory, string> = {
+    'Reference Materials': 'Synthesized peptide standards for assay validation.',
+    'Analytical Standards': 'Acylated peptide reference materials.',
+    'Single Compounds': 'Individual peptides and metabolic standards.',
+    'Specialty Materials': 'Less commonly stocked research compounds.',
+    'Lab Supplies': 'Diluents and chromatography solvents.',
+  };
+
+  const categories = useMemo(
+    () =>
+      (Object.keys(CATEGORY_BLURBS) as ProductCategory[])
+        .map((title) => {
+          const count = PRODUCTS.filter((p) => p.category === title).length;
+          return {
+            title,
+            desc: CATEGORY_BLURBS[title],
+            count: `${count} ${count === 1 ? 'item' : 'items'}`,
+            path: `/catalog?category=${encodeURIComponent(title)}`,
+          };
+        })
+        .filter((c) => !c.count.startsWith('0 ')),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
   return (
     <div className="space-y-0 bg-brand-canvas">
@@ -88,7 +107,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
             {categories.map((cat, idx) => (
               <div
                 key={idx}
@@ -120,8 +139,8 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
       {/* 4. Quality / The Foundry Standard Section */}
       <FoundryStandard navigate={navigate} />
 
-      {/* 5. Batch Verification Engine Section */}
-      <BatchVerificationEngine />
+      {/* 5. Lot documentation lookup */}
+      <BatchVerificationEngine navigate={navigate} />
 
       {/* 6. Research Resources & Documentation Articles */}
       <section className="py-16 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-brand-border">
@@ -177,9 +196,9 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
       </section>
 
       {/* COA Modal if opened */}
-      {activeCOALot && BATCH_RECORDS[activeCOALot] && (
+      {activeCOALot && getBatchRecord(activeCOALot) && (
         <COAModal
-          batch={BATCH_RECORDS[activeCOALot]}
+          batch={getBatchRecord(activeCOALot)}
           onClose={() => setActiveCOALot(null)}
         />
       )}

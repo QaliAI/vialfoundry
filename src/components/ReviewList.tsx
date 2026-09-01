@@ -33,7 +33,7 @@ export const ReviewList: React.FC<{ productSlug: string }> = ({ productSlug }) =
     };
   }, [productSlug]);
 
-  if (loaded && reviews.length === 0) return null;
+  if (!loaded || reviews.length === 0) return null;
 
   const avg =
     reviews.length > 0 ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : '—';

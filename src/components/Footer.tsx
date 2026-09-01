@@ -87,19 +87,19 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
             <h5 className="font-sans text-xs font-semibold text-slate-200 uppercase tracking-wider">Shop Catalog</h5>
             <ul className="space-y-2 text-xs">
               <li><button onClick={() => navigate('/catalog')} className="text-slate-400 hover:text-white transition-colors">All Research Materials</button></li>
-              <li><button onClick={() => navigate('/catalog')} className="text-slate-400 hover:text-white transition-colors">Reference Standards</button></li>
-              <li><button onClick={() => navigate('/catalog')} className="text-slate-400 hover:text-white transition-colors">Analytical Standards</button></li>
-              <li><button onClick={() => navigate('/catalog')} className="text-slate-400 hover:text-white transition-colors">Single Compounds</button></li>
-              <li><button onClick={() => navigate('/catalog')} className="text-slate-400 hover:text-white transition-colors">Laboratory Supplies</button></li>
+              <li><button onClick={() => navigate('/catalog?category=Reference+Materials')} className="text-slate-400 hover:text-white transition-colors">Reference Materials</button></li>
+              <li><button onClick={() => navigate('/catalog?category=Analytical+Standards')} className="text-slate-400 hover:text-white transition-colors">Analytical Standards</button></li>
+              <li><button onClick={() => navigate('/catalog?category=Single+Compounds')} className="text-slate-400 hover:text-white transition-colors">Single Compounds</button></li>
+              <li><button onClick={() => navigate('/catalog?category=Specialty+Materials')} className="text-slate-400 hover:text-white transition-colors">Specialty Materials</button></li>
+              <li><button onClick={() => navigate('/catalog?category=Lab+Supplies')} className="text-slate-400 hover:text-white transition-colors">Lab Supplies</button></li>
             </ul>
           </div>
 
           <div className="space-y-3">
             <h5 className="font-sans text-xs font-semibold text-slate-200 uppercase tracking-wider">Quality & Testing</h5>
             <ul className="space-y-2 text-xs">
-              <li><button onClick={() => navigate('/verify')} className="text-slate-200 font-semibold hover:text-white transition-colors">Lot Verification Portal</button></li>
+              <li><button onClick={() => navigate('/verify')} className="text-slate-200 font-semibold hover:text-white transition-colors">Lot Documentation Lookup</button></li>
               <li><button onClick={() => navigate('/quality')} className="text-slate-400 hover:text-white transition-colors">The Foundry Standard</button></li>
-              <li><button onClick={() => navigate('/quality')} className="text-slate-400 hover:text-white transition-colors">HPLC & MS Verification</button></li>
               <li><button onClick={() => navigate('/resources')} className="text-slate-400 hover:text-white transition-colors">COA Interpretation Guide</button></li>
             </ul>
           </div>

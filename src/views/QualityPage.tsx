@@ -7,8 +7,8 @@ export const QualityPage: React.FC = () => {
     { title: '1. Sourcing & Qualification', desc: 'Precursor materials and reagents undergo chromatographic qualification prior to peptide assembly.' },
     { title: '2. Precursor Evaluation', desc: 'Protected amino acids are verified for optical rotation, identity, and absence of racemized impurities.' },
     { title: '3. Batch-Specific Records', desc: 'Every synthesis run receives a unique lot number tied to physical chromatographic records.' },
-    { title: '4. Analytical Testing', desc: 'Finished lots undergo RP-HPLC purity integration and ESI-MS mass confirmation at independent testing labs.' },
-    { title: '5. Lot Documentation Index', desc: 'Certificates of analysis are indexed and stored permanently in our public lot search portal.' },
+    { title: '4. Analytical Testing', desc: 'Where a lot has been analysed, the issuing laboratory and method are published with it. We do not describe testing that has not been performed.' },
+    { title: '5. Lot Documentation Index', desc: 'Certificates we hold are indexed in the public lot lookup. Lots without a certificate are listed as documentation pending.' },
     { title: '6. Sealed Packaging', desc: 'Vials are stoppered with inert fluoropolymer septa to minimize atmospheric and moisture interaction.' },
     { title: '7. Desiccated Cold Storage', desc: 'Inventory is maintained in climate-controlled storage vaults prior to insulated dispatch.' },
     { title: '8. Batch Retain Archives', desc: 'Retain samples from production lots are archived to support lot traceability and reference checks.' },
@@ -25,10 +25,11 @@ export const QualityPage: React.FC = () => {
           </span>
         </div>
         <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-brand-ink tracking-tight">
-          The 8 Pillars of Material Integrity
+          How we handle material and documentation
         </h1>
         <p className="text-brand-steel text-sm sm:text-base font-normal leading-relaxed">
-          Our quality framework emphasizes analytical rigor, lot traceability, and transparent documentation for research applications.
+          Our commitment is narrow and checkable: every lot is traceable by number, and the site
+          states what documentation exists for it — including when the answer is none yet.
         </p>
       </div>
 

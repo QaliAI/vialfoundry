@@ -19,7 +19,10 @@ export const AboutPage: React.FC = () => {
       <div className="storefront-card p-8 sm:p-12 rounded-2xl bg-brand-paper border border-brand-border shadow-2xs space-y-6 text-sm text-brand-steel font-normal leading-relaxed">
         <h3 className="font-display text-xl font-bold text-brand-ink">Our Focus</h3>
         <p>
-          Research materials require clear, dependable analytical documentation. We focus on batch-specific traceability, providing access to HPLC profiles and mass spectrometry reports for each production lot.
+          Research materials are only as useful as the paperwork behind them. We focus on lot-level
+          traceability: each vial carries a lot number, and the documentation portal states what
+          records exist for that lot. When a certificate exists we publish the issuing laboratory’s
+          own document. When one does not, we say so rather than filling the gap.
         </p>
 
         <h3 className="font-display text-xl font-bold text-brand-ink pt-4">Operational Framework</h3>

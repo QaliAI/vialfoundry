@@ -1,5 +1,5 @@
 import { createClient } from './supabase/client';
-import { Review, STATIC_REVIEWS } from '../data/reviews';
+import { Review } from '../data/reviews';
 
 interface DbReview {
   product_slug: string | null;

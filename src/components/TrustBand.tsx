@@ -5,13 +5,13 @@ export const TrustBand: React.FC = () => {
   const trustItems = [
     {
       icon: ShieldCheck,
-      title: 'Independent Analytical Testing',
-      desc: 'Tested via reverse-phase HPLC and mass spectrometry where indicated.'
+      title: 'Documentation Status, Stated',
+      desc: 'Every lot says whether a certificate is on file — including when one is not.'
     },
     {
       icon: FileCheck,
       title: 'Lot Documentation',
-      desc: 'Lot-specific chromatograms and certificates available for review.'
+      desc: 'Where a certificate is on file, you can read the issuing lab’s own document.'
     },
     {
       icon: Snowflake,

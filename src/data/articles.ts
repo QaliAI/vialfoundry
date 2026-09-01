@@ -17,7 +17,7 @@ export const RESEARCH_ARTICLES: ResearchArticle[] = [
       '2. **Chromatographic Integration (HPLC)**: High-Performance Liquid Chromatography (HPLC) separates the compound from residual synthesis artifacts. Purity is calculated by integrating the area under the primary compound peak relative to total peak area.',
       '3. **Mass Spectrometry (LC-MS / ESI-MS)**: While HPLC proves purity (homogeneity), Mass Spectrometry verifies chemical identity by determining the exact molecular weight (m/z ratio) down to hundredths of a Dalton.',
       '4. **Appearance & Physical Properties**: Lyophilized cakes, crystalline matrices, or clear aqueous solutions are visually inspected against physical specifications.',
-      'At Vial Foundry, every batch record is archived digitally and directly searchable via our Batch Verification engine.'
+      'At Vial Foundry, any lot number can be searched in the documentation portal. The lookup returns the certificate if we hold one, or tells you plainly that documentation for that lot is still pending.'
     ]
   },
   {

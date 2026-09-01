@@ -193,7 +193,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       {
         heading: 'Quality Guarantee',
         body: [
-          'Every lot is backed by a Certificate of Analysis. If a product does not match its published analytical specification, we will replace it or issue a resolution.',
+          'Where we publish an analytical specification for a lot, that lot is warranted to meet it. If a product does not match a specification we published for it, we will replace it or issue a resolution. Documentation status for any lot can be checked before you order.',
         ],
       },
       {

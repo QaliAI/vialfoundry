@@ -45,7 +45,7 @@ export default function AdminProductsPage() {
         inStock: true,
         stockCount: formData.stockCount || 100,
         description: 'Synthetic reference material verified for analytical testing.',
-        technicalNotes: ['RP-HPLC Purity verified', 'Mass confirmed via LC-MS'],
+        materialNotes: [],
         storageConditions: 'Store at -20°C',
         appearance: 'White lyophilized powder',
         solubility: 'Soluble in sterile water',
