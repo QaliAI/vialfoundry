@@ -76,7 +76,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           VIAL <span className={inverted ? 'text-slate-300 font-medium' : 'text-brand-graphite font-medium'}>FOUNDRY</span>
         </span>
         <span className={`font-sans uppercase tracking-[0.18em] font-medium mt-1 ${mutedColor} ${subtitleSizes}`}>
-          Research Materials
+          Research Peptides
         </span>
       </div>
     </div>

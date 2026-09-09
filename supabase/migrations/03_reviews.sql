@@ -2,7 +2,7 @@
 
 CREATE TABLE IF NOT EXISTS public.reviews (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    product_id UUID REFERENCES public.products(id) ON DELETE CASCADE,
+    product_id VARCHAR(100) REFERENCES public.products(id) ON DELETE CASCADE,
     product_slug VARCHAR(255),
     reviewer_name VARCHAR(255) NOT NULL,
     reviewer_org VARCHAR(255),

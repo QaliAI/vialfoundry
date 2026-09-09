@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Copy, ExternalLink } from 'lucide-react';
 import { PaymentMethod } from '../data/payment';
 
@@ -35,7 +35,7 @@ export const PaymentInstructions: React.FC<Props> = ({ method, total, orderRef, 
       <div className="grid grid-cols-2 gap-3 text-xs font-sans">
         <div className="p-3.5 rounded-xl bg-brand-canvas border border-brand-border">
           <span className="text-brand-steel block text-[10px] uppercase font-medium">Amount Due</span>
-          <span className="text-brand-ink font-mono text-lg font-bold"></span>
+          <span className="text-brand-ink font-mono text-lg font-bold">${total.toFixed(2)}</span>
         </div>
         <div className="p-3.5 rounded-xl bg-brand-canvas border border-brand-border">
           <span className="text-brand-steel block text-[10px] uppercase font-medium">Order Reference</span>

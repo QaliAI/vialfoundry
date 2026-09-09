@@ -12,6 +12,22 @@ import { calculateShipping } from "../src/lib/manual-orders/shipping.mjs";
 import { isValidStatusTransition } from "../src/lib/admin/order-classification.mjs";
 import { sanitizeEnvValue } from "../src/lib/env/sanitizer.mjs";
 
+// Load .env.local if present in current working directory
+const envLocalPath = path.resolve(".env.local");
+if (fs.existsSync(envLocalPath)) {
+  const envLines = fs.readFileSync(envLocalPath, "utf8").split("\n");
+  for (const line of envLines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#") || !trimmed.includes("=")) continue;
+    const idx = trimmed.indexOf("=");
+    const key = trimmed.slice(0, idx).trim();
+    const val = trimmed.slice(idx + 1).trim();
+    if (!process.env[key]) {
+      process.env[key] = val;
+    }
+  }
+}
+
 console.log("\n=======================================================");
 console.log("   VIAL FOUNDRY — PRODUCTION READINESS AUDIT");
 console.log("=======================================================\n");

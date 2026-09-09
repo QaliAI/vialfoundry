@@ -5,7 +5,7 @@ import { AffiliatesPage } from '../../views/AffiliatesPage';
 export const metadata: Metadata = {
   title: 'Affiliate Program — Vial Foundry',
   description:
-    'Join the Vial Foundry affiliate program and earn commission referring researchers to batch-documented research materials.',
+    'Join the Vial Foundry affiliate program and earn commission referring researchers to batch-documented research peptides.',
 };
 
 export default function Page() {

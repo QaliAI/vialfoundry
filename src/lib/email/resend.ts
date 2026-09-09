@@ -34,7 +34,10 @@ export async function sendEmailSafely(params: {
 
     const senderName = sanitizeEnvValue(process.env.EMAIL_SENDER_NAME) || brand.emailSenderName || "Vial Foundry Procurement";
     const senderDomain = sanitizeEnvValue(process.env.EMAIL_SENDER_DOMAIN) || brand.emailSenderDomain || "vialfoundry.com";
-    const defaultFrom = `${senderName} <orders@${senderDomain}>`;
+    const transactionalFrom = sanitizeEnvValue(process.env.TRANSACTIONAL_EMAIL_FROM);
+    const defaultFrom = transactionalFrom
+      ? (transactionalFrom.includes("<") ? transactionalFrom : `${senderName} <${transactionalFrom}>`)
+      : `${senderName} <orders@${senderDomain}>`;
 
     const { data, error } = await resend.emails.send({
       from: params.from || defaultFrom,

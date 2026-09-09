@@ -231,7 +231,7 @@ export async function POST(req: Request) {
         affiliate_commission_amount: commissionCalc?.affiliate_commission_amount || 0,
         affiliate_status: affiliateRecord ? "pending_payment" : null,
         notes: data.notes || null,
-        is_test: false,
+        is_test: Boolean(data.isTest),
       });
 
       if (orderErr) {

@@ -7,7 +7,7 @@ import { vialFoundryBrandConfig } from '../../config/brand';
 import { calculateShipping } from '../../lib/manual-orders/shipping.mjs';
 import { calculateConfiguredPromoDiscount } from '../../lib/promotions/promotions.mjs';
 import { getClientAffiliateCode } from '../../lib/affiliates/client-storage.mjs';
-import { PAYMENT_METHODS, PaymentMethodId, getPaymentMethod } from '../../data/payment';
+import { PAYMENT_METHODS, CONFIGURED_PAYMENT_METHODS, PaymentMethodId, getPaymentMethod } from '../../data/payment';
 import { ShieldCheck, Lock, CheckCircle2, ShoppingBag, Truck } from 'lucide-react';
 import { trackEvent } from '../../lib/analytics';
 
@@ -15,13 +15,16 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { cart, subtotal, clearCart } = useCart();
 
+  const availablePaymentMethods = CONFIGURED_PAYMENT_METHODS.length > 0 ? CONFIGURED_PAYMENT_METHODS : PAYMENT_METHODS;
   const [discountCode, setDiscountCode] = useState('');
   const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; discountCents: number; name?: string } | null>(null);
   const [discountError, setDiscountError] = useState('');
   const [ruoAgreed, setRuoAgreed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
-  const [paymentMethodId, setPaymentMethodId] = useState<PaymentMethodId>('zelle');
+  const [paymentMethodId, setPaymentMethodId] = useState<PaymentMethodId>(
+    (availablePaymentMethods[0]?.id as PaymentMethodId) || 'zelle'
+  );
   const [shippingMethodId, setShippingMethodId] = useState('standard');
   const [affiliateCode, setAffiliateCode] = useState<string | null>(null);
 
@@ -371,7 +374,7 @@ export default function CheckoutPage() {
               <span className="text-[11px] font-sans text-brand-steel">Select preference</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {PAYMENT_METHODS.map((m) => {
+              {availablePaymentMethods.map((m) => {
                 const Icon = m.icon;
                 const active = paymentMethodId === m.id;
                 return (

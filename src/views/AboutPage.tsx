@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 
 export const AboutPage: React.FC = () => {
   return (
@@ -12,14 +12,14 @@ export const AboutPage: React.FC = () => {
           Precision built around analytical verification.
         </h1>
         <p className="text-brand-steel text-sm sm:text-base font-normal max-w-2xl mx-auto leading-relaxed">
-          Vial Foundry was established to provide reliable, lot-documented reference materials and standards for institutional and laboratory research.
+          Vial Foundry was established to provide reliable, lot-documented research peptides and standards for institutional and laboratory research.
         </p>
       </div>
 
       <div className="storefront-card p-8 sm:p-12 rounded-2xl bg-brand-paper border border-brand-border shadow-2xs space-y-6 text-sm text-brand-steel font-normal leading-relaxed">
         <h3 className="font-display text-xl font-bold text-brand-ink">Our Focus</h3>
         <p>
-          Research materials are only as useful as the paperwork behind them. We focus on lot-level
+          Research peptides are only as useful as the paperwork behind them. We focus on lot-level
           traceability: each vial carries a lot number, and the documentation portal states what
           records exist for that lot. When a certificate exists we publish the issuing laboratory’s
           own document. When one does not, we say so rather than filling the gap.

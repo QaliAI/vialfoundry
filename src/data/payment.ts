@@ -86,6 +86,24 @@ export const PAYMENT_METHODS: PaymentMethod[] = [
   },
 ];
 
+export function isPaymentMethodConfigured(m: PaymentMethod): boolean {
+  if (m.id === 'cashapp') {
+    return Boolean(m.handle && m.handle !== '$YourCashtag' && !m.handle.includes('YourCashtag'));
+  }
+  if (m.id === 'crypto') {
+    return Boolean(process.env.NEXT_PUBLIC_NOWPAYMENTS_LINK);
+  }
+  if (m.id === 'ach') {
+    return Boolean(process.env.NEXT_PUBLIC_LINKMONEY_LINK);
+  }
+  if (m.id === 'zelle') {
+    return Boolean(m.handle && m.handle !== 'payments@example.com' && !m.handle.includes('example.com'));
+  }
+  return false;
+}
+
+export const CONFIGURED_PAYMENT_METHODS: PaymentMethod[] = PAYMENT_METHODS.filter(isPaymentMethodConfigured);
+
 export function getPaymentMethod(id?: string | null): PaymentMethod | undefined {
   return PAYMENT_METHODS.find((m) => m.id === id);
 }

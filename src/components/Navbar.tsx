@@ -23,7 +23,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
 
   const navItems = [
     { label: 'Shop', path: '/catalog' },
-    { label: 'Lab Results / COAs', path: '/verify' },
     { label: 'Quality', path: '/quality' },
     { label: 'About', path: '/about' },
     { label: 'Resources', path: '/resources' },
@@ -88,15 +87,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
                 </kbd>
               </button>
 
-              {/* Lab Results / Lot Lookup Badge */}
-              <button
-                onClick={() => navigate('/verify')}
-                className="hidden lg:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-brand-paper border border-brand-border text-brand-ink hover:bg-brand-surface-muted text-xs font-sans font-medium transition-colors shadow-2xs"
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-brand-accent" />
-                <span className="tracking-wide">LOT LOOKUP</span>
-              </button>
-
               {/* Cart Button */}
               <button
                 onClick={() => setIsCartOpen(true)}
@@ -149,18 +139,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
             ))}
           </div>
 
-          <div className="space-y-3 pt-6 border-t border-brand-border">
-            <button
-              onClick={() => {
-                navigate('/verify');
-                setMobileMenuOpen(false);
-              }}
-              className="w-full flex items-center justify-center space-x-2 py-3 rounded-xl bg-brand-paper border border-brand-border text-brand-ink font-sans text-sm font-semibold shadow-xs"
-            >
-              <ShieldCheck className="w-4 h-4 text-brand-accent" />
-              <span>VERIFY BATCH DOCUMENTATION</span>
-            </button>
-
+          <div className="pt-6 border-t border-brand-border">
             <div className="text-center text-xs text-brand-steel pt-1">
               FOR RESEARCH USE ONLY · NOT FOR HUMAN USE
             </div>

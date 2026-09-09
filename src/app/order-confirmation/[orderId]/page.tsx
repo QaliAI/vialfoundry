@@ -96,11 +96,11 @@ function Confirmation() {
           <ArrowRight className="w-4 h-4" />
         </button>
         <button
-          onClick={() => router.push('/verify')}
+          onClick={() => router.push('/quality')}
           className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-brand-paper border border-brand-border text-brand-ink font-display font-bold text-xs hover:bg-brand-surface-muted transition-all flex items-center justify-center space-x-2 shadow-2xs"
         >
           <ShieldCheck className="w-4 h-4 text-brand-accent" />
-          <span>Lookup Batch COA</span>
+          <span>Quality & Standards</span>
         </button>
       </div>
     </div>

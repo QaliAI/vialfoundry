@@ -1,11 +1,11 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import { Percent, TrendingUp, Wallet, CheckCircle2, Users, ShieldCheck } from 'lucide-react';
 
 const BENEFITS = [
   { icon: Percent, title: 'Competitive commission', body: 'Earn commission on verified research orders from your referrals.' },
-  { icon: TrendingUp, title: 'Dedicated catalog', body: 'Standardized, lot-documented research materials researchers trust and reorder.' },
+  { icon: TrendingUp, title: 'Dedicated catalog', body: 'Standardized, lot-documented research peptides researchers trust and reorder.' },
   { icon: Wallet, title: 'Flexible settlement', body: 'Receive payouts via ACH, Zelle, CashApp, or crypto upon verified order completion.' },
 ];
 
@@ -35,7 +35,7 @@ export const AffiliatesPage: React.FC = () => {
         </div>
         <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-brand-ink tracking-tight">Vial Foundry Affiliate Program</h1>
         <p className="text-brand-steel text-sm sm:text-base font-normal leading-relaxed">
-          Refer qualified researchers and laboratory procurement teams to precision-tested, lot-documented research materials.
+          Refer qualified researchers and laboratory procurement teams to precision-tested, lot-documented research peptides.
         </p>
       </div>
 

@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Hero } from '../components/Hero';
 import { TrustBand } from '../components/TrustBand';
 import { ProductCard } from '../components/ProductCard';
@@ -69,7 +69,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
               Featured Reference Standards
             </h2>
             <p className="text-brand-steel text-sm">
-              Standardized research materials available for institutional procurement.
+              Standardized research peptides available for institutional procurement.
             </p>
           </div>
 

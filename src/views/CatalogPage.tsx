@@ -80,10 +80,10 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct, initi
           Catalog
         </div>
         <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-brand-ink tracking-tight">
-          Research Materials &amp; Reference Standards
+          Research Peptides &amp; Reference Standards
         </h1>
         <p className="text-brand-steel text-sm sm:text-base font-normal max-w-2xl leading-relaxed">
-          {PRODUCTS.length} materials in stock or on backorder. Each card states whether we hold a
+          {PRODUCTS.length} research peptides in stock or on backorder. Each card states whether we hold a
           certificate of analysis for that lot, so you know before you order.
         </p>
       </div>

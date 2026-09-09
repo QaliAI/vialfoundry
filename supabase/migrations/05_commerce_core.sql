@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS public.manual_orders (
 CREATE TABLE IF NOT EXISTS public.manual_order_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     manual_order_id UUID NOT NULL REFERENCES public.manual_orders(id) ON DELETE CASCADE,
-    product_id UUID REFERENCES public.products(id) ON DELETE SET NULL,
+    product_id VARCHAR(100) REFERENCES public.products(id) ON DELETE SET NULL,
     variant_id UUID REFERENCES public.product_variants(id) ON DELETE SET NULL,
     product_name TEXT NOT NULL,
     configuration_label TEXT,

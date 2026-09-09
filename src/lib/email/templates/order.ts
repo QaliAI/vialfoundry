@@ -66,7 +66,7 @@ export function renderOrderConfirmationEmail(params: {
         
         <div style="border-bottom: 1px solid #1e293b; padding-bottom: 16px; margin-bottom: 24px;">
           <h1 style="color: #06b6d4; font-size: 22px; margin: 0; font-weight: 800; letter-spacing: 0.5px;">${brand.name.toUpperCase()}</h1>
-          <p style="color: #94a3b8; font-size: 12px; margin: 4px 0 0 0;">Research Materials &amp; Reference Standards Procurement</p>
+          <p style="color: #94a3b8; font-size: 12px; margin: 4px 0 0 0;">Research Peptides &amp; Reference Standards Procurement</p>
         </div>
 
         <p style="font-size: 15px; color: #e2e8f0;">Dear ${params.customerName},</p>

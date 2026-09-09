@@ -41,6 +41,7 @@ export const checkoutSubmissionSchema = z.object({
   }),
   items: z.array(manualOrderItemSchema).min(1, "At least one item is required in the cart"),
   notes: z.string().optional().nullable(),
+  isTest: z.boolean().optional().default(false),
 });
 
 export type CheckoutSubmission = z.infer<typeof checkoutSubmissionSchema>;

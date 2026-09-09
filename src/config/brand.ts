@@ -1,4 +1,4 @@
-﻿export interface BrandPaymentMethods {
+export interface BrandPaymentMethods {
   manualInvoice: boolean;
   zelle: {
     enabled: boolean;
@@ -70,7 +70,7 @@ export const vialFoundryBrandConfig: BrandConfig = {
   legalName: process.env.NEXT_PUBLIC_BRAND_LEGAL_NAME || "Vial Foundry Laboratories LLC",
   domain: process.env.NEXT_PUBLIC_BRAND_DOMAIN || "vialfoundry.com",
   supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@vialfoundry.com",
-  orderNotificationEmails: (process.env.ADMIN_NOTIFICATION_EMAIL || "orders@vialfoundry.com, admin@vialfoundry.com")
+  orderNotificationEmails: (process.env.ADMIN_NOTIFICATION_EMAIL || process.env.NOTIFICATION_EMAIL_TO || "orders@vialfoundry.com, admin@vialfoundry.com")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean),

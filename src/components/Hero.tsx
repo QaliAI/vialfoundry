@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { ArrowRight, FileCheck, ShieldCheck } from 'lucide-react';
 
 interface HeroProps {
@@ -24,7 +24,7 @@ export const Hero: React.FC<HeroProps> = ({ navigate }) => {
 
             {/* Headline */}
             <h1 className="font-display text-4xl sm:text-5xl lg:text-[50px] font-extrabold text-brand-ink tracking-tight leading-[1.12]">
-              Precision research materials. <span className="text-brand-graphite font-bold">Documented by lot.</span>
+              Precision research peptides. <span className="text-brand-graphite font-bold">Documented by lot.</span>
             </h1>
 
             {/* Subtitle */}
@@ -38,16 +38,16 @@ export const Hero: React.FC<HeroProps> = ({ navigate }) => {
                 onClick={() => navigate('/catalog')}
                 className="flex items-center justify-center space-x-2 px-7 py-3.5 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-semibold text-sm shadow-xs transition-all"
               >
-                <span>Shop Research Materials</span>
+                <span>Shop Research Peptides</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
               <button
-                onClick={() => navigate('/verify')}
+                onClick={() => navigate('/quality')}
                 className="flex items-center justify-center space-x-2 px-6 py-3.5 rounded-xl bg-brand-paper border border-brand-border text-brand-ink font-display font-semibold text-sm hover:bg-brand-surface-muted hover:border-brand-border-strong transition-all shadow-2xs"
               >
                 <FileCheck className="w-4 h-4 text-brand-accent" />
-                <span>Check a lot&apos;s documentation</span>
+                <span>Quality &amp; Standards</span>
               </button>
             </div>
 

@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS public.categories (
 
 -- 2. PRODUCTS TABLE
 CREATE TABLE IF NOT EXISTS public.products (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(100) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
     slug VARCHAR(255) UNIQUE NOT NULL,
     sku VARCHAR(100) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS public.products (
 -- 3. PRODUCT VARIANTS TABLE
 CREATE TABLE IF NOT EXISTS public.product_variants (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    product_id UUID REFERENCES public.products(id) ON DELETE CASCADE,
+    product_id VARCHAR(100) REFERENCES public.products(id) ON DELETE CASCADE,
     sku VARCHAR(100) UNIQUE NOT NULL,
     title VARCHAR(255) NOT NULL,
     size VARCHAR(100) NOT NULL,
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS public.product_variants (
 -- 4. BATCHES / LOTS TABLE
 CREATE TABLE IF NOT EXISTS public.batches (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    product_id UUID REFERENCES public.products(id) ON DELETE SET NULL,
+    product_id VARCHAR(100) REFERENCES public.products(id) ON DELETE SET NULL,
     lot_number VARCHAR(100) UNIQUE NOT NULL,
     manufacturing_date DATE,
     testing_date DATE,
@@ -129,7 +129,7 @@ CREATE TABLE IF NOT EXISTS public.orders (
 CREATE TABLE IF NOT EXISTS public.order_items (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     order_id UUID REFERENCES public.orders(id) ON DELETE CASCADE,
-    product_id UUID REFERENCES public.products(id) ON DELETE SET NULL,
+    product_id VARCHAR(100) REFERENCES public.products(id) ON DELETE SET NULL,
     variant_id UUID REFERENCES public.product_variants(id) ON DELETE SET NULL,
     product_name VARCHAR(255) NOT NULL,
     variant_title VARCHAR(255),
@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS public.order_items (
 -- 9. INVENTORY TRANSACTIONS TABLE
 CREATE TABLE IF NOT EXISTS public.inventory_transactions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    product_id UUID REFERENCES public.products(id) ON DELETE CASCADE,
+    product_id VARCHAR(100) REFERENCES public.products(id) ON DELETE CASCADE,
     variant_id UUID REFERENCES public.product_variants(id) ON DELETE SET NULL,
     transaction_type VARCHAR(50) NOT NULL, -- sale, manual_adjustment, restock, cancellation, refund, damaged
     quantity_change INT NOT NULL,
@@ -179,6 +179,8 @@ CREATE TABLE IF NOT EXISTS public.affiliates (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     commission_rate NUMERIC(5, 2) DEFAULT 10.00,
+    commission_rate_bps INT DEFAULT 1000,
+    status VARCHAR(50) DEFAULT 'active',
     total_conversions INT DEFAULT 0,
     total_earned NUMERIC(10, 2) DEFAULT 0.00,
     active BOOLEAN DEFAULT true,
@@ -221,7 +223,7 @@ CREATE TABLE IF NOT EXISTS public.contact_requests (
 -- 15. RESTOCK REQUESTS TABLE
 CREATE TABLE IF NOT EXISTS public.restock_requests (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    product_id UUID REFERENCES public.products(id) ON DELETE CASCADE,
+    product_id VARCHAR(100) REFERENCES public.products(id) ON DELETE CASCADE,
     variant_id UUID REFERENCES public.product_variants(id) ON DELETE SET NULL,
     email VARCHAR(255) NOT NULL,
     status VARCHAR(50) DEFAULT 'pending',
