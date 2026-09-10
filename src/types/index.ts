@@ -15,7 +15,15 @@ export interface Product {
   chemicalFormula: string;
   molecularWeight: string;
   category: ProductCategory;
+  /**
+   * Short, plain name shown to customers ("BPC-157"). `name` stays the full
+   * internal/record title; never show classification terminology in the
+   * primary listing title.
+   */
+  displayName?: string;
   size: string;
+  /** Plain presentation for listings ("5 mg vial"). `size` stays the record value. */
+  displaySize?: string;
   purityPercentage: number;
   lotNumber: string;
   price: number;

@@ -49,9 +49,9 @@ function Confirmation() {
 
       <div className="space-y-2">
         <span className="text-xs text-brand-mineral font-sans font-bold tracking-widest uppercase bg-brand-paper px-3 py-1 rounded-full border border-brand-border">
-          ORDER REQUEST REGISTERED
+          ORDER RECEIVED
         </span>
-        <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-brand-ink">Thank you — your request has been logged.</h1>
+        <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-brand-ink">Thank you — we&rsquo;ve got your order.</h1>
         <p className="text-brand-steel text-sm font-sans">
           Order Reference: <span className="text-brand-ink font-mono font-bold">{orderId}</span>
         </p>
@@ -71,20 +71,20 @@ function Confirmation() {
       <div className="storefront-card p-6 rounded-2xl bg-brand-paper border border-brand-border text-left space-y-3 font-sans text-xs shadow-2xs">
         <div className="flex items-center justify-between border-b border-brand-border/60 pb-3">
           <span className="text-brand-steel">Status:</span>
-          <span className="text-brand-mineral font-bold">Received / Under Procurement Review</span>
+          <span className="text-brand-mineral font-bold">Received &mdash; we&rsquo;re checking stock</span>
         </div>
         <div className="flex items-center justify-between border-b border-brand-border/60 pb-3">
           <span className="text-brand-steel">Next Step:</span>
-          <span className="text-brand-ink font-medium">Send payment via chosen method &bull; We confirm and dispatch</span>
+          <span className="text-brand-ink font-medium">Send payment &bull; We confirm and ship</span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-brand-steel">Typical Confirmation:</span>
+          <span className="text-brand-steel">Usually confirmed:</span>
           <span className="text-brand-graphite font-bold">Within 12 business hours</span>
         </div>
       </div>
 
       <p className="text-xs text-brand-steel font-sans">
-        A confirmation email is on its way to the address you provided. No credit card is charged on this site. All materials are supplied strictly for laboratory research use only.
+        A confirmation email is on its way to the address you provided. No credit card is charged on this site. All products are supplied strictly for laboratory research use only.
       </p>
 
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
@@ -92,7 +92,7 @@ function Confirmation() {
           onClick={() => router.push('/catalog')}
           className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-bold text-xs shadow-xs flex items-center justify-center space-x-2 transition-all"
         >
-          <span>Return to Catalog</span>
+          <span>Keep Shopping</span>
           <ArrowRight className="w-4 h-4" />
         </button>
         <button
@@ -100,7 +100,7 @@ function Confirmation() {
           className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-brand-paper border border-brand-border text-brand-ink font-display font-bold text-xs hover:bg-brand-surface-muted transition-all flex items-center justify-center space-x-2 shadow-2xs"
         >
           <ShieldCheck className="w-4 h-4 text-brand-accent" />
-          <span>Quality & Standards</span>
+          <span>How We Handle Quality</span>
         </button>
       </div>
     </div>

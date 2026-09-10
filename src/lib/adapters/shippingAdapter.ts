@@ -18,7 +18,7 @@ export function calculateShippingRate(req: ShippingRateRequest): ShippingRateRes
 
   if (req.subtotal >= FREE_SHIPPING_THRESHOLD) {
     return {
-      methodName: 'Insulated Cold-Chain Express (Free Tier)',
+      methodName: 'Free Standard Shipping',
       cost: 0.0,
       estimatedDays: '1-2 Business Days',
       isFreeShipping: true
@@ -26,7 +26,7 @@ export function calculateShippingRate(req: ShippingRateRequest): ShippingRateRes
   }
 
   return {
-    methodName: 'Insulated Cold-Chain Express',
+    methodName: 'Standard Shipping',
     cost: FLAT_RATE_SHIPPING,
     estimatedDays: '1-2 Business Days',
     isFreeShipping: false

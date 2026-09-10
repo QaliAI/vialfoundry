@@ -18,7 +18,7 @@ export function renderTrackingUpdateEmail(params: {
     <p style="margin: 0 0 24px 0; font-size: 15px; color: ${EMAIL_COLORS.textMuted};">
       Your research order
       <strong style="color: ${EMAIL_COLORS.text};">#${escapeHtml(params.orderNumber)}</strong>
-      has shipped with insulated cold packaging.
+      has shipped.
     </p>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
@@ -40,13 +40,13 @@ export function renderTrackingUpdateEmail(params: {
     </table>
 
     <p style="margin: 24px 0 0 0; font-size: 13px; color: ${EMAIL_COLORS.textMuted};">
-      Carrier scans can take up to 24 hours to appear after dispatch.
+      Tracking can take up to 24 hours to update after we ship.
     </p>
   `;
 
   return {
     html: renderEmailShell({
-      eyebrow: "Shipment dispatched",
+      eyebrow: "Your order has shipped",
       preheader: `Order ${params.orderNumber} shipped — ${carrier} ${params.trackingNumber}`,
       body,
     }),

@@ -1,29 +1,32 @@
 ﻿import React from 'react';
-import { ShieldCheck, FileCheck, Snowflake, Lock } from 'lucide-react';
+import { Tag, FileText, MessageCircle, Boxes } from 'lucide-react';
 
 export const TrustBand: React.FC = () => {
+  // Only claims we can actually stand behind. No cold-chain or testing
+  // language here: we do not perform those processes.
   const trustItems = [
     {
-      icon: ShieldCheck,
-      title: 'Documentation Status, Stated',
-      desc: 'Every lot says whether a certificate is on file — including when one is not.'
+      icon: Tag,
+      title: 'Lot Tracking',
+      desc: 'Every vial has a batch number.'
     },
     {
-      icon: FileCheck,
-      title: 'Lot Documentation',
-      desc: 'Where a certificate is on file, you can read the issuing lab’s own document.'
+      icon: FileText,
+      title: 'Batch Documents',
+      desc: 'See which documents we hold for a batch.'
     },
     {
-      icon: Snowflake,
-      title: 'Cold Storage Handling',
-      desc: 'Stored under desiccated conditions with insulated packaging.'
+      icon: MessageCircle,
+      title: 'Fast Support',
+      desc: 'Questions? Contact our team.'
     },
     {
-      icon: Lock,
-      title: 'Direct Sourcing',
-      desc: 'Institutional orders and reference compounds supplied direct.'
+      icon: Boxes,
+      title: 'Bulk Orders',
+      desc: 'Need larger quantities? Ask for pricing.'
     }
   ];
+
 
   return (
     <section className="border-b border-brand-border bg-brand-paper py-8 sm:py-10">

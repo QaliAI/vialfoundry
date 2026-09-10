@@ -12,13 +12,13 @@ export const ResourcesPage: React.FC<ResourcesPageProps> = ({ onSelectArticle })
       
       <div className="space-y-3 text-center max-w-2xl mx-auto">
         <div className="text-xs font-sans font-semibold text-brand-steel uppercase tracking-wider">
-          Resources & Documentation
+          Research Guides
         </div>
         <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-brand-ink tracking-tight">
-          Analytical Knowledge Hub
+          Learn About Research &amp; Testing
         </h1>
         <p className="text-brand-steel text-sm sm:text-base font-normal leading-relaxed">
-          Technical guides focusing on chromatographic integration, mass spectrometry, COA interpretation, and lot traceability.
+          Plain-English guides to how peptides are tested, what a certificate of analysis shows, and how batch numbers work.
         </p>
       </div>
 

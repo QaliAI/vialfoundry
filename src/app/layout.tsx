@@ -15,18 +15,18 @@ const organizationJsonLd = {
   logo: `${SITE_URL}/brand/logo-horizontal.svg`,
   image: `${SITE_URL}/brand/og-image.png`,
   description:
-    'Precision research peptides and reference compounds supported by lot-specific documentation and analytical verification. For research use only.',
+    'Shop research peptides with clear product details, batch numbers and documents when available. For research use only.',
   email: 'support@vialfoundry.com',
 };
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://vialfoundry.com'),
-  title: 'Vial Foundry — Research Peptides | Reference Standards & Batch Documentation',
-  description: 'Precision-manufactured research peptides, reference standards, and lot documentation for qualified research applications. For research use only.',
-  keywords: ['research peptides', 'peptide reference standards', 'batch documentation', 'analytical verification', 'peptide compounds', 'RUO peptides'],
+  title: 'Vial Foundry — Research Peptides',
+  description: 'Shop research peptides with clear product details, batch numbers and documents when available. For research use only.',
+  keywords: ['research peptides', 'buy research peptides', 'batch documents', 'peptide vials', 'RUO peptides'],
   openGraph: {
-    title: 'Vial Foundry — Research Peptides | Reference Standards & Batch Documentation',
-    description: 'Precision-manufactured research peptides and reference standards supported by lot-specific documentation. For research use only.',
+    title: 'Vial Foundry — Research Peptides',
+    description: 'Shop research peptides with clear product details, batch numbers and documents when available. For research use only.',
     url: 'https://vialfoundry.com/',
     siteName: 'Vial Foundry',
     images: [{ url: '/brand/og-image.png', width: 1200, height: 630, alt: 'Vial Foundry — Research Peptides' }],
@@ -34,8 +34,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Vial Foundry — Research Peptides | Reference Standards & Batch Documentation',
-    description: 'Precision-manufactured research peptides and reference standards supported by lot-specific documentation. For research use only.',
+    title: 'Vial Foundry — Research Peptides',
+    description: 'Shop research peptides with clear product details, batch numbers and documents when available. For research use only.',
     images: ['/brand/og-image.png'],
   },
   robots: {

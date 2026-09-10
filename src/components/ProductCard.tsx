@@ -3,7 +3,7 @@ import { ShoppingBag, FileCheck } from 'lucide-react';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
 import { getDocumentationStatus } from '../data/batches';
-import { DocumentationStatusBadge } from './DocumentationStatusBadge';
+import { productTitle, productSize } from '../lib/catalog-display';
 import { trackEvent } from '../lib/analytics';
 
 interface ProductCardProps {
@@ -27,15 +27,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         onClick={() => onViewProduct(product)}
         className="relative aspect-square w-full bg-brand-canvas p-6 flex items-center justify-center overflow-hidden cursor-pointer border-b border-brand-border/60"
       >
-        {/* Only the lot's real documentation status - no category jargon. */}
-        <div className="absolute top-3 right-3 z-10">
-          <DocumentationStatusBadge status={docStatus} className="bg-brand-paper/95 shadow-2xs" />
-        </div>
-
         {/* Product Vial Image */}
         <img
           src={product.image}
-          alt={product.name}
+          alt={productTitle(product)}
           className="relative z-10 max-h-56 w-full object-contain filter drop-shadow-sm group-hover:scale-[1.03] transition-transform duration-300"
           loading="lazy"
         />
@@ -46,7 +41,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         <div className="space-y-1.5">
           {/* Size / Presentation */}
           <div className="text-xs font-sans text-brand-steel font-medium">
-            {product.size}
+            {productSize(product)}
           </div>
 
           {/* Product Title */}
@@ -54,7 +49,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             onClick={() => onViewProduct(product)}
             className="font-display text-[15px] font-semibold text-brand-ink group-hover:text-brand-accent transition-colors cursor-pointer line-clamp-2 leading-snug"
           >
-            {product.name}
+            {productTitle(product)}
           </h3>
         </div>
 
@@ -83,8 +78,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   onViewCOA(product.lotNumber);
                 }}
                 className="px-2.5 py-2 rounded-lg bg-brand-surface-muted hover:bg-brand-border text-brand-graphite border border-brand-border text-xs font-sans font-medium transition-colors shadow-2xs"
-                title="View Lot Documentation & COA"
-                aria-label={`View Certificate of Analysis for ${product.name}`}
+                title="View batch documents"
+                aria-label={`View batch documents for ${productTitle(product)}`}
               >
                 <FileCheck className="w-3.5 h-3.5 text-brand-accent" />
               </button>
@@ -104,7 +99,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   });
                 }}
                 className="flex items-center space-x-1.5 px-3.5 py-2 rounded-lg bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-semibold text-xs shadow-xs transition-all"
-                aria-label={`Add ${product.name} to cart`}
+                aria-label={`Add ${productTitle(product)} to cart`}
               >
                 <ShoppingBag className="w-3.5 h-3.5" />
                 <span>Add</span>

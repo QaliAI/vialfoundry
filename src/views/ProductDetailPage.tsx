@@ -5,6 +5,7 @@ import { COAModal } from '../components/COAModal';
 import { useCart } from '../context/CartContext';
 import { FileCheck, FileClock, ShoppingBag, ArrowLeft, CheckCircle2, Copy } from 'lucide-react';
 import { PRODUCTS } from '../data/products';
+import { categoryLabel, productTitle, productSize } from '../lib/catalog-display';
 import { ProductCard } from '../components/ProductCard';
 import { ProductTabs } from '../components/ProductTabs';
 import { RestockNotify } from '../components/RestockNotify';
@@ -96,7 +97,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           {/* Category & Lot Badges */}
           <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
             <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-md bg-brand-canvas border border-brand-border text-brand-graphite font-sans text-xs font-medium">
-              <span>{product.category}</span>
+              <span>{categoryLabel(product.category)}</span>
             </span>
             <span className="text-[11px] font-mono text-brand-steel bg-brand-paper border border-brand-border px-2.5 py-1 rounded">
               LOT: {product.lotNumber}
@@ -107,7 +108,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           {/* Vial Image */}
           <img
             src={product.image}
-            alt={product.name}
+            alt={productTitle(product)}
             className="max-h-96 w-full object-contain filter drop-shadow-sm transition-all duration-300"
           />
         </div>
@@ -116,12 +117,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
         <div className="lg:col-span-6 space-y-6">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-sans font-semibold text-brand-steel uppercase tracking-widest">{product.category}</span>
+              <span className="text-xs font-sans font-semibold text-brand-steel uppercase tracking-widest">{categoryLabel(product.category)}</span>
               <span className="text-xs font-mono text-brand-steel">SKU: {product.sku}</span>
             </div>
-            <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-brand-ink tracking-tight">{product.name}</h1>
+            <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-brand-ink tracking-tight">{productTitle(product)}</h1>
             <p className="text-xs font-mono text-brand-steel">
-              CAS: {product.casNumber} | MW: {product.molecularWeight} | Presentation: {product.size}
+              {productSize(product)} &nbsp;·&nbsp; CAS {product.casNumber} &nbsp;·&nbsp; MW {product.molecularWeight}
             </p>
           </div>
 
@@ -156,7 +157,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   <div className="font-display text-3xl font-bold text-brand-ink tracking-tight">${product.price.toFixed(2)}</div>
                   <div className="text-[11px] font-medium text-brand-mineral flex items-center space-x-1 mt-0.5">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-accent" />
-                    <span>In Stock — Dispatched in Insulated Cold Packaging</span>
+                    <span>In stock &mdash; packed carefully for shipping</span>
                   </div>
                 </div>
 
@@ -225,7 +226,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                     className="py-3.5 rounded-xl bg-brand-canvas hover:bg-brand-surface-muted border border-brand-border text-brand-graphite font-display font-bold text-xs transition-all flex items-center justify-center space-x-2"
                   >
                     <FileClock className="w-4 h-4" />
-                    <span>Ask about documentation</span>
+                    <span>Ask About Documents</span>
                   </button>
                 )}
               </div>
@@ -271,7 +272,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
       {/* Related Products */}
       {relatedProducts.length > 0 && (
         <div className="space-y-6 border-t border-brand-border pt-12">
-          <h3 className="font-display text-2xl font-bold text-brand-ink">Related Reference Materials</h3>
+          <h3 className="font-display text-2xl font-bold text-brand-ink">More Research Peptides</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {relatedProducts.map((p) => (
               <ProductCard key={p.id} product={p} onViewProduct={onSelectProduct} />

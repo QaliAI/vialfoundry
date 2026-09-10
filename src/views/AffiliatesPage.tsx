@@ -35,7 +35,7 @@ export const AffiliatesPage: React.FC = () => {
         </div>
         <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-brand-ink tracking-tight">Vial Foundry Affiliate Program</h1>
         <p className="text-brand-steel text-sm sm:text-base font-normal leading-relaxed">
-          Refer qualified researchers and laboratory procurement teams to precision-tested, lot-documented research peptides.
+          Refer researchers and labs to Vial Foundry research peptides and earn commission on what they order.
         </p>
       </div>
 

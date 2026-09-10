@@ -5,6 +5,7 @@ import { ProductCard } from '../components/ProductCard';
 import { FoundryStandard } from '../components/FoundryStandard';
 import { BatchVerificationEngine } from '../components/BatchVerificationEngine';
 import { PUBLIC_PRODUCTS } from '../data/products';
+import { categoryLabel, categoryBlurb } from '../lib/catalog-display';
 import { getBatchRecord } from '../data/batches';
 import { VERIFIED_BATCH_RECORDS } from '../data/verified-batch-records';
 import { Product, ProductCategory } from '../types';
@@ -21,35 +22,27 @@ interface HomePageProps {
 export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, onSelectArticle }) => {
   const [activeCOALot, setActiveCOALot] = useState<string | null>(null);
 
-  // Featured 4 Best Sellers / Popular Reference Standards
+  // Featured, not "best selling": we have no sales data to support a
+  // popularity claim, so the wording stays neutral.
   const bestSellers = PUBLIC_PRODUCTS.slice(0, 4);
 
   // Category tiles. Counts are derived from the catalog so they cannot drift, and
   // each tile carries its category through to the catalog's own filter.
-  const CATEGORY_BLURBS: Record<ProductCategory, string> = {
-    'Reference Materials': 'Synthesized peptide standards for assay validation.',
-    'Analytical Standards': 'Acylated peptide reference materials.',
-    'Single Compounds': 'Individual peptides and metabolic standards.',
-    'Specialty Materials': 'Less commonly stocked research compounds.',
-    'Lab Supplies': 'Diluents and chromatography solvents.',
-  };
-
-  const categories = useMemo(
-    () =>
-      (Object.keys(CATEGORY_BLURBS) as ProductCategory[])
-        .map((title) => {
-          const count = PUBLIC_PRODUCTS.filter((p) => p.category === title).length;
-          return {
-            title,
-            desc: CATEGORY_BLURBS[title],
-            count: `${count} ${count === 1 ? 'item' : 'items'}`,
-            path: `/catalog?category=${encodeURIComponent(title)}`,
-          };
-        })
-        .filter((c) => !c.count.startsWith('0 ')),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
+  const categories = useMemo(() => {
+    const keys = Array.from(
+      new Set(PUBLIC_PRODUCTS.map((p) => p.category)),
+    ) as ProductCategory[];
+    return keys.map((key) => {
+      const count = PUBLIC_PRODUCTS.filter((p) => p.category === key).length;
+      return {
+        key,
+        title: categoryLabel(key),
+        desc: categoryBlurb(key),
+        count: `${count} ${count === 1 ? 'product' : 'products'}`,
+        path: `/catalog?category=${encodeURIComponent(key)}`,
+      };
+    });
+  }, []);
 
   return (
     <div className="space-y-0 bg-brand-canvas">
@@ -64,13 +57,13 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
         <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-10 gap-4">
           <div className="space-y-1.5">
             <div className="text-xs font-sans font-semibold text-brand-steel uppercase tracking-wider">
-              Catalog Highlights
+              Shop
             </div>
             <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-brand-ink tracking-tight">
-              Featured Reference Standards
+              Featured Research Peptides
             </h2>
             <p className="text-brand-steel text-sm">
-              Standardized research peptides available for institutional procurement.
+A selection from our catalogue. See the full range for everything in stock.
             </p>
           </div>
 
@@ -101,10 +94,10 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-10 space-y-2">
             <div className="text-xs font-sans font-semibold text-brand-steel uppercase tracking-wider">
-              Product Divisions
+              Categories
             </div>
             <h3 className="font-display text-2xl font-bold text-brand-ink">
-              Browse by Material Category
+              Shop by Category
             </h3>
           </div>
 
@@ -128,7 +121,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
                   </p>
                 </div>
                 <div className="pt-4 mt-4 border-t border-brand-border/60 flex items-center text-xs font-display font-semibold text-brand-ink group-hover:text-brand-graphite">
-                  <span>Explore category</span>
+                  <span>Shop now</span>
                   <ChevronRight className="w-3.5 h-3.5 ml-1 group-hover:translate-x-1 transition-transform text-brand-accent" />
                 </div>
               </div>
@@ -154,13 +147,13 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
         <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-10 gap-4">
           <div className="space-y-1.5">
             <div className="text-xs font-sans font-semibold text-brand-steel uppercase tracking-wider">
-              Technical Resources
+              Research Guides
             </div>
             <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-brand-ink tracking-tight">
-              Analytical Documentation & Protocols
+              Learn About Research &amp; Testing
             </h2>
             <p className="text-brand-steel text-sm">
-              Guides on interpreting chromatograms, mass spectrometry data, and reference standard handling.
+              How peptides are tested, what a certificate shows, and how to store them.
             </p>
           </div>
 
