@@ -17,7 +17,9 @@ export type FunnelEvent =
   | 'add_to_cart'
   | 'checkout_started'
   | 'order_submitted'
-  | 'order_confirmed';
+  | 'order_confirmed'
+  | 'payment_started'
+  | 'payment_completed';
 
 type Props = Record<string, string | number | boolean | null>;
 

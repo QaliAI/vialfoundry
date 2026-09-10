@@ -7,6 +7,19 @@ import { getPaymentMethod } from '../../../data/payment';
 import { PaymentInstructions } from '../../../components/PaymentInstructions';
 import { trackEvent } from '../../../lib/analytics';
 
+interface OrderStatus {
+  paid: boolean;
+  paymentStatus: string;
+  paymentProvider: string;
+  totalCents: number;
+  subtotalCents: number;
+  shippingCents: number;
+  discountCents: number;
+  customerName: string;
+  shippingAddress: Record<string, string>;
+  items: Array<{ product_name: string; quantity: number; line_total_amount: number }>;
+}
+
 function Confirmation() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -17,7 +30,49 @@ function Confirmation() {
   const storedOrder = typeof window !== 'undefined' ? 
     JSON.parse(sessionStorage.getItem(`vf_order_${orderId}`) || 'null') : null;
   
+  const stripeSessionId = searchParams.get('session_id');
   const method = getPaymentMethod(searchParams.get('method'));
+
+  // Payment is confirmed by the server (which reflects the Stripe webhook),
+  // never by the presence of a session_id in the URL.
+  const [serverOrder, setServerOrder] = useState<OrderStatus | null>(null);
+  const [checkingPayment, setCheckingPayment] = useState(Boolean(stripeSessionId));
+
+  useEffect(() => {
+    if (!stripeSessionId) return;
+    let cancelled = false;
+    let attempts = 0;
+
+    // The webhook can land a moment after the redirect, so poll briefly.
+    const poll = async () => {
+      attempts += 1;
+      try {
+        const res = await fetch(
+          `/api/orders/${encodeURIComponent(orderId)}/status?session_id=${encodeURIComponent(stripeSessionId)}`,
+        );
+        if (res.ok) {
+          const data = (await res.json()) as OrderStatus;
+          if (cancelled) return;
+          setServerOrder(data);
+          if (data.paid) {
+            setCheckingPayment(false);
+            trackEvent('payment_completed', { orderId, totalCents: data.totalCents, provider: 'stripe' });
+            return;
+          }
+        }
+      } catch {
+        /* transient: keep polling */
+      }
+      if (!cancelled && attempts < 10) {
+        setTimeout(poll, 1500);
+      } else if (!cancelled) {
+        setCheckingPayment(false);
+      }
+    };
+    poll();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stripeSessionId, orderId]);
   const total = storedOrder 
     ? storedOrder.totalCents / 100 
     : parseFloat(searchParams.get('total') || '0');
@@ -49,16 +104,61 @@ function Confirmation() {
 
       <div className="space-y-2">
         <span className="text-xs text-brand-mineral font-sans font-bold tracking-widest uppercase bg-brand-paper px-3 py-1 rounded-full border border-brand-border">
-          ORDER RECEIVED
+          {checkingPayment ? 'CONFIRMING PAYMENT' : serverOrder?.paid ? 'PAYMENT RECEIVED' : 'ORDER RECEIVED'}
         </span>
-        <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-brand-ink">Thank you — we&rsquo;ve got your order.</h1>
+        <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-brand-ink">
+          {serverOrder?.paid ? 'Thank you — your payment went through.' : 'Thank you — we’ve got your order.'}
+        </h1>
         <p className="text-brand-steel text-sm font-sans">
           Order Reference: <span className="text-brand-ink font-mono font-bold">{orderId}</span>
         </p>
       </div>
 
-      {/* Payment instructions for the selected method */}
-      {method && total > 0 && (
+      {stripeSessionId && checkingPayment && (
+        <div className="storefront-card p-5 rounded-2xl bg-brand-paper border border-brand-border text-sm text-brand-steel">
+          Confirming your payment with our payment provider&hellip; this usually takes a few seconds.
+        </div>
+      )}
+
+      {stripeSessionId && !checkingPayment && !serverOrder?.paid && (
+        <div className="storefront-card p-5 rounded-2xl bg-brand-paper border border-brand-border text-sm text-brand-steel text-left space-y-2">
+          <p className="font-semibold text-brand-ink">We haven&rsquo;t seen the payment confirmation yet.</p>
+          <p>
+            If you completed payment, it can take a minute to reach us and no further action is
+            needed &mdash; we&rsquo;ll email you as soon as it lands. If you were not charged, nothing has
+            been taken. Contact support with order {orderId} if anything looks wrong.
+          </p>
+        </div>
+      )}
+
+      {serverOrder?.paid && (
+        <div className="storefront-card p-6 rounded-2xl bg-brand-paper border border-brand-border text-left space-y-3 shadow-2xs">
+          <div className="text-[11px] font-sans font-bold uppercase tracking-wider text-brand-steel">Order summary</div>
+          {serverOrder.items.map((li, i) => (
+            <div key={i} className="flex items-center justify-between text-sm">
+              <span className="text-brand-ink">{li.product_name} &times; {li.quantity}</span>
+              <span className="text-brand-ink font-medium">${(li.line_total_amount / 100).toFixed(2)}</span>
+            </div>
+          ))}
+          <div className="pt-3 border-t border-brand-border/60 space-y-1.5 text-sm">
+            {serverOrder.discountCents > 0 && (
+              <div className="flex justify-between text-brand-mineral">
+                <span>Discount</span><span>&minus;${(serverOrder.discountCents / 100).toFixed(2)}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-brand-steel">
+              <span>Shipping</span>
+              <span>{serverOrder.shippingCents === 0 ? 'Included' : `$${(serverOrder.shippingCents / 100).toFixed(2)}`}</span>
+            </div>
+            <div className="flex justify-between font-display font-bold text-brand-ink text-base pt-1">
+              <span>Paid</span><span>${(serverOrder.totalCents / 100).toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Payment instructions for the selected method (manual orders only) */}
+      {!stripeSessionId && method && total > 0 && (
         <PaymentInstructions
           method={method}
           total={total}
@@ -71,11 +171,15 @@ function Confirmation() {
       <div className="storefront-card p-6 rounded-2xl bg-brand-paper border border-brand-border text-left space-y-3 font-sans text-xs shadow-2xs">
         <div className="flex items-center justify-between border-b border-brand-border/60 pb-3">
           <span className="text-brand-steel">Status:</span>
-          <span className="text-brand-mineral font-bold">Received &mdash; we&rsquo;re checking stock</span>
+          <span className="text-brand-mineral font-bold">
+            {serverOrder?.paid ? 'Paid — preparing your order' : 'Received — we’re checking stock'}
+          </span>
         </div>
         <div className="flex items-center justify-between border-b border-brand-border/60 pb-3">
           <span className="text-brand-steel">Next Step:</span>
-          <span className="text-brand-ink font-medium">Send payment &bull; We confirm and ship</span>
+          <span className="text-brand-ink font-medium">
+            {serverOrder?.paid ? 'We pack and ship — you’ll get tracking by email' : 'Send payment • We confirm and ship'}
+          </span>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-brand-steel">Usually confirmed:</span>

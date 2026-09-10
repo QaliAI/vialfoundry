@@ -1,4 +1,7 @@
 import { createAdminClient } from "../supabase/admin";
+import { recordOrderEvent } from "./order-events";
+import { sendEmailSafely } from "../email/resend";
+import { renderTrackingUpdateEmail } from "../email/templates/tracking";
 import { isValidStatusTransition, isCancelledStatus } from "./order-classification.mjs";
 import { recalculateInvoice } from "./order-math.mjs";
 import { logAdminAudit } from "./audit";
@@ -39,6 +42,7 @@ export async function updateAdminOrderStatus(params: {
   nextStatus: string;
   actor: string;
   trackingNumber?: string;
+  carrier?: string;
   notes?: string;
 }) {
   const supabase = createAdminClient();
@@ -68,8 +72,15 @@ export async function updateAdminOrderStatus(params: {
   if (params.trackingNumber !== undefined) {
     updates.tracking_number = params.trackingNumber;
   }
+  if (params.carrier !== undefined) {
+    updates.carrier = params.carrier;
+  }
   if (params.notes !== undefined) {
     updates.notes = params.notes;
+  }
+  // Stamp the dispatch time the first time an order is marked shipped.
+  if (params.nextStatus === "shipped" && !order.shipped_at) {
+    updates.shipped_at = new Date().toISOString();
   }
 
   // 3. Update order
@@ -93,6 +104,51 @@ export async function updateAdminOrderStatus(params: {
     before: { status: order.status, tracking_number: order.tracking_number },
     after: { status: params.nextStatus, tracking_number: updates.tracking_number },
   });
+
+  // 5. Customer-visible timeline
+  if (order.status !== params.nextStatus) {
+    await recordOrderEvent({
+      orderId: params.orderId,
+      type: "status_changed",
+      actor: params.actor,
+      message: `Status changed from ${order.status} to ${params.nextStatus}`,
+      metadata: { from: order.status, to: params.nextStatus },
+    });
+  }
+  if (params.trackingNumber && params.trackingNumber !== order.tracking_number) {
+    await recordOrderEvent({
+      orderId: params.orderId,
+      type: "tracking_added",
+      actor: params.actor,
+      message: `Tracking ${params.trackingNumber}${params.carrier ? ` (${params.carrier})` : ""}`,
+      metadata: { trackingNumber: params.trackingNumber, carrier: params.carrier || null },
+    });
+  }
+
+  // 6. Shipping notification, only on the transition into "shipped" and only
+  //    when we actually have a tracking number to give the customer.
+  const trackingForEmail = params.trackingNumber || order.tracking_number;
+  if (params.nextStatus === "shipped" && order.status !== "shipped" && trackingForEmail) {
+    const mail = renderTrackingUpdateEmail({
+      orderNumber: order.order_number,
+      customerName: order.customer_name,
+      trackingNumber: trackingForEmail,
+      carrier: params.carrier || order.carrier || undefined,
+    });
+    const sent = await sendEmailSafely({
+      to: order.customer_email,
+      subject: `[Vial Foundry] Your order ${order.order_number} has shipped`,
+      html: mail.html,
+    });
+    await recordOrderEvent({
+      orderId: params.orderId,
+      type: sent.success ? "email_sent" : "email_failed",
+      actor: params.actor,
+      message: sent.success
+        ? `Shipping notification sent to ${order.customer_email}`
+        : `Shipping notification FAILED: ${sent.error}`,
+    });
+  }
 
   return updated;
 }

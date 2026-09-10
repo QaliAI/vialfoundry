@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { OrderDetailDrawer } from '../../../components/admin/OrderDetailDrawer';
 import { ShoppingCart, Search, CheckCircle2, Truck, Mail, Archive, AlertCircle, RefreshCw } from 'lucide-react';
 
 interface OrderItem {
@@ -37,7 +39,7 @@ interface TableColumn {
   className?: string;
 }
 
-export default function AdminOrdersPage() {
+function AdminOrdersPageInner() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,6 +47,14 @@ export default function AdminOrdersPage() {
   const [actionMessage, setActionMessage] = useState('');
   const [editingTrackingId, setEditingTrackingId] = useState<string | null>(null);
   const [trackingInput, setTrackingInput] = useState('');
+  const [openOrder, setOpenOrder] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+
+  // Deep link from the dashboard: /admin/orders?order=VF-123456
+  useEffect(() => {
+    const q = searchParams?.get('order');
+    if (q) setOpenOrder(q);
+  }, [searchParams]);
 
   const loadOrders = async () => {
     setLoading(true);
@@ -211,7 +221,14 @@ export default function AdminOrdersPage() {
           <tbody className="divide-y divide-white/5 bg-slate-950/60">
             {filteredOrders.map(o => (
               <tr key={o.id} className="text-slate-300 hover:bg-white/[0.02]">
-                <td className="p-4 font-bold text-brand-paper">{o.order_number}</td>
+                <td className="p-4 font-bold text-brand-paper">
+                  <button
+                    onClick={() => setOpenOrder(o.order_number)}
+                    className="hover:text-brand-teal underline-offset-4 hover:underline"
+                  >
+                    {o.order_number}
+                  </button>
+                </td>
                 <td className="p-4">
                   <div className="font-bold text-white">{o.customer_name}</div>
                   <div className="text-[10px] text-slate-400">{o.customer_email}</div>
@@ -287,6 +304,25 @@ export default function AdminOrdersPage() {
         </table>
       </div>
 
-    </div>
+          {openOrder && (
+        <OrderDetailDrawer
+          orderKey={openOrder}
+          onClose={() => setOpenOrder(null)}
+          onChanged={loadOrders}
+        />
+      )}
+</div>
+  );
+}
+
+/**
+ * useSearchParams() (used for the ?order= deep link from the dashboard) opts
+ * the page into client-side rendering, so Next requires a Suspense boundary.
+ */
+export default function AdminOrdersPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-sm text-slate-400">Loading orders…</div>}>
+      <AdminOrdersPageInner />
+    </Suspense>
   );
 }

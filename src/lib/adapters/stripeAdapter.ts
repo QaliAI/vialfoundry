@@ -29,6 +29,37 @@ export {
   isStripeEnabled,
 } from './stripe-gating.mjs';
 
+import { buildStripeCheckoutAmounts, assertStripeTotalMatches } from './stripe-amounts.mjs';
+
+/** A server-authoritative order ready to be charged. */
+export interface StripeOrderCheckout {
+  orderId: string;
+  orderNumber: string;
+  customerEmail: string;
+  currency: string;
+  /** Server-validated catalogue lines (unit_price_amount in cents). */
+  items: Array<{
+    productName: string;
+    displayName?: string | null;
+    sku?: string | null;
+    quantity: number;
+    unit_price_amount: number;
+  }>;
+  /** Output of recalculateInvoice(). */
+  invoice: {
+    subtotal_before_discount: number;
+    discount_amount: number;
+    shipping_amount: number;
+    tax_amount: number;
+    total_amount: number;
+    promo_code?: string | null;
+    pricingPending?: boolean;
+  };
+  shippingLabel?: string;
+  promoCode?: string | null;
+  affiliateCode?: string | null;
+}
+
 function siteUrl(): string {
   return (process.env.NEXT_PUBLIC_SITE_URL || 'https://vialfoundry.com').replace(/\/$/, '');
 }
@@ -43,43 +74,87 @@ export class StripePaymentAdapter implements PaymentAdapter {
     this.stripe = new Stripe(secretKey);
   }
 
-  async createPaymentSession(req: PaymentSessionRequest): Promise<PaymentSessionResponse> {
+  /**
+   * Legacy adapter entry point. Product-only line items cannot reproduce
+   * shipping or discounts, so charging through this path would bill the wrong
+   * amount. Use `createOrderCheckoutSession` instead.
+   */
+  async createPaymentSession(_req: PaymentSessionRequest): Promise<PaymentSessionResponse> {
+    throw new Error(
+      'StripePaymentAdapter.createPaymentSession is not supported: it cannot represent shipping or discounts. ' +
+        'Use createOrderCheckoutSession(order) so the charge equals the server-authoritative total.',
+    );
+  }
+
+  /**
+   * Creates a Checkout Session whose amount_total is guaranteed equal to the
+   * server's order total. The amount is built from the server invoice, and the
+   * session Stripe returns is verified before we hand the customer to it.
+   */
+  async createOrderCheckoutSession(order: StripeOrderCheckout): Promise<{
+    sessionId: string;
+    url: string;
+    amountTotal: number;
+  }> {
+    const { line_items, discountCents, expectedTotalCents } = buildStripeCheckoutAmounts({
+      items: order.items,
+      invoice: order.invoice,
+      currency: order.currency,
+      shippingLabel: order.shippingLabel || 'Shipping',
+    });
+
+    // Stripe has no negative line items; a discount becomes a one-off coupon.
+    let discounts: Stripe.Checkout.SessionCreateParams.Discount[] | undefined;
+    if (discountCents > 0) {
+      const coupon = await this.stripe.coupons.create(
+        {
+          amount_off: discountCents,
+          currency: order.currency.toLowerCase(),
+          duration: 'once',
+          name: order.promoCode ? `Discount (${order.promoCode})` : 'Order discount',
+          metadata: { orderId: order.orderId, orderNumber: order.orderNumber },
+        },
+        { idempotencyKey: `coupon:${order.orderId}` },
+      );
+      discounts = [{ coupon: coupon.id }];
+    }
+
     const session = await this.stripe.checkout.sessions.create(
       {
         mode: 'payment',
-        customer_email: req.customerEmail,
-        client_reference_id: req.orderId,
-        // Server-authoritative pricing: line items are built from the order the
-        // server already priced, never from client-supplied amounts.
-        line_items: req.items.map((item) => ({
-          quantity: item.quantity,
-          price_data: {
-            currency: req.currency.toLowerCase(),
-            unit_amount: Math.round(item.unitPrice * 100),
-            product_data: { name: item.name },
-          },
-        })),
+        line_items,
+        discounts,
+        customer_email: order.customerEmail,
+        client_reference_id: order.orderId,
         metadata: {
-          orderId: req.orderId,
-          orderNumber: req.orderNumber,
+          orderId: order.orderId,
+          orderNumber: order.orderNumber,
+          promoCode: order.promoCode || '',
+          affiliateCode: order.affiliateCode || '',
+          serverTotalCents: String(order.invoice.total_amount),
         },
         payment_intent_data: {
-          metadata: { orderId: req.orderId, orderNumber: req.orderNumber },
+          description: `Vial Foundry order ${order.orderNumber}`,
+          metadata: {
+            orderId: order.orderId,
+            orderNumber: order.orderNumber,
+            serverTotalCents: String(order.invoice.total_amount),
+          },
         },
-        success_url: `${siteUrl()}/order-confirmation/${req.orderId}?session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${siteUrl()}/order-confirmation/${order.orderNumber}?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${siteUrl()}/checkout?canceled=1`,
       },
-      // Stripe de-duplicates retries of the same order.
-      { idempotencyKey: `checkout:${req.orderId}` },
+      { idempotencyKey: `checkout:${order.orderId}` },
     );
 
-    return {
-      sessionId: session.id,
-      redirectUrl: session.url ?? undefined,
-      clientSecret: session.client_secret ?? undefined,
-      status: 'created',
-      gateway: 'stripe',
-    };
+    // Verify what Stripe actually built rather than trusting our own inputs.
+    assertStripeTotalMatches(session.amount_total ?? -1, expectedTotalCents);
+
+    if (!session.url) {
+      throw new Error('[stripe] Checkout Session created without a redirect URL');
+    }
+
+    return { sessionId: session.id, url: session.url, amountTotal: session.amount_total ?? 0 };
   }
 
   async verifyPayment(transactionId: string): Promise<PaymentVerificationResult> {
@@ -112,6 +187,36 @@ export class StripePaymentAdapter implements PaymentAdapter {
       amount: Math.round(amount * 100),
     });
     return refund.status === 'succeeded' || refund.status === 'pending';
+  }
+
+  /**
+   * Verifies the Stripe signature and returns the typed event. Throws on any
+   * signature failure — nothing in the payload is trusted before this passes.
+   * `payload` must be the raw request body, not parsed JSON.
+   */
+  constructEvent(payload: string | Buffer, signature: string): Stripe.Event {
+    const secret = process.env.STRIPE_WEBHOOK_SECRET;
+    if (!secret) {
+      throw new Error('STRIPE_WEBHOOK_SECRET is not configured.');
+    }
+    return this.stripe.webhooks.constructEvent(payload, signature, secret);
+  }
+
+  /** Retrieves a Checkout Session (used by the confirmation page, read-only). */
+  async getCheckoutSession(sessionId: string) {
+    return this.stripe.checkout.sessions.retrieve(sessionId);
+  }
+
+  /**
+   * Issues a refund against the order's payment intent. Amount in cents; omit
+   * for a full refund. The resulting `charge.refunded` webhook is what updates
+   * order state, so this method never writes order records itself.
+   */
+  async refundPaymentIntent(paymentIntentId: string, amountCents?: number) {
+    return this.stripe.refunds.create({
+      payment_intent: paymentIntentId,
+      ...(amountCents ? { amount: amountCents } : {}),
+    });
   }
 
   /**

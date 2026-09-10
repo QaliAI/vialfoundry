@@ -20,7 +20,13 @@ export default function CheckoutPage() {
   // are configured we show no selector at all and tell the customer we will
   // email payment instructions — which is what actually happens. Falling back
   // to the full list would print unconfigured, unmonitored payment handles.
-  const availablePaymentMethods = CONFIGURED_PAYMENT_METHODS;
+  // When Stripe is live, card is THE payment path and the alternative-method
+  // selector is hidden entirely — a wall of options next to a card checkout
+  // just creates doubt. Alternatives return automatically if Stripe is off.
+  const stripeLive = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+    ? process.env.NEXT_PUBLIC_PAYMENT_GATEWAY_TYPE === 'stripe'
+    : false;
+  const availablePaymentMethods = stripeLive ? [] : CONFIGURED_PAYMENT_METHODS;
   const hasPaymentMethods = availablePaymentMethods.length > 0;
   const [discountCode, setDiscountCode] = useState('');
   const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; discountCents: number; name?: string } | null>(null);
@@ -172,6 +178,18 @@ export default function CheckoutPage() {
       }
 
       const orderNumber = data.orderNumber || `VF-${Date.now().toString().slice(-6)}`;
+
+      // Stripe: hand the customer to Stripe-hosted Checkout. The cart is kept
+      // until payment succeeds so a cancelled payment does not lose the basket.
+      if (data.paymentProvider === 'stripe' && data.checkoutUrl) {
+        trackEvent('payment_started', {
+          items: cart.length,
+          totalCents: data.totalAmount || grandTotalCents,
+          provider: 'stripe',
+        });
+        window.location.href = data.checkoutUrl;
+        return;
+      }
 
       trackEvent('order_submitted', {
         items: cart.length,
@@ -385,7 +403,13 @@ export default function CheckoutPage() {
                 <span className="text-[11px] font-sans text-brand-steel">Choose one</span>
               )}
             </div>
-            {!hasPaymentMethods && (
+            {stripeLive && (
+              <p className="text-sm text-brand-steel leading-relaxed">
+                You&rsquo;ll pay securely by card on the next step. We never see or store your card
+                details.
+              </p>
+            )}
+            {!hasPaymentMethods && !stripeLive && (
               <p className="text-sm text-brand-steel leading-relaxed">
                 We&rsquo;ll email you payment instructions once we confirm your order. No payment is
                 taken on this site.
@@ -521,7 +545,7 @@ export default function CheckoutPage() {
               className="w-full py-3.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-bold text-sm shadow-xs flex items-center justify-center space-x-2 transition-all"
             >
               <Lock className="w-4 h-4" />
-              <span>{isSubmitting ? 'Submitting Request...' : 'Submit Order Request'}</span>
+              <span>{isSubmitting ? (stripeLive ? 'Redirecting to payment...' : 'Submitting Request...') : (stripeLive ? 'Continue to Secure Payment' : 'Submit Order Request')}</span>
             </button>
 
             <div className="text-center text-[11px] font-sans text-brand-steel flex items-center justify-center space-x-1.5">
