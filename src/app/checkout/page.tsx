@@ -7,6 +7,7 @@ import { vialFoundryBrandConfig } from '../../config/brand';
 import { calculateShipping } from '../../lib/manual-orders/shipping.mjs';
 import { calculateConfiguredPromoDiscount } from '../../lib/promotions/promotions.mjs';
 import { getClientAffiliateCode } from '../../lib/affiliates/client-storage.mjs';
+import { productTitle } from '../../lib/catalog-display';
 import { PAYMENT_METHODS, CONFIGURED_PAYMENT_METHODS, PaymentMethodId, getPaymentMethod } from '../../data/payment';
 import { ShieldCheck, Lock, CheckCircle2, ShoppingBag, Truck } from 'lucide-react';
 import { trackEvent } from '../../lib/analytics';
@@ -453,7 +454,7 @@ export default function CheckoutPage() {
               {cart.map(({ product, quantity }) => (
                 <div key={product.id} className="flex items-center justify-between text-xs font-sans">
                   <div>
-                    <span className="text-brand-ink font-bold">{product.name}</span>
+                    <span className="text-brand-ink font-bold">{productTitle(product)}</span>
                     <span className="text-brand-steel block text-[10px] font-mono">Qty: {quantity} | LOT: {product.lotNumber}</span>
                   </div>
                   <span className="text-brand-ink font-mono font-bold">${(product.price * quantity).toFixed(2)}</span>
@@ -525,7 +526,7 @@ export default function CheckoutPage() {
 
             <div className="text-center text-[11px] font-sans text-brand-steel flex items-center justify-center space-x-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-brand-accent" />
-              <span>Direct Laboratory Procurement · Order Confirmation</span>
+              <span>No card charged &middot; We email your invoice</span>
             </div>
           </div>
         </div>

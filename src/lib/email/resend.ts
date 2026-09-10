@@ -32,7 +32,7 @@ export async function sendEmailSafely(params: {
       return { success: true, id: "mock-email-id" };
     }
 
-    const senderName = sanitizeEnvValue(process.env.EMAIL_SENDER_NAME) || brand.emailSenderName || "Vial Foundry Procurement";
+    const senderName = sanitizeEnvValue(process.env.EMAIL_SENDER_NAME) || brand.emailSenderName || "Vial Foundry";
     const senderDomain = sanitizeEnvValue(process.env.EMAIL_SENDER_DOMAIN) || brand.emailSenderDomain || "vialfoundry.com";
     const transactionalFrom = sanitizeEnvValue(process.env.TRANSACTIONAL_EMAIL_FROM);
     const defaultFrom = transactionalFrom

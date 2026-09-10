@@ -1,6 +1,5 @@
 ﻿import React from 'react';
 import { ShieldCheck } from 'lucide-react';
-import { FoundryStandard } from '../components/FoundryStandard';
 
 export const QualityPage: React.FC = () => {
   // Only what we can actually show. The previous list described upstream
@@ -63,8 +62,6 @@ export const QualityPage: React.FC = () => {
           </div>
         ))}
       </div>
-
-      <FoundryStandard />
 
     </div>
   );

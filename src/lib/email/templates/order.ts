@@ -55,10 +55,9 @@ export function renderOrderConfirmationEmail(params: {
     );
   } else {
     paymentPanel = panel(
-      "Direct laboratory invoice",
+      "Payment instructions to follow",
       `<p style="margin: 0; font-size: 14px; color: ${EMAIL_COLORS.text};">
-         Our procurement desk will confirm batch availability and issue formal payment
-         instructions for order ${escapeHtml(params.orderNumber)}.
+         We&rsquo;ll confirm stock and email payment instructions for order ${escapeHtml(params.orderNumber)}.
        </p>`,
     );
   }

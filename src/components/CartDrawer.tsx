@@ -68,16 +68,16 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
                 >
                   <img
                     src={product.transparentImage || product.image}
-                    alt={product.name}
+                    alt={productTitle(product)}
                     className="w-14 h-14 object-contain bg-brand-paper rounded-lg p-1 border border-brand-border/60"
                   />
 
                   <div className="flex-1 space-y-1">
                     <h4 className="text-xs font-bold text-brand-ink font-display line-clamp-1">
-                      {product.name}
+                      {productTitle(product)}
                     </h4>
                     <div className="text-[11px] font-sans text-brand-steel">
-                      {product.size} · ${product.price.toFixed(2)}
+                      {productSize(product)} · ${product.price.toFixed(2)}
                     </div>
 
                     <div className="flex items-center space-x-2 pt-1">

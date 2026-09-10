@@ -82,7 +82,7 @@ export const vialFoundryBrandConfig: BrandConfig = {
   primaryColor: "#0F2740", // Midnight (approved)
   accentColor: "#2F9E9A", // Teal (approved, accent only)
   currency: "USD",
-  emailSenderName: process.env.EMAIL_SENDER_NAME || "Vial Foundry Procurement",
+  emailSenderName: process.env.EMAIL_SENDER_NAME || "Vial Foundry",
   emailSenderDomain: process.env.EMAIL_SENDER_DOMAIN || "vialfoundry.com",
   researchUseOnlyDisclaimer:
     "All Vial Foundry products are supplied strictly for laboratory research use. Not for human or animal consumption, and not for medical, veterinary, therapeutic or diagnostic use.",

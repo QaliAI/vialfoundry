@@ -30,7 +30,7 @@ export const ContactPage: React.FC = () => {
       
       <div className="space-y-3 text-center max-w-2xl mx-auto">
         <div className="text-xs font-sans font-semibold text-brand-steel uppercase tracking-wider">
-          Support & Procurement
+          Contact Us
         </div>
         <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-brand-ink tracking-tight">
           Contact Vial Foundry
@@ -57,14 +57,14 @@ export const ContactPage: React.FC = () => {
               </div>
               <div className="flex items-center space-x-3">
                 <Building2 className="w-4 h-4 text-brand-mineral" />
-                <span>Vial Foundry Operations</span>
+                <span>Vial Foundry Support</span>
               </div>
             </div>
           </div>
 
           <div className="p-4 rounded-xl bg-brand-paper border border-brand-border text-xs font-sans text-brand-steel leading-relaxed">
-            <strong className="text-brand-ink block mb-1 font-semibold uppercase tracking-wider text-[11px]">Research Use Only Notice</strong>
-            Support is strictly limited to technical, analytical, and shipping inquiries. We do not provide administration, dosing, or therapeutic guidance.
+            <strong className="text-brand-ink block mb-1 font-semibold uppercase tracking-wider text-[11px]">Research Use Only</strong>
+            We can help with products, batch documents, orders and shipping. We cannot give dosing, administration or medical guidance.
           </div>
         </div>
 
@@ -82,7 +82,7 @@ export const ContactPage: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-sans text-brand-ink font-semibold">Researcher Name</label>
+                  <label className="text-xs font-sans text-brand-ink font-semibold">Your Name</label>
                   <input
                     type="text"
                     required
@@ -93,7 +93,7 @@ export const ContactPage: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-sans text-brand-ink font-semibold">Institution / Lab</label>
+                  <label className="text-xs font-sans text-brand-ink font-semibold">Company or Lab (optional)</label>
                   <input
                     type="text"
                     required
@@ -118,21 +118,21 @@ export const ContactPage: React.FC = () => {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-sans text-brand-ink font-semibold">Inquiry Type</label>
+                <label className="text-xs font-sans text-brand-ink font-semibold">What can we help with?</label>
                 <select
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-brand-canvas border border-brand-border text-brand-ink text-xs font-sans focus:outline-none focus:bg-brand-paper focus:border-brand-graphite cursor-pointer"
                 >
                   <option value="Bulk Order Enquiry">Bulk Order Enquiry</option>
-                  <option value="Batch COA Verification Request">Batch COA Verification Request</option>
-                  <option value="Custom Synthesis Quote">Custom Synthesis Quote</option>
+                  <option value="Batch Document Request">Batch Document Request</option>
+                  
                   <option value="Shipping Support">Shipping Support</option>
                 </select>
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-sans text-brand-ink font-semibold">Message & Specifications</label>
+                <label className="text-xs font-sans text-brand-ink font-semibold">Message</label>
                 <textarea
                   rows={4}
                   required
@@ -148,7 +148,7 @@ export const ContactPage: React.FC = () => {
                 className="w-full py-3.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-bold text-xs shadow-xs flex items-center justify-center space-x-2 transition-all"
               >
                 <Send className="w-4 h-4" />
-                <span>Submit Inquiry</span>
+                <span>Send Message</span>
               </button>
             </form>
           )}
