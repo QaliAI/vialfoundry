@@ -50,6 +50,9 @@ next-env.d.ts
 
 .vercel
 supabase/.temp
+scripts/.stripe-listen.log
+scripts/.stripe-listen.pid
+scripts/.stripe-*
 
 # Python bytecode from the brand asset scripts
 __pycache__/

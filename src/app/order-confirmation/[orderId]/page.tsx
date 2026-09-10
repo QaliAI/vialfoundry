@@ -6,6 +6,7 @@ import { CheckCircle2, ShieldCheck, ArrowRight } from 'lucide-react';
 import { getPaymentMethod } from '../../../data/payment';
 import { PaymentInstructions } from '../../../components/PaymentInstructions';
 import { trackEvent } from '../../../lib/analytics';
+import { useCart } from '../../../context/CartContext';
 
 interface OrderStatus {
   paid: boolean;
@@ -24,7 +25,9 @@ function Confirmation() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { clearCart } = useCart();
   const orderId = params?.orderId as string;
+  const supportEmail = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@vialfoundry.com';
 
   // Read authoritative totals from sessionStorage (set on checkout success)
   const storedOrder = typeof window !== 'undefined' ? 
@@ -56,6 +59,7 @@ function Confirmation() {
           setServerOrder(data);
           if (data.paid) {
             setCheckingPayment(false);
+            clearCart();
             trackEvent('payment_completed', { orderId, totalCents: data.totalCents, provider: 'stripe' });
             return;
           }
@@ -107,10 +111,16 @@ function Confirmation() {
           {checkingPayment ? 'CONFIRMING PAYMENT' : serverOrder?.paid ? 'PAYMENT RECEIVED' : 'ORDER RECEIVED'}
         </span>
         <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-brand-ink">
-          {serverOrder?.paid ? 'Thank you — your payment went through.' : 'Thank you — we’ve got your order.'}
+          {checkingPayment
+            ? 'Thank you.'
+            : serverOrder?.paid
+              ? 'Thank you — payment received.'
+              : stripeSessionId
+                ? 'Thank you — processing payment.'
+                : 'Thank you — we’ve got your order.'}
         </h1>
         <p className="text-brand-steel text-sm font-sans">
-          Order Reference: <span className="text-brand-ink font-mono font-bold">{orderId}</span>
+          Order number: <span className="text-brand-ink font-mono font-bold">{orderId}</span>
         </p>
       </div>
 
@@ -151,9 +161,22 @@ function Confirmation() {
               <span>{serverOrder.shippingCents === 0 ? 'Included' : `$${(serverOrder.shippingCents / 100).toFixed(2)}`}</span>
             </div>
             <div className="flex justify-between font-display font-bold text-brand-ink text-base pt-1">
-              <span>Paid</span><span>${(serverOrder.totalCents / 100).toFixed(2)}</span>
+              <span>Total</span><span>${(serverOrder.totalCents / 100).toFixed(2)}</span>
             </div>
           </div>
+          {serverOrder.shippingAddress && (
+            <div className="pt-3 border-t border-brand-border/60 text-sm text-brand-steel">
+              <div className="text-[11px] font-sans font-bold uppercase tracking-wider text-brand-steel mb-1">Ship to</div>
+              <p className="text-brand-ink leading-relaxed">
+                {[serverOrder.shippingAddress.firstName, serverOrder.shippingAddress.lastName].filter(Boolean).join(' ')}
+                {serverOrder.shippingAddress.address ? <><br />{serverOrder.shippingAddress.address}</> : null}
+                {serverOrder.shippingAddress.address2 ? <><br />{serverOrder.shippingAddress.address2}</> : null}
+                <br />
+                {[serverOrder.shippingAddress.city, serverOrder.shippingAddress.state, serverOrder.shippingAddress.zip].filter(Boolean).join(', ')}
+                {serverOrder.shippingAddress.country ? <><br />{serverOrder.shippingAddress.country}</> : null}
+              </p>
+            </div>
+          )}
         </div>
       )}
 
@@ -172,23 +195,39 @@ function Confirmation() {
         <div className="flex items-center justify-between border-b border-brand-border/60 pb-3">
           <span className="text-brand-steel">Status:</span>
           <span className="text-brand-mineral font-bold">
-            {serverOrder?.paid ? 'Paid — preparing your order' : 'Received — we’re checking stock'}
+            {checkingPayment
+              ? 'Processing payment'
+              : serverOrder?.paid
+                ? 'Payment received — preparing your order'
+                : stripeSessionId
+                  ? 'Processing payment'
+                  : 'Received — we’re checking stock'}
           </span>
         </div>
         <div className="flex items-center justify-between border-b border-brand-border/60 pb-3">
-          <span className="text-brand-steel">Next Step:</span>
+          <span className="text-brand-steel">Next step:</span>
           <span className="text-brand-ink font-medium">
-            {serverOrder?.paid ? 'We pack and ship — you’ll get tracking by email' : 'Send payment • We confirm and ship'}
+            {serverOrder?.paid
+              ? 'We pack and ship — you’ll get tracking by email'
+              : stripeSessionId
+                ? 'We’ll email you as soon as payment is confirmed'
+                : 'Send payment • We confirm and ship'}
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-brand-steel">Usually confirmed:</span>
-          <span className="text-brand-graphite font-bold">Within 12 business hours</span>
+          <span className="text-brand-steel">Support:</span>
+          <a href={`mailto:${supportEmail}`} className="text-brand-ink font-medium underline-offset-2 hover:underline">
+            {supportEmail}
+          </a>
         </div>
       </div>
 
       <p className="text-xs text-brand-steel font-sans">
-        A confirmation email is on its way to the address you provided. No credit card is charged on this site. All products are supplied strictly for laboratory research use only.
+        {serverOrder?.paid
+          ? 'A payment confirmation is on its way to the address you provided. All products are supplied strictly for laboratory research use only.'
+          : stripeSessionId
+            ? 'We only mark an order paid after our payment provider confirms it. All products are supplied strictly for laboratory research use only.'
+            : 'A confirmation email is on its way to the address you provided. No credit card is charged on this site. All products are supplied strictly for laboratory research use only.'}
       </p>
 
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">

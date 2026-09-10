@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCart } from '../../context/CartContext';
 import { vialFoundryBrandConfig } from '../../config/brand';
 import { calculateShipping } from '../../lib/manual-orders/shipping.mjs';
@@ -12,8 +12,10 @@ import { PAYMENT_METHODS, CONFIGURED_PAYMENT_METHODS, PaymentMethodId, getPaymen
 import { ShieldCheck, Lock, CheckCircle2, ShoppingBag, Truck } from 'lucide-react';
 import { trackEvent } from '../../lib/analytics';
 
-export default function CheckoutPage() {
+function CheckoutPageInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const canceled = searchParams.get('canceled') === '1';
   const { cart, subtotal, clearCart } = useCart();
 
   // Only methods with real production configuration are ever offered. If none
@@ -23,9 +25,10 @@ export default function CheckoutPage() {
   // When Stripe is live, card is THE payment path and the alternative-method
   // selector is hidden entirely — a wall of options next to a card checkout
   // just creates doubt. Alternatives return automatically if Stripe is off.
-  const stripeLive = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-    ? process.env.NEXT_PUBLIC_PAYMENT_GATEWAY_TYPE === 'stripe'
-    : false;
+  const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '';
+  const stripeLive =
+    process.env.NEXT_PUBLIC_PAYMENT_GATEWAY_TYPE === 'stripe' &&
+    (publishableKey.startsWith('pk_test_') || publishableKey.startsWith('pk_live_'));
   const availablePaymentMethods = stripeLive ? [] : CONFIGURED_PAYMENT_METHODS;
   const hasPaymentMethods = availablePaymentMethods.length > 0;
   const [discountCode, setDiscountCode] = useState('');
@@ -248,12 +251,20 @@ export default function CheckoutPage() {
           Your Order
         </div>
         <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-brand-ink tracking-tight">
-          Place Your Order
+          {stripeLive ? 'Checkout' : 'Place Your Order'}
         </h1>
         <p className="text-sm text-brand-steel font-normal max-w-2xl leading-relaxed">
-          Send us your order and we&rsquo;ll confirm stock, then email you an invoice and payment instructions.
+          {stripeLive
+            ? 'Enter your shipping details, then pay securely. We never see or store your card details.'
+            : 'Send us your order and we\u2019ll confirm stock, then email you an invoice and payment instructions.'}
         </p>
       </div>
+
+      {canceled && (
+        <div className="p-4 rounded-xl bg-brand-paper border border-brand-border text-sm text-brand-ink font-sans">
+          Payment was not completed. Your cart is still here.
+        </div>
+      )}
 
       {submitError && (
         <div className="p-4 rounded-xl bg-brand-paper border border-brand-danger text-brand-danger text-xs font-sans font-medium">
@@ -445,9 +456,11 @@ export default function CheckoutPage() {
                 );
               })}
             </div>
-            <p className="text-[11px] font-sans text-brand-steel">
-              Choose your preferred method. After submitting, you&apos;ll receive exact payment details and reference verification. No credit card is charged on this site.
-            </p>
+            {!stripeLive && hasPaymentMethods && (
+              <p className="text-[11px] font-sans text-brand-steel">
+                Choose your preferred method. After submitting, you&apos;ll receive exact payment details and reference verification. No credit card is charged on this site.
+              </p>
+            )}
           </div>
 
           {/* RUO Compliance Checkbox */}
@@ -545,12 +558,12 @@ export default function CheckoutPage() {
               className="w-full py-3.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-bold text-sm shadow-xs flex items-center justify-center space-x-2 transition-all"
             >
               <Lock className="w-4 h-4" />
-              <span>{isSubmitting ? (stripeLive ? 'Redirecting to payment...' : 'Submitting Request...') : (stripeLive ? 'Continue to Secure Payment' : 'Submit Order Request')}</span>
+              <span>{isSubmitting ? (stripeLive ? 'Redirecting to payment...' : 'Submitting Request...') : (stripeLive ? 'SECURE CHECKOUT' : 'Submit Order Request')}</span>
             </button>
 
             <div className="text-center text-[11px] font-sans text-brand-steel flex items-center justify-center space-x-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-brand-accent" />
-              <span>No card charged &middot; We email your invoice</span>
+              <span>{stripeLive ? 'Pay securely \u00b7 Card details stay with Stripe' : 'No card charged \u00b7 We email your invoice'}</span>
             </div>
           </div>
         </div>
@@ -558,5 +571,13 @@ export default function CheckoutPage() {
       </form>
 
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div className="pt-32 text-center text-brand-steel font-sans">Loading checkout…</div>}>
+      <CheckoutPageInner />
+    </Suspense>
   );
 }

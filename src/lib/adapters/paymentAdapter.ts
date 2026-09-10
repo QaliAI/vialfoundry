@@ -79,28 +79,36 @@ export class SandboxPaymentAdapter implements PaymentAdapter {
 /**
  * Selects the active gateway.
  *
- * Stripe is only ever returned when it is explicitly selected AND every
- * required credential is present. A partially configured environment falls
- * back to the sandbox adapter rather than half-enabling card payments, so
- * Stripe is never exposed to customers before the merchant account is live.
+ * Stripe is only ever returned when it is explicitly selected, fully
+ * credentialed, and the key mode matches this environment. A partially
+ * configured or mismatched environment does NOT fall through to a fake
+ * sandbox charge — checkout uses the configured manual-invoice path instead.
+ * The sandbox adapter remains for isolated unit tests only.
  */
 export function getPaymentAdapter(): PaymentAdapter {
-  const gatewayType = process.env.PAYMENT_GATEWAY_TYPE || 'sandbox';
+  const gatewayType = process.env.PAYMENT_GATEWAY_TYPE || '';
 
   if (gatewayType === 'stripe') {
     // Required lazily so the SDK is never pulled into builds that do not use it.
-    const { isStripeEnabled, StripePaymentAdapter, missingStripeEnv } =
+    const { isStripeEnabled, StripePaymentAdapter, stripeConfigStatus } =
       require('./stripeAdapter') as typeof import('./stripeAdapter');
 
     if (isStripeEnabled()) {
       return new StripePaymentAdapter();
     }
 
+    const status = stripeConfigStatus();
     console.warn(
-      `[payments] PAYMENT_GATEWAY_TYPE=stripe but ${missingStripeEnv().join(', ')} ` +
-        'is not configured. Falling back to the sandbox adapter; card payments stay disabled.',
+      `[payments] PAYMENT_GATEWAY_TYPE=stripe but Stripe is not enabled ` +
+        `(missing=[${status.missing.join(',')}] mismatch=[${status.mismatch.join(',')}] ` +
+        `mode=${status.mode || 'none'} runtime=${status.runtime}). ` +
+        'Card checkout stays disabled; the manual-invoice path is used if configured.',
     );
+    throw new Error('Stripe is selected but not safely configured; refusing to charge.');
   }
 
-  return new SandboxPaymentAdapter();
+  throw new Error(
+    `No card payment adapter is active (PAYMENT_GATEWAY_TYPE=${gatewayType || 'unset'}). ` +
+      'Use the manual-invoice checkout path.',
+  );
 }

@@ -38,4 +38,31 @@ Log into your Porkbun account and add the following exact DNS records for `vialf
 | **CNAME** | `www` | `cname.vercel-dns.com` | 600 |
 
 ### Step C: Canonical Redirect
-In Vercel Domain settings, set `vialfoundry.com` as the canonical domain and redirect `www.vialfoundry.com` to `vialfoundry.com`.
+In Vercel Domain settings, set `www.vialfoundry.com` or `vialfoundry.com` as the canonical domain and redirect the other host to it.
+
+---
+
+## 4. Stripe environment (do not paste secret values)
+
+Stripe Checkout is gated by `PAYMENT_GATEWAY_TYPE=stripe` **and** a complete, environment-safe credential set.
+
+| Vercel environment | Stripe keys | Webhook signing secret |
+| --- | --- | --- |
+| Development | TEST (`sk_test_` / `pk_test_`) | Test endpoint secret |
+| Preview | TEST (`sk_test_` / `pk_test_`) | Test endpoint secret |
+| Production | LIVE (`sk_live_` / `pk_live_`) | Live endpoint secret |
+
+Required names (values stay in Vercel; never in git):
+
+- `PAYMENT_GATEWAY_TYPE`
+- `NEXT_PUBLIC_PAYMENT_GATEWAY_TYPE`
+- `STRIPE_SECRET_KEY`
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `NEXT_PUBLIC_SITE_URL`
+
+Webhook URL: `https://www.vialfoundry.com/api/webhooks/stripe` (live) and the Preview URL `/api/webhooks/stripe` (test).
+
+Live Stripe must not be enabled until a TEST-mode acceptance pass succeeds. Setting live keys in Production does nothing until `PAYMENT_GATEWAY_TYPE=stripe` is also set there.
+
+Do not put both live and test secret keys in the same Vercel environment.

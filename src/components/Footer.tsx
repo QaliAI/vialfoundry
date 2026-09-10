@@ -128,6 +128,7 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
           <div className="space-y-3">
             <h5 className="font-sans text-xs font-semibold text-slate-200 uppercase tracking-wider">Support</h5>
             <ul className="space-y-2 text-xs">
+              <li><a href="mailto:support@vialfoundry.com" className="text-slate-400 hover:text-white transition-colors">support@vialfoundry.com</a></li>
               <li><button onClick={() => navigate('/contact')} className="text-slate-400 hover:text-white transition-colors">Bulk Orders</button></li>
               <li><button onClick={() => navigate('/legal/shipping')} className="text-slate-400 hover:text-white transition-colors">Shipping & Storage</button></li>
               <li><button onClick={() => navigate('/legal/refunds')} className="text-slate-400 hover:text-white transition-colors">Return Policy</button></li>

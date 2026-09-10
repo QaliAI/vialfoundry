@@ -53,6 +53,7 @@ export async function POST(req: Request) {
         shippingCents: order.shipping_amount,
         totalCents: order.total_amount,
         paymentMethod: order.preferred_payment_method,
+        paymentState: order.payment_status === 'paid' ? 'paid' : 'awaiting_payment',
         shippingAddress: order.shipping_address_snapshot || {},
       });
 

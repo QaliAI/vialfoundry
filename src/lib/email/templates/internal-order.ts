@@ -31,6 +31,7 @@ export function renderInternalOrderNotificationEmail(params: {
   affiliateCode?: string | null;
   isTest?: boolean;
   notes?: string | null;
+  adminOrderUrl?: string | null;
 }) {
   const rows = params.items
     .map(
@@ -132,6 +133,17 @@ export function renderInternalOrderNotificationEmail(params: {
       params.notes
         ? `<div style="font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: ${EMAIL_COLORS.textMuted}; margin: 22px 0 6px 0;">Customer notes</div>
            <p style="margin: 0; font-size: 14px; line-height: 1.6; color: ${EMAIL_COLORS.text};">${escapeHtml(params.notes)}</p>`
+        : ""
+    }
+
+    ${
+      params.adminOrderUrl
+        ? `<p style="margin: 28px 0 0 0;">
+             <a href="${escapeHtml(params.adminOrderUrl)}"
+                style="display: inline-block; background-color: ${EMAIL_COLORS.midnight}; color: #FFFFFF; font-weight: 600; text-decoration: none; padding: 12px 22px; border-radius: 8px; font-size: 14px;">
+               Open in admin
+             </a>
+           </p>`
         : ""
     }
   `;

@@ -12,6 +12,7 @@ import { createAdminClient } from "../supabase/admin";
 export type OrderEventType =
   | "order_created"
   | "checkout_session_created"
+  | "checkout_expired"
   | "payment_succeeded"
   | "payment_failed"
   | "status_changed"

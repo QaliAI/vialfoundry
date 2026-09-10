@@ -308,6 +308,29 @@ if (resendKey) {
   logWarn("Transactional Email (Resend)", "RESEND_API_KEY not set (safe non-blocking mock active)");
 }
 
+// Stripe — names and modes only, never secret values
+const { stripeConfigStatus } = await import("../src/lib/adapters/stripe-gating.mjs");
+const stripeStatus = stripeConfigStatus(process.env);
+if (stripeStatus.enabled) {
+  logPass("Stripe Checkout", `enabled mode=${stripeStatus.mode} runtime=${stripeStatus.runtime}`);
+} else if (stripeStatus.selected) {
+  logWarn(
+    "Stripe Checkout selected but not enabled",
+    `missing=[${stripeStatus.missing.join(",")}] mismatch=[${stripeStatus.mismatch.join(",")}] mode=${stripeStatus.mode || "none"} runtime=${stripeStatus.runtime}`,
+  );
+} else {
+  logWarn("Stripe Checkout", "PAYMENT_GATEWAY_TYPE is not stripe — manual invoice path only");
+}
+
+if (process.env.STRIPE_SECRET_KEY && process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY) {
+  logFail("Secret Leak Prevention", "STRIPE_SECRET_KEY must never be mirrored as NEXT_PUBLIC_STRIPE_SECRET_KEY");
+}
+
+const publicStripe = sanitizeEnvValue(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+if (publicStripe && publicStripe.startsWith("sk_")) {
+  logFail("Secret Leak Prevention", "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY looks like a secret key");
+}
+
 // -------------------------------------------------------------
 // SUMMARY REPORT
 // -------------------------------------------------------------

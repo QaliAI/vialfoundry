@@ -8,6 +8,7 @@
 
 export const HANDLED_EVENT_TYPES = [
   'checkout.session.completed',
+  'checkout.session.expired',
   'payment_intent.succeeded',
   'payment_intent.payment_failed',
   'charge.refunded',
@@ -78,6 +79,31 @@ export function resolveRefund(order, amountRefunded) {
       ...(fully ? { status: 'refunded' } : {}),
       // A fully refunded order must stop paying commission.
       ...(order.affiliate_id && fully ? { affiliate_status: 'reversed' } : {}),
+    },
+  };
+}
+
+/**
+ * Abandoned Stripe Checkout: the customer never paid. Cancel the pending
+ * order so the desk does not treat it as a live invoice. Never touch a
+ * paid or refunded order — expiry can race a late settlement in theory,
+ * and settlement always wins.
+ */
+export function resolveSessionExpired(order) {
+  if (!order) return { apply: false, reason: 'order_not_found' };
+  if (order.payment_status === 'paid') return { apply: false, reason: 'already_paid' };
+  if (order.payment_status === 'refunded' || order.payment_status === 'partially_refunded') {
+    return { apply: false, reason: 'already_refunded' };
+  }
+  if (order.payment_status === 'expired' || order.status === 'canceled' || order.status === 'cancelled') {
+    return { apply: false, reason: 'already_expired' };
+  }
+  return {
+    apply: true,
+    updates: {
+      status: 'canceled',
+      payment_status: 'expired',
+      affiliate_status: order.affiliate_id ? 'void' : null,
     },
   };
 }

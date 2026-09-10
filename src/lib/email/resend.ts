@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import { sanitizeEnvValue } from "../env/sanitizer";
 import { getBrandConfig } from "../../config/brand";
+import { resolveEmailIdentity } from "./identity.mjs";
 
 let resendInstance: Resend | null = null;
 
@@ -32,20 +33,15 @@ export async function sendEmailSafely(params: {
       return { success: true, id: "mock-email-id" };
     }
 
-    const senderName = sanitizeEnvValue(process.env.EMAIL_SENDER_NAME) || brand.emailSenderName || "Vial Foundry";
-    const senderDomain = sanitizeEnvValue(process.env.EMAIL_SENDER_DOMAIN) || brand.emailSenderDomain || "vialfoundry.com";
-    const transactionalFrom = sanitizeEnvValue(process.env.TRANSACTIONAL_EMAIL_FROM);
-    const defaultFrom = transactionalFrom
-      ? (transactionalFrom.includes("<") ? transactionalFrom : `${senderName} <${transactionalFrom}>`)
-      : `${senderName} <orders@${senderDomain}>`;
+    const identity = resolveEmailIdentity(process.env, brand);
 
     const { data, error } = await resend.emails.send({
-      from: params.from || defaultFrom,
+      from: params.from || identity.from,
       to: params.to,
       subject: params.subject,
       html: params.html,
       text: params.text,
-      replyTo: params.replyTo || brand.supportEmail || "support@vialfoundry.com",
+      replyTo: params.replyTo || identity.replyTo,
     });
 
     if (error) {

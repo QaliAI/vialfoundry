@@ -7,6 +7,7 @@ import { calculateShipping } from "../src/lib/manual-orders/shipping.mjs";
 const SHIPPING_OPTIONS = [
   { id: "standard", name: "Standard", costCents: 1500, freeShippingThresholdCents: 20000 },
   { id: "priority", name: "Priority", costCents: 3500 },
+  { id: "express", name: "Express", costCents: 6500 },
 ];
 
 const PROMOS = [
@@ -102,10 +103,26 @@ test("stacked promo + payment discount + shipping still matches", () => {
   });
 });
 
+test("express shipping is reproduced exactly", () => {
+  const { invoice } = assertInvariant({ lines: [["BPC-157", 6400, 1]], shippingId: "express" });
+  assert.equal(invoice.shipping_amount, 6500);
+  assert.equal(invoice.total_amount, 6400 + 6500);
+});
+
+test("discount plus each shipping tier still matches", () => {
+  for (const shippingId of ["standard", "priority", "express"]) {
+    assertInvariant({
+      lines: [["BPC-157", 6400, 2], ["TB-500", 8800, 1]],
+      shippingId,
+      promoCode: "FOUNDRY10",
+    });
+  }
+});
+
 test("many mixed baskets all reconcile exactly", () => {
   const prices = [6400, 8800, 11200, 14500, 5200, 7500, 4200, 11800];
   for (let i = 0; i < prices.length; i++) {
-    for (const shippingId of ["standard", "priority"]) {
+    for (const shippingId of ["standard", "priority", "express"]) {
       for (const promoCode of [null, "FOUNDRY10", "RESEARCH25"]) {
         for (const paymentBps of [0, 500]) {
           assertInvariant({

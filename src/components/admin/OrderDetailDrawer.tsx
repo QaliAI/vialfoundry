@@ -123,7 +123,14 @@ export const OrderDetailDrawer: React.FC<Props> = ({ orderKey, onClose, onChange
           <div>
             <div className="font-mono text-sm text-brand-teal">{o?.order_number || orderKey}</div>
             <h2 className="font-display text-xl font-bold text-white">{o?.customer_name || 'Order'}</h2>
-            {o?.is_test && <span className="text-[10px] text-amber-400 font-bold">QA TEST ORDER — do not fulfil</span>}
+            <div className="flex flex-wrap gap-2 pt-1">
+              {o?.payment_provider === 'stripe' && (
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${o.stripe_livemode === true ? 'bg-emerald-900/60 text-emerald-300' : 'bg-amber-900/60 text-amber-300'}`}>
+                  {o.stripe_livemode === true ? 'STRIPE LIVE' : 'STRIPE TEST'}
+                </span>
+              )}
+              {o?.is_test && <span className="text-[10px] text-amber-400 font-bold">QA TEST ORDER — do not fulfil</span>}
+            </div>
           </div>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
         </div>
@@ -140,8 +147,29 @@ export const OrderDetailDrawer: React.FC<Props> = ({ orderKey, onClose, onChange
               <KV k="Total" v={money(o.total_amount)} />
               {o.amount_refunded > 0 && <KV k="Refunded" v={money(o.amount_refunded)} />}
               {o.paid_at && <KV k="Paid at" v={new Date(o.paid_at).toLocaleString()} />}
+              {o.refunded_at && <KV k="Refunded at" v={new Date(o.refunded_at).toLocaleString()} />}
               {o.stripe_checkout_session_id && <KV k="Stripe session" v={<span className="font-mono text-[10px] break-all">{o.stripe_checkout_session_id}</span>} />}
               {o.stripe_payment_intent_id && <KV k="Payment intent" v={<span className="font-mono text-[10px] break-all">{o.stripe_payment_intent_id}</span>} />}
+              {(() => {
+                const dash = o.stripe_livemode === true ? 'https://dashboard.stripe.com' : 'https://dashboard.stripe.com/test';
+                const href = o.stripe_payment_intent_id
+                  ? `${dash}/payments/${o.stripe_payment_intent_id}`
+                  : o.stripe_checkout_session_id
+                    ? `${dash}/checkout/sessions/${o.stripe_checkout_session_id}`
+                    : null;
+                if (!href) return null;
+                return (
+                  <div className="pt-2">
+                    <a href={href} target="_blank" rel="noreferrer"
+                      className="inline-flex items-center px-3 py-1.5 rounded-lg bg-white text-brand-ink text-xs font-semibold">
+                      View in Stripe
+                    </a>
+                    <p className="text-[10px] text-slate-500 pt-1">
+                      Opens the {o.stripe_livemode === true ? 'LIVE' : 'TEST'} Stripe Dashboard. Test charges are not live revenue.
+                    </p>
+                  </div>
+                );
+              })()}
             </Section>
 
             {/* Items */}

@@ -67,13 +67,26 @@ Set the following environment variables in Vercel (Project `vialfoundry` → Set
 | `ADMIN_EMAIL` | Production, Preview | Yes | Admin login email (default: `admin@vialfoundry.com`) |
 | `ADMIN_ACCESS_PASSWORD` | Production, Preview | Yes | Admin dashboard access password |
 | `ADMIN_SESSION_SECRET` | Production, Preview | Yes | 32+ character HMAC secret for signing admin session cookies |
-| `NEXT_PUBLIC_SITE_URL` | Production | Yes | Canonical site URL (`https://vialfoundry.com`) |
-| `RESEND_API_KEY` | Production | Optional | Resend API key for transactional emails |
-| `NOTIFICATION_EMAIL_TO` | Production | Optional | Inbox receiving new order notifications |
-| `NEXT_PUBLIC_CASHAPP_CASHTAG` | Production | Optional | Cash App handle displayed on checkout instructions |
-| `NEXT_PUBLIC_ZELLE_HANDLE` | Production | Optional | Zelle recipient email/phone displayed on checkout |
-| `NEXT_PUBLIC_NOWPAYMENTS_LINK` | Production | Optional | NOWPayments hosted payment link |
-| `NEXT_PUBLIC_LINKMONEY_LINK` | Production | Optional | Link.money ACH link |
+| `NEXT_PUBLIC_SITE_URL` | Production, Preview, Development | Yes | Canonical site URL (`https://www.vialfoundry.com` in production) |
+| `PAYMENT_GATEWAY_TYPE` | All | Yes for Stripe | Set to `stripe` to enable Checkout. Leave unset to keep manual invoice only. |
+| `NEXT_PUBLIC_PAYMENT_GATEWAY_TYPE` | All | Yes for Stripe | Must match `PAYMENT_GATEWAY_TYPE` so the storefront shows the Stripe CTA. |
+| `STRIPE_SECRET_KEY` | Preview: **TEST** `sk_test_`. Production: **LIVE** `sk_live_`. Never both. | Yes for Stripe | Server-only. Never `NEXT_PUBLIC_`. |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Preview: **TEST** `pk_test_`. Production: **LIVE** `pk_live_`. | Yes for Stripe | Publishable key only. |
+| `STRIPE_WEBHOOK_SECRET` | Separate test and live signing secrets | Yes for Stripe | Endpoint: `/api/webhooks/stripe`. Server-only. |
+| `RESEND_API_KEY` | Production, Preview | Yes for mail | Server-only. |
+| `TRANSACTIONAL_EMAIL_FROM` | Production, Preview | Recommended | `Vial Foundry <orders@vialfoundry.com>` |
+| `TRANSACTIONAL_EMAIL_REPLY_TO` | Production, Preview | Recommended | `support@vialfoundry.com` |
+| `EMAIL_SENDER_NAME` | Production, Preview | Optional | Default `Vial Foundry` |
+| `EMAIL_SENDER_DOMAIN` | Production, Preview | Optional | Default `vialfoundry.com` |
+| `NEXT_PUBLIC_HELLO_EMAIL` | Production, Preview | Optional | Public general inbox |
+| `NEXT_PUBLIC_SUPPORT_EMAIL` | Production, Preview | Optional | Public support inbox |
+| `NEXT_PUBLIC_INFO_EMAIL` | Production, Preview | Optional | Alias; not shown on the site |
+| `ADMIN_NOTIFICATION_EMAIL` | Production, Preview | Yes for ops alerts | Internal paid-order alerts. Not shown publicly. |
+| `NOTIFICATION_EMAIL_TO` | Production, Preview | Optional | Fallback for admin alerts if `ADMIN_NOTIFICATION_EMAIL` is unset |
+| `NEXT_PUBLIC_CASHAPP_CASHTAG` | Optional | No | Only if a real Cash App handle is configured. Leave blank otherwise. |
+| `NEXT_PUBLIC_ZELLE_HANDLE` | Optional | No | Only if a real Zelle handle is configured. Leave blank otherwise. |
+| `NEXT_PUBLIC_NOWPAYMENTS_LINK` | Optional | No | Leave blank unless a real hosted link exists. |
+| `NEXT_PUBLIC_LINKMONEY_LINK` | Optional | No | Leave blank unless a real hosted link exists. |
 
 ---
 

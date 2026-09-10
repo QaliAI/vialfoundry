@@ -5,11 +5,24 @@ import {
   isStripeEnabled,
   missingStripeEnv,
 } from '../../../../lib/adapters/stripeAdapter';
+import {
+  resolvePaymentSuccess,
+  resolveRefund,
+  resolveSessionExpired,
+  isHandledEvent,
+} from '../../../../lib/adapters/stripe-webhook-rules.mjs';
+import {
+  shouldDecrementInventory,
+  shouldRestockInventory,
+  nextInventoryQuantity,
+  isOversell,
+} from '../../../../lib/admin/inventory.mjs';
 import { createAdminClient } from '../../../../lib/supabase/admin';
 import { recordOrderEvent } from '../../../../lib/admin/order-events';
 import { sendEmailSafely } from '../../../../lib/email/resend';
 import { renderOrderConfirmationEmail } from '../../../../lib/email/templates/order';
 import { renderInternalOrderNotificationEmail } from '../../../../lib/email/templates/internal-order';
+import { renderRefundConfirmationEmail } from '../../../../lib/email/templates/refund';
 import { getBrandConfig } from '../../../../config/brand';
 
 /**
@@ -22,18 +35,14 @@ import { getBrandConfig } from '../../../../config/brand';
  * Idempotency: Stripe retries and can deliver the same event more than once,
  * and `checkout.session.completed` plus `payment_intent.succeeded` both arrive
  * for a single payment. Every event id is recorded in `stripe_webhook_events`
- * before we act, so a replay is a no-op and email is never sent twice.
+ * before we act, so a replay is a no-op. Paid emails are additionally gated
+ * by `paid_email_sent_at` so the two settlement events cannot send twice.
+ *
+ * Inventory: decremented once on confirmed payment. See inventory.mjs.
  */
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-const HANDLED = new Set([
-  'checkout.session.completed',
-  'payment_intent.succeeded',
-  'payment_intent.payment_failed',
-  'charge.refunded',
-]);
 
 /** Records the event id. Returns false when we have already processed it. */
 async function claimEvent(
@@ -41,14 +50,13 @@ async function claimEvent(
   event: Stripe.Event,
   orderId: string | null,
 ): Promise<boolean> {
-  if (!supabase) return true; // no DB: process, but nothing is persisted anyway
+  if (!supabase) return true;
   const { error } = await supabase.from('stripe_webhook_events').insert({
     id: event.id,
     event_type: event.type,
     manual_order_id: orderId,
   });
   if (error) {
-    // A unique-violation means this event id is already recorded.
     if (error.code === '23505') return false;
     console.error('[stripe-webhook] could not record event id:', error.message);
   }
@@ -61,7 +69,7 @@ async function findOrder(
     { orderId?: string | null; sessionId?: string | null; paymentIntentId?: string | null },
 ) {
   const cols =
-    'id, order_number, status, payment_status, total_amount, amount_refunded, currency, customer_email, customer_name, customer_phone, shipping_address_snapshot, promo_code, affiliate_code, affiliate_id, subtotal_amount, shipping_amount, discount_amount, is_test';
+    'id, order_number, status, payment_status, total_amount, amount_refunded, currency, customer_email, customer_name, customer_phone, shipping_address_snapshot, promo_code, affiliate_code, affiliate_id, subtotal_amount, shipping_amount, discount_amount, is_test, stripe_livemode, inventory_decremented_at, inventory_restocked_at, paid_email_sent_at';
 
   for (const [column, value] of [
     ['id', orderId],
@@ -73,6 +81,11 @@ async function findOrder(
     if (data) return data as any;
   }
   return null;
+}
+
+function adminOrderUrl(orderNumber: string) {
+  const base = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.vialfoundry.com').replace(/\/$/, '');
+  return `${base}/admin/orders?order=${encodeURIComponent(orderNumber)}`;
 }
 
 export async function POST(req: Request) {
@@ -99,7 +112,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
-  if (!HANDLED.has(event.type)) {
+  if (!isHandledEvent(event.type)) {
     return NextResponse.json({ received: true, ignored: event.type });
   }
 
@@ -109,14 +122,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ received: true, applied: false });
   }
 
-  // Resolve which order this event belongs to.
   let orderId: string | null = null;
   let sessionId: string | null = null;
   let paymentIntentId: string | null = null;
   let stripeCustomerId: string | null = null;
 
   switch (event.type) {
-    case 'checkout.session.completed': {
+    case 'checkout.session.completed':
+    case 'checkout.session.expired': {
       const s = event.data.object as Stripe.Checkout.Session;
       orderId = s.client_reference_id || (s.metadata?.orderId ?? null);
       sessionId = s.id;
@@ -141,7 +154,6 @@ export async function POST(req: Request) {
 
   const order = await findOrder(supabase, { orderId, sessionId, paymentIntentId });
   if (!order) {
-    // Acknowledge so Stripe stops retrying an event we can never match.
     console.warn(`[stripe-webhook] no matching order for ${event.type} (${event.id})`);
     return NextResponse.json({ received: true, matched: false });
   }
@@ -156,7 +168,6 @@ export async function POST(req: Request) {
 
   try {
     if (event.type === 'checkout.session.completed' || event.type === 'payment_intent.succeeded') {
-      // Confirm the money actually settled before marking paid.
       let amountPaid: number | null = null;
       if (event.type === 'checkout.session.completed') {
         const s = event.data.object as Stripe.Checkout.Session;
@@ -169,44 +180,48 @@ export async function POST(req: Request) {
         amountPaid = pi.amount_received ?? null;
       }
 
-      // Amount integrity, checked again at settlement.
-      if (amountPaid !== null && amountPaid !== order.total_amount) {
-        console.error(
-          `[stripe-webhook] AMOUNT MISMATCH on ${order.order_number}: paid ${amountPaid} vs order ${order.total_amount}`,
-        );
-        await recordOrderEvent({
-          orderId: order.id,
-          type: 'payment_failed',
-          actor: 'stripe-webhook',
-          message: `Amount mismatch: Stripe captured ${amountPaid} but the order total is ${order.total_amount}. Held for review.`,
-          metadata: { eventId: event.id, amountPaid, orderTotal: order.total_amount },
-        });
-        return NextResponse.json({ received: true, applied: false, reason: 'amount_mismatch' });
+      const decision = resolvePaymentSuccess(order, amountPaid);
+      if (!decision.apply) {
+        if (decision.reason === 'amount_mismatch') {
+          console.error(
+            `[stripe-webhook] AMOUNT MISMATCH on ${order.order_number}: paid ${amountPaid} vs order ${order.total_amount}`,
+          );
+          await recordOrderEvent({
+            orderId: order.id,
+            type: 'payment_failed',
+            actor: 'stripe-webhook',
+            message: `Amount mismatch: Stripe captured ${amountPaid} but the order total is ${order.total_amount}. Held for review.`,
+            metadata: { eventId: event.id, amountPaid, orderTotal: order.total_amount },
+          });
+        }
+        return NextResponse.json({ received: true, applied: false, reason: decision.reason });
       }
 
-      if (order.payment_status === 'paid') {
+      // Race-safe: only the first settlement event wins the paid write.
+      const paidUpdates: Record<string, unknown> = {
+        payment_status: 'paid',
+        status: 'paid',
+        paid_at: now,
+        updated_at: now,
+        ...(sessionId ? { stripe_checkout_session_id: sessionId } : {}),
+        ...(paymentIntentId ? { stripe_payment_intent_id: paymentIntentId } : {}),
+        ...(stripeCustomerId ? { stripe_customer_id: stripeCustomerId } : {}),
+      };
+      if (order.affiliate_id) paidUpdates.affiliate_status = 'pending_payout';
+
+      const { data: won } = await supabase
+        .from('manual_orders')
+        .update(paidUpdates)
+        .eq('id', order.id)
+        .neq('payment_status', 'paid')
+        .select('id')
+        .maybeSingle();
+
+      if (!won) {
         return NextResponse.json({ received: true, alreadyPaid: true });
       }
 
-      await supabase
-        .from('manual_orders')
-        .update({
-          payment_status: 'paid',
-          status: 'paid',
-          paid_at: now,
-          updated_at: now,
-          ...(sessionId ? { stripe_checkout_session_id: sessionId } : {}),
-          ...(paymentIntentId ? { stripe_payment_intent_id: paymentIntentId } : {}),
-          ...(stripeCustomerId ? { stripe_customer_id: stripeCustomerId } : {}),
-        })
-        .eq('id', order.id);
-
-      // Commission becomes earned only once payment has actually settled.
       if (order.affiliate_id) {
-        await supabase
-          .from('manual_orders')
-          .update({ affiliate_status: 'pending_payout' })
-          .eq('id', order.id);
         await supabase
           .from('referral_revenue')
           .update({ status: 'pending_payout' })
@@ -221,15 +236,19 @@ export async function POST(req: Request) {
         metadata: { eventId: event.id, paymentIntentId, sessionId },
       });
 
-      await sendPaidEmails(supabase, order, brand);
+      await decrementInventoryForOrder(supabase, { ...order, payment_status: 'paid' });
+      await sendPaidEmails(supabase, { ...order, payment_status: 'paid' }, brand);
     }
 
     if (event.type === 'payment_intent.payment_failed') {
       const pi = event.data.object as Stripe.PaymentIntent;
-      await supabase
-        .from('manual_orders')
-        .update({ payment_status: 'failed', updated_at: now })
-        .eq('id', order.id);
+      if (order.payment_status !== 'paid') {
+        await supabase
+          .from('manual_orders')
+          .update({ payment_status: 'failed', updated_at: now })
+          .eq('id', order.id)
+          .neq('payment_status', 'paid');
+      }
       await recordOrderEvent({
         orderId: order.id,
         type: 'payment_failed',
@@ -239,24 +258,53 @@ export async function POST(req: Request) {
       });
     }
 
+    if (event.type === 'checkout.session.expired') {
+      const decision = resolveSessionExpired(order);
+      if (!decision.apply) {
+        return NextResponse.json({ received: true, applied: false, reason: decision.reason });
+      }
+      const expiredUpdates: Record<string, unknown> = {
+        ...decision.updates,
+        updated_at: now,
+      };
+      Object.keys(expiredUpdates).forEach((k) => {
+        if (expiredUpdates[k] === null) delete expiredUpdates[k];
+      });
+      await supabase.from('manual_orders').update(expiredUpdates).eq('id', order.id);
+      if (order.affiliate_id) {
+        await supabase
+          .from('referral_revenue')
+          .update({ status: 'void' })
+          .eq('manual_order_id', order.id)
+          .eq('status', 'pending_payment');
+      }
+      await recordOrderEvent({
+        orderId: order.id,
+        type: 'checkout_expired',
+        actor: 'stripe-webhook',
+        message: 'Stripe Checkout Session expired — payment was not completed',
+        metadata: { eventId: event.id, sessionId },
+      });
+    }
+
     if (event.type === 'charge.refunded') {
       const ch = event.data.object as Stripe.Charge;
       const refunded = ch.amount_refunded ?? 0;
-      const fullyRefunded = refunded >= (order.total_amount ?? 0);
-
+      const decision = resolveRefund(order, refunded);
+      if (!decision.apply) {
+        return NextResponse.json({ received: true, applied: false, reason: decision.reason });
+      }
+      const fullyRefunded = Boolean(decision.fullyRefunded);
       await supabase
         .from('manual_orders')
         .update({
-          amount_refunded: refunded,
-          payment_status: fullyRefunded ? 'refunded' : 'partially_refunded',
-          ...(fullyRefunded ? { status: 'refunded', refunded_at: now } : {}),
+          ...decision.updates,
+          ...(fullyRefunded ? { refunded_at: now } : {}),
           updated_at: now,
         })
         .eq('id', order.id);
 
-      // A refunded order must not keep paying commission.
       if (order.affiliate_id && fullyRefunded) {
-        await supabase.from('manual_orders').update({ affiliate_status: 'reversed' }).eq('id', order.id);
         await supabase.from('referral_revenue').update({ status: 'reversed' }).eq('manual_order_id', order.id);
       }
 
@@ -267,16 +315,148 @@ export async function POST(req: Request) {
         message: `${fullyRefunded ? 'Full' : 'Partial'} refund of ${(refunded / 100).toFixed(2)} processed`,
         metadata: { eventId: event.id, amountRefunded: refunded, fullyRefunded },
       });
+
+      if (fullyRefunded) {
+        await restockInventoryForOrder(supabase, { ...order, payment_status: 'refunded' });
+        const refundMail = renderRefundConfirmationEmail({
+          orderNumber: order.order_number,
+          customerName: order.customer_name,
+          refundedCents: refunded,
+          fullyRefunded: true,
+        });
+        await sendEmailSafely({
+          to: order.customer_email,
+          subject: `[Vial Foundry] Refund issued — order ${order.order_number}`,
+          html: refundMail.html,
+        });
+      }
     }
   } catch (err: any) {
     console.error(`[stripe-webhook] error applying ${event.type}:`, err?.message || err);
-    // 500 asks Stripe to retry; the event id claim is rolled forward, so we
-    // remove it to allow a genuine retry to re-apply.
     await supabase.from('stripe_webhook_events').delete().eq('id', event.id);
     return NextResponse.json({ error: 'processing failed' }, { status: 500 });
   }
 
   return NextResponse.json({ received: true, event: event.type, order: order.order_number });
+}
+
+/** Decrement on-hand stock once per paid order. Never double-decrements. */
+async function decrementInventoryForOrder(
+  supabase: NonNullable<ReturnType<typeof createAdminClient>>,
+  order: any,
+) {
+  const decision = shouldDecrementInventory(order);
+  if (!decision.apply) return;
+
+  const { data: claimed } = await supabase
+    .from('manual_orders')
+    .update({ inventory_decremented_at: new Date().toISOString() })
+    .eq('id', order.id)
+    .is('inventory_decremented_at', null)
+    .select('id')
+    .maybeSingle();
+  if (!claimed) return;
+
+  const { data: lines } = await supabase
+    .from('manual_order_items')
+    .select('product_id, product_name, sku, quantity')
+    .eq('manual_order_id', order.id);
+
+  for (const line of lines || []) {
+    if (!line.product_id) continue;
+    const qty = Number(line.quantity) || 0;
+    if (qty <= 0) continue;
+
+    const { data: product } = await supabase
+      .from('products')
+      .select('id, inventory_quantity')
+      .eq('id', line.product_id)
+      .maybeSingle();
+    if (!product) continue;
+
+    const previous = Number(product.inventory_quantity) || 0;
+    const next = nextInventoryQuantity(previous, -qty);
+    const oversell = isOversell(previous, qty);
+
+    await supabase.from('products').update({ inventory_quantity: next, updated_at: new Date().toISOString() }).eq('id', product.id);
+    await supabase.from('inventory_transactions').insert({
+      product_id: product.id,
+      transaction_type: 'sale',
+      quantity_change: -qty,
+      previous_quantity: previous,
+      new_quantity: next,
+      reason: oversell
+        ? `Oversell on paid order ${order.order_number} — paid order honoured`
+        : `Sale ${order.order_number}`,
+      reference_id: order.id,
+      created_by: 'stripe-webhook',
+    });
+
+    await recordOrderEvent({
+      orderId: order.id,
+      type: 'inventory_adjusted',
+      actor: 'stripe-webhook',
+      message: oversell
+        ? `Inventory oversell: ${line.product_name} requested ${qty}, on hand ${previous}`
+        : `Inventory −${qty} ${line.product_name} (${previous} → ${next})`,
+      metadata: { productId: product.id, quantity: qty, previous, next, oversell },
+    });
+  }
+}
+
+async function restockInventoryForOrder(
+  supabase: NonNullable<ReturnType<typeof createAdminClient>>,
+  order: any,
+) {
+  const decision = shouldRestockInventory(order, true);
+  if (!decision.apply) return;
+
+  const { data: claimed } = await supabase
+    .from('manual_orders')
+    .update({ inventory_restocked_at: new Date().toISOString() })
+    .eq('id', order.id)
+    .is('inventory_restocked_at', null)
+    .not('inventory_decremented_at', 'is', null)
+    .select('id')
+    .maybeSingle();
+  if (!claimed) return;
+
+  const { data: lines } = await supabase
+    .from('manual_order_items')
+    .select('product_id, product_name, quantity')
+    .eq('manual_order_id', order.id);
+
+  for (const line of lines || []) {
+    if (!line.product_id) continue;
+    const qty = Number(line.quantity) || 0;
+    if (qty <= 0) continue;
+    const { data: product } = await supabase
+      .from('products')
+      .select('id, inventory_quantity')
+      .eq('id', line.product_id)
+      .maybeSingle();
+    if (!product) continue;
+    const previous = Number(product.inventory_quantity) || 0;
+    const next = previous + qty;
+    await supabase.from('products').update({ inventory_quantity: next, updated_at: new Date().toISOString() }).eq('id', product.id);
+    await supabase.from('inventory_transactions').insert({
+      product_id: product.id,
+      transaction_type: 'refund',
+      quantity_change: qty,
+      previous_quantity: previous,
+      new_quantity: next,
+      reason: `Refund ${order.order_number}`,
+      reference_id: order.id,
+      created_by: 'stripe-webhook',
+    });
+    await recordOrderEvent({
+      orderId: order.id,
+      type: 'inventory_adjusted',
+      actor: 'stripe-webhook',
+      message: `Inventory +${qty} ${line.product_name} (${previous} → ${next}) after refund`,
+      metadata: { productId: product.id, quantity: qty, previous, next, restock: true },
+    });
+  }
 }
 
 /** Customer receipt + operations notification, sent once, after payment. */
@@ -285,6 +465,15 @@ async function sendPaidEmails(
   order: any,
   brand: ReturnType<typeof getBrandConfig>,
 ) {
+  const { data: claimed } = await supabase
+    .from('manual_orders')
+    .update({ paid_email_sent_at: new Date().toISOString() })
+    .eq('id', order.id)
+    .is('paid_email_sent_at', null)
+    .select('id')
+    .maybeSingle();
+  if (!claimed) return;
+
   const { data: lines } = await supabase
     .from('manual_order_items')
     .select('product_name, sku, quantity, unit_price_amount, line_total_amount')
@@ -309,7 +498,11 @@ async function sendPaidEmails(
     shippingAddress: (order.shipping_address_snapshot || {}) as Record<string, string>,
   };
 
-  const customer = renderOrderConfirmationEmail({ ...shared, paymentMethod: 'card' });
+  const customer = renderOrderConfirmationEmail({
+    ...shared,
+    paymentMethod: 'card',
+    paymentState: 'paid',
+  });
   const sent = await sendEmailSafely({
     to: order.customer_email,
     subject: `[Vial Foundry] Payment received — order ${order.order_number}`,
@@ -334,11 +527,12 @@ async function sendPaidEmails(
       paymentStatus: 'paid',
       promoCode: order.promo_code,
       affiliateCode: order.affiliate_code,
-      isTest: Boolean(order.is_test),
+      isTest: Boolean(order.is_test) || order.stripe_livemode === false,
+      adminOrderUrl: adminOrderUrl(order.order_number),
     });
     await sendEmailSafely({
       to: admins,
-      subject: `${order.is_test ? '[TEST] ' : ''}[PAID] ${order.order_number} — ${order.customer_name} ($${((order.total_amount || 0) / 100).toFixed(2)})`,
+      subject: `${order.is_test || order.stripe_livemode === false ? '[TEST] ' : ''}[PAID] ${order.order_number} — ${order.customer_name} ($${((order.total_amount || 0) / 100).toFixed(2)})`,
       html: internal.html,
     });
   }

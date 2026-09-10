@@ -72,7 +72,9 @@ async function run() {
       'supabase/migrations/02_rls.sql',
       'supabase/migrations/03_reviews.sql',
       'supabase/migrations/04_payments_affiliates.sql',
-      'supabase/migrations/05_commerce_core.sql'
+      'supabase/migrations/05_commerce_core.sql',
+      'supabase/migrations/06_stripe_commerce.sql',
+      'supabase/migrations/07_stripe_lifecycle.sql',
     ];
 
     for (const file of migrationFiles) {
@@ -82,7 +84,7 @@ async function run() {
       console.log(`✓ Applied ${file}`);
     }
 
-    console.log('\nAll 5 migrations applied successfully.\n');
+    console.log(`\nAll ${migrationFiles.length} migrations applied successfully.\n`);
 
     // 2. Seed Categories
     console.log('Seeding categories...');

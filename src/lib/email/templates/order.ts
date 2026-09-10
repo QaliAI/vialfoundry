@@ -1,4 +1,3 @@
-import { getBrandConfig } from "../../../config/brand";
 import { getManualPaymentConfig } from "../../manual-orders/payment-config";
 import {
   EMAIL_COLORS,
@@ -20,9 +19,11 @@ export function renderOrderConfirmationEmail(params: {
   totalCents: number;
   paymentMethod: string;
   shippingAddress: Record<string, string>;
+  /** paid = webhook-verified Stripe (or reconciled) payment. awaiting_payment = unpaid request. */
+  paymentState?: "paid" | "awaiting_payment";
 }) {
-  const brand = getBrandConfig();
   const paymentConfig = getManualPaymentConfig();
+  const paid = params.paymentState === "paid";
 
   const itemRows = params.items
     .map(
@@ -40,7 +41,14 @@ export function renderOrderConfirmationEmail(params: {
     .join("");
 
   let paymentPanel: string;
-  if (params.paymentMethod === "zelle") {
+  if (paid) {
+    paymentPanel = panel(
+      "Payment received",
+      `<p style="margin: 0; font-size: 14px; color: ${EMAIL_COLORS.text};">
+         We have confirmed payment for order ${escapeHtml(params.orderNumber)}. We are preparing your shipment.
+       </p>`,
+    );
+  } else if (params.paymentMethod === "zelle") {
     paymentPanel = panel(
       "Zelle payment instructions",
       panelRow("Recipient", escapeHtml(paymentConfig.zelleRecipientName)) +
@@ -55,9 +63,10 @@ export function renderOrderConfirmationEmail(params: {
     );
   } else {
     paymentPanel = panel(
-      "Payment instructions to follow",
+      "Awaiting payment",
       `<p style="margin: 0; font-size: 14px; color: ${EMAIL_COLORS.text};">
-         We&rsquo;ll confirm stock and email payment instructions for order ${escapeHtml(params.orderNumber)}.
+         We have received order ${escapeHtml(params.orderNumber)}. Payment has not been confirmed yet.
+         We&rsquo;ll email payment instructions once we confirm stock.
        </p>`,
     );
   }
@@ -77,9 +86,11 @@ export function renderOrderConfirmationEmail(params: {
   const body = `
     <p style="margin: 0 0 4px 0; font-size: 16px;">Dear ${escapeHtml(params.customerName)},</p>
     <p style="margin: 0 0 24px 0; font-size: 15px; color: ${EMAIL_COLORS.textMuted};">
-      We have received your research order request
-      <strong style="color: ${EMAIL_COLORS.text};">#${escapeHtml(params.orderNumber)}</strong>.
-      ${escapeHtml(brand.checkoutNotice)}
+      ${
+        paid
+          ? `Payment received. Your research order <strong style="color: ${EMAIL_COLORS.text};">#${escapeHtml(params.orderNumber)}</strong> is confirmed.`
+          : `We have received your research order request <strong style="color: ${EMAIL_COLORS.text};">#${escapeHtml(params.orderNumber)}</strong>. Payment has not been confirmed yet.`
+      }
     </p>
 
     ${paymentPanel}
@@ -106,8 +117,10 @@ export function renderOrderConfirmationEmail(params: {
 
   return {
     html: renderEmailShell({
-      eyebrow: "Order confirmation",
-      preheader: `Order ${params.orderNumber} received — ${money(params.totalCents)}`,
+      eyebrow: paid ? "Payment received" : "Order received — awaiting payment",
+      preheader: paid
+        ? `Payment received for order ${params.orderNumber} — ${money(params.totalCents)}`
+        : `Order ${params.orderNumber} received — awaiting payment — ${money(params.totalCents)}`,
       body,
     }),
   };

@@ -12,6 +12,15 @@ export const MANUAL_ORDER_STATUSES = [
   "refunded",
 ];
 
+export const PAYMENT_STATUSES = [
+  "unpaid",
+  "paid",
+  "failed",
+  "expired",
+  "refunded",
+  "partially_refunded",
+];
+
 export const VALID_STATUS_TRANSITIONS = {
   new: ["invoice_sent", "pending_payment", "paid", "canceled", "cancelled"],
   invoice_sent: ["pending_payment", "paid", "canceled", "cancelled"],

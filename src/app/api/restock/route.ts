@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     }
 
     await sendTransactionalEmail({
-      to: process.env.NOTIFICATION_EMAIL_TO || 'admin@vialfoundry.com',
+      to: process.env.ADMIN_NOTIFICATION_EMAIL || process.env.NOTIFICATION_EMAIL_TO || process.env.NEXT_PUBLIC_HELLO_EMAIL || 'hello@vialfoundry.com',
       subject: `[Vial Foundry] Restock request: ${productName || productId || 'product'}`,
       html: `<p><strong>${email}</strong> requested restock notification for <strong>${productName || productId}</strong>.</p>`,
     });

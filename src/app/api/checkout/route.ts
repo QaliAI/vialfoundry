@@ -9,7 +9,7 @@ import { sendEmailSafely } from "@/lib/email/resend";
 import { renderOrderConfirmationEmail } from "@/lib/email/templates/order";
 import { renderInternalOrderNotificationEmail } from "@/lib/email/templates/internal-order";
 import { PRODUCTS } from "@/data/products";
-import { isStripeEnabled } from "@/lib/adapters/stripe-gating.mjs";
+import { isStripeEnabled, stripeSecretMode, stripeConfigStatus } from "@/lib/adapters/stripe-gating.mjs";
 import { recordOrderEvent } from "@/lib/admin/order-events";
 
 const PAYMENT_METHOD_DISCOUNT_BPS: Record<string, number> = {
@@ -57,7 +57,10 @@ export async function POST(req: Request) {
       }
     }
 
-    // 2. Validate items against authoritative catalog & enforce inventory
+    // 2. Validate items against authoritative catalog & enforce inventory.
+    //    Inventory policy (launch): check here, decrement only on confirmed
+    //    payment in the Stripe webhook. Sessions do not reserve stock.
+    //    See src/lib/admin/inventory.mjs.
     const validatedItems: Array<{
       productId?: string | null;
       variantId?: string | null;
@@ -174,9 +177,18 @@ export async function POST(req: Request) {
     const orderNumber = `VF-${Date.now().toString().slice(-6)}`;
     const orderId = crypto.randomUUID();
 
-    // Stripe only handles checkout when it is explicitly selected AND fully
-    // credentialed. Otherwise we keep the manual-invoice flow untouched.
+    // Stripe only handles checkout when it is explicitly selected, fully
+    // credentialed, and the key mode matches this environment. Otherwise we
+    // keep the configured manual-invoice flow. We never silently switch to
+    // live keys and never invent a sandbox payment method.
     const stripeMode = isStripeEnabled();
+    if (process.env.PAYMENT_GATEWAY_TYPE === "stripe" && !stripeMode) {
+      const status = stripeConfigStatus();
+      console.warn(
+        `[checkout] Stripe selected but not enabled (missing=[${status.missing.join(",")}] mismatch=[${status.mismatch.join(",")}] mode=${status.mode || "none"} runtime=${status.runtime})`,
+      );
+    }
+    const stripeLivemode = stripeMode ? stripeSecretMode() === "live" : null;
 
     // 6. Persist to Supabase
     if (supabase) {
@@ -240,7 +252,8 @@ export async function POST(req: Request) {
         affiliate_commission_amount: commissionCalc?.affiliate_commission_amount || 0,
         affiliate_status: affiliateRecord ? "pending_payment" : null,
         notes: data.notes || null,
-        is_test: Boolean(data.isTest),
+        is_test: Boolean(data.isTest) || stripeLivemode === false,
+        stripe_livemode: stripeLivemode,
       });
 
       if (orderErr) {
@@ -345,7 +358,9 @@ export async function POST(req: Request) {
           metadata: { sessionId: session.sessionId, amountTotal: session.amountTotal },
         });
 
-        // No confirmation email yet: nothing has been paid. The webhook sends it.
+        // No customer email yet: nothing has been paid. The signed webhook
+        // sends "payment received" after settlement so we never confirm an
+        // unpaid Stripe session.
         return NextResponse.json({
           success: true,
           orderNumber,
@@ -394,6 +409,7 @@ export async function POST(req: Request) {
         shippingCents: invoice.shipping_amount || 0,
         totalCents: invoice.total_amount || 0,
         paymentMethod: data.preferredPaymentMethod,
+        paymentState: "awaiting_payment",
         shippingAddress: data.shippingAddress as Record<string, string>,
       });
 
@@ -434,6 +450,7 @@ export async function POST(req: Request) {
           affiliateCode: affiliateRecord?.code || null,
           isTest: Boolean(data.isTest),
           notes: data.notes || null,
+          adminOrderUrl: `${(process.env.NEXT_PUBLIC_SITE_URL || "https://www.vialfoundry.com").replace(/\/$/, "")}/admin/orders?order=${encodeURIComponent(orderNumber)}`,
         });
 
         const adminSend = await sendEmailSafely({

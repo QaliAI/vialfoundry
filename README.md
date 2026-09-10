@@ -45,14 +45,18 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-key
 
-# Payment Adapter
-PAYMENT_GATEWAY_TYPE=sandbox
-PAYMENT_API_KEY=your-api-key
+# Payment Adapter — TEST keys in local/Preview, LIVE keys only in Production
+PAYMENT_GATEWAY_TYPE=stripe
+NEXT_PUBLIC_PAYMENT_GATEWAY_TYPE=stripe
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 
 # Transactional Email
-RESEND_API_KEY=re_your_key
-TRANSACTIONAL_EMAIL_FROM=support@vialfoundry.com
-NOTIFICATION_EMAIL_TO=admin@vialfoundry.com
+RESEND_API_KEY=
+TRANSACTIONAL_EMAIL_FROM=Vial Foundry <orders@vialfoundry.com>
+TRANSACTIONAL_EMAIL_REPLY_TO=support@vialfoundry.com
+ADMIN_NOTIFICATION_EMAIL=
 
 # Site URL
 NEXT_PUBLIC_SITE_URL=https://vialfoundry.com

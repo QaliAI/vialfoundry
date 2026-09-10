@@ -1,19 +1,25 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  isHandledEvent, resolvePaymentSuccess, resolveRefund, isDuplicateEvent, HANDLED_EVENT_TYPES,
+  isHandledEvent, resolvePaymentSuccess, resolveRefund, resolveSessionExpired, isDuplicateEvent, HANDLED_EVENT_TYPES,
 } from "../src/lib/adapters/stripe-webhook-rules.mjs";
 
 const unpaid = { id: "o1", payment_status: "unpaid", total_amount: 7900, amount_refunded: 0, affiliate_id: null };
 const withAffiliate = { ...unpaid, affiliate_id: "aff-1" };
 const paid = { ...unpaid, payment_status: "paid" };
 
-test("handles exactly the four required Stripe events", () => {
-  for (const t of ["checkout.session.completed","payment_intent.succeeded","payment_intent.payment_failed","charge.refunded"]) {
+test("handles the required Stripe events including checkout expiry", () => {
+  for (const t of [
+    "checkout.session.completed",
+    "checkout.session.expired",
+    "payment_intent.succeeded",
+    "payment_intent.payment_failed",
+    "charge.refunded",
+  ]) {
     assert.ok(isHandledEvent(t), t);
   }
   assert.equal(isHandledEvent("customer.created"), false);
-  assert.equal(HANDLED_EVENT_TYPES.length, 4);
+  assert.equal(HANDLED_EVENT_TYPES.length, 5);
 });
 
 test("marks an unpaid order paid when the amount matches exactly", () => {
@@ -88,4 +94,19 @@ test("event id ledger blocks replays", () => {
 test("missing order is never applied", () => {
   assert.equal(resolvePaymentSuccess(null, 7900).apply, false);
   assert.equal(resolveRefund(null, 100).apply, false);
+  assert.equal(resolveSessionExpired(null).apply, false);
+});
+
+test("expired unpaid checkout cancels the order and voids unpaid commission", () => {
+  const r = resolveSessionExpired(withAffiliate);
+  assert.equal(r.apply, true);
+  assert.equal(r.updates.status, "canceled");
+  assert.equal(r.updates.payment_status, "expired");
+  assert.equal(r.updates.affiliate_status, "void");
+});
+
+test("expiry never overwrites a paid or refunded order", () => {
+  assert.equal(resolveSessionExpired(paid).apply, false);
+  assert.equal(resolveSessionExpired({ ...unpaid, payment_status: "refunded" }).apply, false);
+  assert.equal(resolveSessionExpired({ ...unpaid, payment_status: "expired" }).apply, false);
 });

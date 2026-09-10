@@ -27,6 +27,16 @@ export {
   missingStripeEnv,
   isStripeConfigured,
   isStripeEnabled,
+  isStripeClientEnabled,
+  isStripeEnvironmentAllowed,
+  stripeSecretMode,
+  stripePublishableMode,
+  stripeRuntimeEnvironment,
+  stripeEnvironmentMismatch,
+  stripeConfigStatus,
+  stripeDashboardBaseUrl,
+  stripeDashboardPaymentUrl,
+  stripeDashboardSessionUrl,
 } from './stripe-gating.mjs';
 
 import { buildStripeCheckoutAmounts, assertStripeTotalMatches } from './stripe-amounts.mjs';
@@ -119,9 +129,13 @@ export class StripePaymentAdapter implements PaymentAdapter {
       discounts = [{ coupon: coupon.id }];
     }
 
+    // Card (and wallets Stripe attaches to card: Apple Pay, Google Pay, Link)
+    // only. Asynchronous methods are not enabled until the webhook/order
+    // lifecycle can represent delayed success and failure.
     const session = await this.stripe.checkout.sessions.create(
       {
         mode: 'payment',
+        payment_method_types: ['card'],
         line_items,
         discounts,
         customer_email: order.customerEmail,
@@ -257,6 +271,12 @@ export class StripePaymentAdapter implements PaymentAdapter {
         const charge = event.data.object as Stripe.Charge;
         orderId = charge.metadata?.orderId || '';
         status = 'refunded';
+        break;
+      }
+      case 'checkout.session.expired': {
+        const session = event.data.object as Stripe.Checkout.Session;
+        orderId = session.client_reference_id || session.metadata?.orderId || '';
+        status = 'expired';
         break;
       }
       default:

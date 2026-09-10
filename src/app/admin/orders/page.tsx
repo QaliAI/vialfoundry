@@ -22,6 +22,9 @@ interface Order {
   customer_email: string;
   status: string;
   preferred_payment_method: string;
+  payment_provider?: string;
+  payment_status?: string;
+  stripe_livemode?: boolean | null;
   subtotal_amount: number;
   shipping_amount: number;
   discount_amount: number;
@@ -237,7 +240,16 @@ function AdminOrdersPageInner() {
                   {o.manual_order_items?.map(i => `${i.product_name} (×${i.quantity})`).join(', ') || 'Reference Standard'}
                 </td>
                 <td className="p-4 text-white font-bold">${(o.total_amount / 100).toFixed(2)}</td>
-                <td className="p-4 uppercase text-[10px] text-brand-paper font-bold">{o.preferred_payment_method}</td>
+                <td className="p-4">
+                  <div className="uppercase text-[10px] text-brand-paper font-bold">
+                    {o.payment_status || o.preferred_payment_method}
+                  </div>
+                  {o.payment_provider === 'stripe' && (
+                    <div className={`text-[10px] font-bold ${o.stripe_livemode === true ? 'text-emerald-400' : 'text-amber-400'}`}>
+                      {o.stripe_livemode === true ? 'LIVE' : 'TEST'} Stripe
+                    </div>
+                  )}
+                </td>
                 <td className="p-4">
                   <select
                     value={o.status}

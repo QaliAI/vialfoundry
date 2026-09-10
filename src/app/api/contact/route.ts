@@ -23,8 +23,14 @@ export async function POST(req: Request) {
       if (error) console.error('[contact] insert error', error.message);
     }
 
+    const notify =
+      process.env.ADMIN_NOTIFICATION_EMAIL ||
+      process.env.NOTIFICATION_EMAIL_TO ||
+      process.env.NEXT_PUBLIC_HELLO_EMAIL ||
+      'hello@vialfoundry.com';
+
     await sendTransactionalEmail({
-      to: process.env.NOTIFICATION_EMAIL_TO || 'admin@vialfoundry.com',
+      to: notify,
       subject: `[Vial Foundry Contact] ${subject || 'Inquiry'} - ${institution || name}`,
       html: `<p><strong>Name:</strong> ${name}</p><p><strong>Institution:</strong> ${institution || '-'}</p><p><strong>Email:</strong> ${email}</p><p><strong>Message:</strong></p><p>${message}</p>`,
     });

@@ -33,7 +33,7 @@ export const checkoutSubmissionSchema = z.object({
   customerPhone: z.string().optional().nullable(),
   shippingAddress: shippingAddressSchema,
   shippingMethodId: z.string().default("standard"),
-  preferredPaymentMethod: z.enum(["zelle", "venmo", "manual_invoice", "cashapp", "crypto", "ach"]).default("zelle"),
+  preferredPaymentMethod: z.enum(["zelle", "venmo", "manual_invoice", "cashapp", "crypto", "ach", "card"]).default("manual_invoice"),
   promoCode: z.string().optional().nullable(),
   affiliateCode: z.string().optional().nullable(),
   ruoAgreed: z.boolean().refine((val) => val === true, {

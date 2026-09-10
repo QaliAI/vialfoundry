@@ -16,7 +16,7 @@ const organizationJsonLd = {
   image: `${SITE_URL}/brand/og-image.png`,
   description:
     'Shop research peptides with clear product details, batch numbers and documents when available. For research use only.',
-  email: 'support@vialfoundry.com',
+  email: process.env.NEXT_PUBLIC_HELLO_EMAIL || 'hello@vialfoundry.com',
 };
 
 export const metadata: Metadata = {

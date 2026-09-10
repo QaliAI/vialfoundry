@@ -45,19 +45,29 @@ export const ContactPage: React.FC = () => {
         {/* Left Column Contact Info */}
         <div className="lg:col-span-5 space-y-6">
           <div className="storefront-card p-6 sm:p-8 rounded-2xl bg-brand-paper border border-brand-border shadow-2xs space-y-4">
-            <h3 className="font-display text-lg font-bold text-brand-ink">Support</h3>
+            <h3 className="font-display text-lg font-bold text-brand-ink">Get in touch</h3>
             <p className="text-xs text-brand-steel font-normal leading-relaxed">
-              We reply during normal business hours.
+              Email us, or use the form. We reply during normal business hours.
             </p>
 
             <div className="space-y-3 pt-2 text-xs font-sans text-brand-ink">
-              <div className="flex items-center space-x-3">
-                <Mail className="w-4 h-4 text-brand-accent" />
-                <span className="font-semibold text-brand-ink font-mono">support@vialfoundry.com</span>
+              <div className="flex items-start space-x-3">
+                <Mail className="w-4 h-4 text-brand-accent mt-0.5" />
+                <div>
+                  <a href="mailto:hello@vialfoundry.com" className="font-semibold text-brand-ink font-mono hover:underline">hello@vialfoundry.com</a>
+                  <div className="text-brand-steel text-[11px] mt-0.5">General questions</div>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <Mail className="w-4 h-4 text-brand-accent mt-0.5" />
+                <div>
+                  <a href="mailto:support@vialfoundry.com" className="font-semibold text-brand-ink font-mono hover:underline">support@vialfoundry.com</a>
+                  <div className="text-brand-steel text-[11px] mt-0.5">Orders and customer service</div>
+                </div>
               </div>
               <div className="flex items-center space-x-3">
                 <Building2 className="w-4 h-4 text-brand-mineral" />
-                <span>Vial Foundry Support</span>
+                <span>Vial Foundry</span>
               </div>
             </div>
           </div>

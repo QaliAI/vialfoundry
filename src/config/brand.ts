@@ -48,6 +48,8 @@ export interface BrandConfig {
   legalName: string;
   domain: string;
   supportEmail: string;
+  helloEmail: string;
+  infoEmail: string;
   orderNotificationEmails: string[];
   logoUrl: string;
   faviconUrl: string;
@@ -73,7 +75,9 @@ export const vialFoundryBrandConfig: BrandConfig = {
   legalName: process.env.NEXT_PUBLIC_BRAND_LEGAL_NAME || "Vial Foundry",
   domain: process.env.NEXT_PUBLIC_BRAND_DOMAIN || "vialfoundry.com",
   supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@vialfoundry.com",
-  orderNotificationEmails: (process.env.ADMIN_NOTIFICATION_EMAIL || process.env.NOTIFICATION_EMAIL_TO || "orders@vialfoundry.com, admin@vialfoundry.com")
+  helloEmail: process.env.NEXT_PUBLIC_HELLO_EMAIL || "hello@vialfoundry.com",
+  infoEmail: process.env.NEXT_PUBLIC_INFO_EMAIL || "info@vialfoundry.com",
+  orderNotificationEmails: (process.env.ADMIN_NOTIFICATION_EMAIL || process.env.NOTIFICATION_EMAIL_TO || "")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean),
