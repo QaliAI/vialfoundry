@@ -10,7 +10,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { orderId, nextStatus, trackingNumber, notes, actor = "admin" } = body;
+    const { orderId, nextStatus, trackingNumber, carrier, notes, actor = "admin" } = body;
 
     if (!orderId || !nextStatus) {
       return NextResponse.json({ success: false, error: "Order ID and next status required" }, { status: 400 });
@@ -18,6 +18,7 @@ export async function POST(req: Request) {
 
     const updated = await updateAdminOrderStatus({
       orderId,
+      carrier,
       nextStatus,
       trackingNumber,
       notes,

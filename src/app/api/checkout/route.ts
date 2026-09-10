@@ -9,6 +9,8 @@ import { sendEmailSafely } from "@/lib/email/resend";
 import { renderOrderConfirmationEmail } from "@/lib/email/templates/order";
 import { renderInternalOrderNotificationEmail } from "@/lib/email/templates/internal-order";
 import { PRODUCTS } from "@/data/products";
+import { isStripeEnabled } from "@/lib/adapters/stripe-gating.mjs";
+import { recordOrderEvent } from "@/lib/admin/order-events";
 
 const PAYMENT_METHOD_DISCOUNT_BPS: Record<string, number> = {
   cashapp: 500, // 5%
@@ -172,6 +174,10 @@ export async function POST(req: Request) {
     const orderNumber = `VF-${Date.now().toString().slice(-6)}`;
     const orderId = crypto.randomUUID();
 
+    // Stripe only handles checkout when it is explicitly selected AND fully
+    // credentialed. Otherwise we keep the manual-invoice flow untouched.
+    const stripeMode = isStripeEnabled();
+
     // 6. Persist to Supabase
     if (supabase) {
       // Find or create customer
@@ -210,8 +216,10 @@ export async function POST(req: Request) {
         submission_key: data.submissionKey,
         customer_id: customerId,
         status: "new",
-        checkout_mode: "manual_invoice",
-        preferred_payment_method: data.preferredPaymentMethod,
+        checkout_mode: stripeMode ? "stripe" : "manual_invoice",
+        payment_provider: stripeMode ? "stripe" : "manual_invoice",
+        payment_status: "unpaid",
+        preferred_payment_method: stripeMode ? "card" : data.preferredPaymentMethod,
         currency: brand.currency,
         subtotal_amount: invoice.subtotal_amount || 0,
         shipping_amount: invoice.shipping_amount || 0,
@@ -258,6 +266,19 @@ export async function POST(req: Request) {
           .insert(lineItemInserts);
         if (itemsErr) console.error("[checkout] manual_order_items error:", itemsErr.message);
 
+        await recordOrderEvent({
+          orderId,
+          type: "order_created",
+          actor: "customer",
+          message: `Order ${orderNumber} placed for ${((invoice.total_amount || 0) / 100).toFixed(2)} ${brand.currency}`,
+          metadata: {
+            items: validatedItems.length,
+            total_amount: invoice.total_amount || 0,
+            checkout_mode: stripeMode ? "stripe" : "manual_invoice",
+            is_test: Boolean(data.isTest),
+          },
+        });
+
         // Record affiliate referral revenue if attributed
         if (affiliateRecord?.id && commissionCalc?.affiliate_commission_amount) {
           await supabase.from("referral_revenue").insert({
@@ -274,7 +295,90 @@ export async function POST(req: Request) {
       }
     }
 
-    // 7. Non-blocking transactional email
+    // 7. Stripe Checkout. The order already exists and is unpaid; Stripe is the
+    //    authoritative confirmation, delivered later by signed webhook.
+    if (stripeMode) {
+      try {
+        const { StripePaymentAdapter } = await import("@/lib/adapters/stripeAdapter");
+        const shippingOption = brand.shippingOptions.find((o) => o.id === data.shippingMethodId);
+
+        const session = await new StripePaymentAdapter().createOrderCheckoutSession({
+          orderId,
+          orderNumber,
+          customerEmail: data.customerEmail,
+          currency: brand.currency,
+          items: validatedItems.map((i) => ({
+            productName: i.productName,
+            sku: i.sku,
+            quantity: i.quantity,
+            unit_price_amount: i.unit_price_amount,
+          })),
+          invoice: {
+            subtotal_before_discount: invoice.subtotal_before_discount || 0,
+            discount_amount: invoice.discount_amount || 0,
+            shipping_amount: invoice.shipping_amount || 0,
+            tax_amount: invoice.tax_amount || 0,
+            total_amount: invoice.total_amount || 0,
+            promo_code: invoice.promo_code,
+          },
+          shippingLabel: shippingOption?.name || "Shipping",
+          promoCode: invoice.promo_code,
+          affiliateCode: affiliateRecord?.code || null,
+        });
+
+        if (supabase) {
+          await supabase
+            .from("manual_orders")
+            .update({
+              stripe_checkout_session_id: session.sessionId,
+              status: "pending_payment",
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", orderId);
+        }
+
+        await recordOrderEvent({
+          orderId,
+          type: "checkout_session_created",
+          actor: "system",
+          message: `Stripe Checkout Session created for ${(session.amountTotal / 100).toFixed(2)} ${brand.currency}`,
+          metadata: { sessionId: session.sessionId, amountTotal: session.amountTotal },
+        });
+
+        // No confirmation email yet: nothing has been paid. The webhook sends it.
+        return NextResponse.json({
+          success: true,
+          orderNumber,
+          orderId,
+          totalAmount: invoice.total_amount,
+          subtotalAmount: invoice.subtotal_amount,
+          discountAmount: invoice.discount_amount,
+          shippingAmount: invoice.shipping_amount,
+          paymentProvider: "stripe",
+          checkoutUrl: session.url,
+        });
+      } catch (stripeErr: any) {
+        // Fail closed: never silently fall back to an unpaid manual order when
+        // the customer expected to pay by card.
+        console.error("[checkout] Stripe session creation failed:", stripeErr?.message || stripeErr);
+        await recordOrderEvent({
+          orderId,
+          type: "payment_failed",
+          actor: "system",
+          message: `Stripe Checkout Session could not be created: ${stripeErr?.message || "unknown error"}`,
+        });
+        return NextResponse.json(
+          {
+            success: false,
+            error: "We could not start the secure payment session. Your order was not charged. Please try again or contact support.",
+            orderNumber,
+          },
+          { status: 502 },
+        );
+      }
+    }
+
+    // 8. Manual-invoice flow: non-blocking transactional email
     try {
       const emailContent = renderOrderConfirmationEmail({
         orderNumber,
