@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { PRODUCTS } from '../data/products';
+import { PUBLIC_PRODUCTS } from '../data/products';
 import { Product } from '../types';
 import { ProductCard } from '../components/ProductCard';
 import { getBatchRecord, getDocumentationStatus } from '../data/batches';
@@ -42,12 +42,12 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct, initi
   }, []);
 
   const documentedCount = useMemo(
-    () => PRODUCTS.filter((p) => getDocumentationStatus(p) === 'verified').length,
+    () => PUBLIC_PRODUCTS.filter((p) => getDocumentationStatus(p) === 'verified').length,
     []
   );
 
   const filteredProducts = useMemo(() => {
-    return PRODUCTS.filter((product) => {
+    return PUBLIC_PRODUCTS.filter((product) => {
       const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
       const q = searchQuery.toLowerCase().trim();
       const matchesSearch =
@@ -83,7 +83,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct, initi
           Research Peptides &amp; Reference Standards
         </h1>
         <p className="text-brand-steel text-sm sm:text-base font-normal max-w-2xl leading-relaxed">
-          {PRODUCTS.length} research peptides in stock or on backorder. Each card states whether we hold a
+          {PUBLIC_PRODUCTS.length} research peptides in stock or on backorder. Each card states whether we hold a
           certificate of analysis for that lot, so you know before you order.
         </p>
       </div>
@@ -151,9 +151,9 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct, initi
           <span className="text-brand-steel font-medium">Documentation:</span>
           {(
             [
-              ['any', `All ${PRODUCTS.length}`],
+              ['any', `All ${PUBLIC_PRODUCTS.length}`],
               ['verified', `COA on file (${documentedCount})`],
-              ['pending', `COA pending (${PRODUCTS.length - documentedCount})`],
+              ['pending', `COA pending (${PUBLIC_PRODUCTS.length - documentedCount})`],
             ] as [DocFilter, string][]
           ).map(([value, label]) => (
             <button

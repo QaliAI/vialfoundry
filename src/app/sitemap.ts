@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { PRODUCTS } from '../data/products';
+import { PUBLIC_PRODUCTS } from '../data/products';
 import { RESEARCH_ARTICLES } from '../data/articles';
 import { LEGAL_SLUGS } from '../data/legal';
 
@@ -16,7 +16,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })
   );
 
-  const productRoutes = PRODUCTS.map((p) => ({
+  const productRoutes = PUBLIC_PRODUCTS.map((p) => ({
     url: `${base}/product/${p.id}`,
     lastModified: now,
     changeFrequency: 'weekly' as const,

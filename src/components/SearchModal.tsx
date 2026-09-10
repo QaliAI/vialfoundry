@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { Search, X, ArrowRight, Package } from 'lucide-react';
-import { PRODUCTS } from '../data/products';
+import { PUBLIC_PRODUCTS } from '../data/products';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
 
@@ -29,7 +29,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ onSelectProduct }) => 
 
   if (!isSearchOpen) return null;
 
-  const filteredProducts = PRODUCTS.filter((p) => {
+  const filteredProducts = PUBLIC_PRODUCTS.filter((p) => {
     const q = query.toLowerCase();
     return (
       p.name.toLowerCase().includes(q) ||

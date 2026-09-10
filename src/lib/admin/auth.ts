@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { sanitizeEnvValue } from "../env/sanitizer";
+import { resolveAdminAuthConfig } from "./auth-config.mjs";
 import {
   ADMIN_SESSION_COOKIE_NAME,
   ADMIN_SESSION_MAX_AGE_SECONDS,
@@ -7,29 +8,42 @@ import {
   verifyAdminSessionToken,
 } from "./session-token.mjs";
 
-export function getAdminAuthConfig() {
-  const adminEmail = sanitizeEnvValue(process.env.ADMIN_EMAIL) || "admin@vialfoundry.com";
-  const accessPassword = sanitizeEnvValue(process.env.ADMIN_ACCESS_PASSWORD) || "foundry2026";
-  const sessionSecret = sanitizeEnvValue(process.env.ADMIN_SESSION_SECRET) || "vial-foundry-dev-session-secret-key-32chars";
+export interface AdminAuthConfig {
+  adminEmail: string;
+  accessPassword: string;
+  sessionSecret: string;
+}
 
-  return {
-    adminEmail,
-    accessPassword,
-    sessionSecret,
-  };
+/**
+ * Reads admin auth configuration from the environment.
+ *
+ * There are deliberately NO hardcoded fallback credentials. This repository is
+ * public, so a fallback password or session secret would be a published
+ * credential — and a fallback session secret would let anyone forge a valid
+ * admin cookie. When any required value is missing we return null, and every
+ * caller treats that as "admin is unavailable" (fail closed) rather than
+ * silently authenticating against a known-public default.
+ */
+export function getAdminAuthConfig(): AdminAuthConfig | null {
+  return resolveAdminAuthConfig({
+    ADMIN_EMAIL: sanitizeEnvValue(process.env.ADMIN_EMAIL),
+    ADMIN_ACCESS_PASSWORD: sanitizeEnvValue(process.env.ADMIN_ACCESS_PASSWORD),
+    ADMIN_SESSION_SECRET: sanitizeEnvValue(process.env.ADMIN_SESSION_SECRET),
+  });
 }
 
 export async function verifyAdminSession(): Promise<boolean> {
+  const config = getAdminAuthConfig();
+  if (!config) return false;
+
   const cookieStore = cookies();
   const token = cookieStore.get(ADMIN_SESSION_COOKIE_NAME)?.value;
   if (!token) return false;
 
-  const { sessionSecret } = getAdminAuthConfig();
-  return verifyAdminSessionToken(token, sessionSecret);
+  return verifyAdminSessionToken(token, config.sessionSecret);
 }
 
-export function generateAdminSessionCookie(email: string) {
-  const { sessionSecret } = getAdminAuthConfig();
+export function generateAdminSessionCookie(email: string, sessionSecret: string) {
   const token = createAdminSessionToken(email, sessionSecret);
 
   return {

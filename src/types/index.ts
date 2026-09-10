@@ -34,6 +34,14 @@ export interface Product {
   solubility: string;
   image: string;
   transparentImage: string;
+  /**
+   * Set to withhold a SKU from public storefront surfaces (catalog, home,
+   * search, sitemap) while keeping it in the catalogue for admin, pricing and
+   * server-side order validation. Used when we do not yet hold product imagery
+   * that honestly represents the container the item actually ships in.
+   * Clear the field to make the SKU public again.
+   */
+  hiddenFromCatalogReason?: string;
   coaAvailable: boolean;
   coaDate: string;
 }

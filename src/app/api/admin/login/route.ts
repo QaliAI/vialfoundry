@@ -7,6 +7,15 @@ export async function POST(req: Request) {
     const { email, password } = await req.json();
     const config = getAdminAuthConfig();
 
+    // Fail closed: with no admin credentials configured, no one can sign in.
+    if (!config) {
+      console.error("[admin/login] admin auth is not configured (ADMIN_EMAIL / ADMIN_ACCESS_PASSWORD / ADMIN_SESSION_SECRET)");
+      return NextResponse.json(
+        { success: false, error: "Admin access is not configured on this deployment." },
+        { status: 503 },
+      );
+    }
+
     if (!email || !password) {
       return NextResponse.json({ success: false, error: "Email and password required" }, { status: 400 });
     }
@@ -22,7 +31,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "Invalid administrative credentials" }, { status: 401 });
     }
 
-    const sessionCookie = generateAdminSessionCookie(config.adminEmail);
+    const sessionCookie = generateAdminSessionCookie(config.adminEmail, config.sessionSecret);
     const response = NextResponse.json({ success: true, user: { email: config.adminEmail } });
     
     response.cookies.set(

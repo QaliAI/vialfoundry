@@ -147,6 +147,10 @@ export default function CheckoutPage() {
           lotNumber: i.product.lotNumber,
         })),
         notes: null,
+        // QA builds only. NEXT_PUBLIC_QA_TEST_ORDERS is never set in the Vercel
+        // production environment, so real customer orders are never flagged as
+        // test and never fall out of revenue reporting.
+        isTest: process.env.NEXT_PUBLIC_QA_TEST_ORDERS === 'true',
       };
 
       const res = await fetch('/api/checkout', {

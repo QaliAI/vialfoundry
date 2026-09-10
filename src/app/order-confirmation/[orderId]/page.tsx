@@ -84,7 +84,7 @@ function Confirmation() {
       </div>
 
       <p className="text-xs text-brand-steel font-sans">
-        A confirmation email has been dispatched. No credit card is charged on this site. All materials are supplied strictly for laboratory research use only.
+        A confirmation email is on its way to the address you provided. No credit card is charged on this site. All materials are supplied strictly for laboratory research use only.
       </p>
 
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">

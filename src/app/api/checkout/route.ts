@@ -7,6 +7,7 @@ import { getBrandConfig } from "@/config/brand";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmailSafely } from "@/lib/email/resend";
 import { renderOrderConfirmationEmail } from "@/lib/email/templates/order";
+import { renderInternalOrderNotificationEmail } from "@/lib/email/templates/internal-order";
 import { PRODUCTS } from "@/data/products";
 
 const PAYMENT_METHOD_DISCOUNT_BPS: Record<string, number> = {
@@ -293,20 +294,52 @@ export async function POST(req: Request) {
       });
 
       // Send to customer
-      await sendEmailSafely({
+      const customerSend = await sendEmailSafely({
         to: data.customerEmail,
         subject: `[Vial Foundry] Order Request #${orderNumber} Received`,
         html: emailContent.html,
       });
+      if (!customerSend.success) {
+        console.error(`[checkout] customer email FAILED for ${orderNumber}: ${customerSend.error}`);
+      }
 
-      // Send notification to admin team
+      // Operations notification. Manual-invoice orders are unpaid until the
+      // desk reconciles payment, so the internal mail says so explicitly
+      // rather than reusing the customer confirmation.
       const adminEmails = brand.orderNotificationEmails;
       if (adminEmails.length > 0) {
-        await sendEmailSafely({
-          to: adminEmails,
-          subject: `[NEW ORDER] #${orderNumber} — ${data.customerName} ($${((invoice.total_amount || 0) / 100).toFixed(2)})`,
-          html: emailContent.html,
+        const internal = renderInternalOrderNotificationEmail({
+          orderNumber,
+          customerName: data.customerName,
+          customerEmail: data.customerEmail,
+          customerPhone: data.customerPhone,
+          items: validatedItems.map((i) => ({
+            name: i.productName,
+            quantity: i.quantity,
+            lineTotalCents: i.line_total_amount || 0,
+            sku: i.sku,
+          })),
+          subtotalCents: invoice.subtotal_before_discount || 0,
+          discountCents: invoice.discount_amount || 0,
+          shippingCents: invoice.shipping_amount || 0,
+          totalCents: invoice.total_amount || 0,
+          paymentMethod: data.preferredPaymentMethod,
+          paymentStatus: "awaiting payment",
+          shippingAddress: data.shippingAddress as Record<string, string>,
+          promoCode: invoice.promo_code,
+          affiliateCode: affiliateRecord?.code || null,
+          isTest: Boolean(data.isTest),
+          notes: data.notes || null,
         });
+
+        const adminSend = await sendEmailSafely({
+          to: adminEmails,
+          subject: `${data.isTest ? "[TEST] " : ""}[NEW ORDER] #${orderNumber} — ${data.customerName} ($${((invoice.total_amount || 0) / 100).toFixed(2)}) — awaiting payment`,
+          html: internal.html,
+        });
+        if (!adminSend.success) {
+          console.error(`[checkout] admin email FAILED for ${orderNumber}: ${adminSend.error}`);
+        }
       }
     } catch (mailErr) {
       console.error("[checkout] mail trigger error:", mailErr);

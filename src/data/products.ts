@@ -252,6 +252,8 @@ export const PRODUCTS: Product[] = [
     solubility: 'Miscible in all aqueous media',
     image: '/assets/vials/products/bacteriostatic-water.webp',
     transparentImage: '/assets/vials/products/bacteriostatic-water-transparent.webp',
+    hiddenFromCatalogReason:
+      'Sold as a 30 mL container; the only product photography we hold is the 10 mL stoppered vial. Withheld until correctly sized photography exists.',
     coaAvailable: true,
     coaDate: '2026-08-01'
   },
@@ -507,7 +509,20 @@ export const PRODUCTS: Product[] = [
     solubility: 'Miscible with water and most organic solvents',
     image: '/assets/vials/products/acetonitrile.webp',
     transparentImage: '/assets/vials/products/acetonitrile-transparent.webp',
+    hiddenFromCatalogReason:
+      'Sold as a 1 L amber HPLC bottle; the only product photography we hold is the 10 mL stoppered vial. Withheld rather than shown in a container it does not ship in.',
     coaAvailable: true,
     coaDate: '2026-08-06'
   }
 ];
+
+/**
+ * Products shown on public storefront surfaces.
+ *
+ * `PRODUCTS` stays the authoritative catalogue - admin, pricing and the
+ * server-side order validation in /api/checkout all read from it, so a
+ * withheld SKU is still priced correctly if it is ever ordered directly.
+ */
+export const PUBLIC_PRODUCTS: Product[] = PRODUCTS.filter(
+  (p) => !p.hiddenFromCatalogReason,
+);

@@ -62,7 +62,11 @@ try {
   const pJs =
     pContent
       .replace(/import\s+type\s+[^;]+;/g, "")
-      .replace(/export\s+const\s+PRODUCTS(\s*:\s*Product\[\])?\s*=/, "const PRODUCTS =") +
+      .replace(/export\s+const\s+PRODUCTS(\s*:\s*Product\[\])?\s*=/, "const PRODUCTS =")
+      // Neutralize any other exports (e.g. the derived PUBLIC_PRODUCTS list)
+      // so the module body can be evaluated in a bare Function scope.
+      .replace(/export\s+const\s+/g, "const ")
+      .replace(/:\s*Product\[\]\s*=/g, " =") +
     "\nreturn PRODUCTS;";
   products = new Function(pJs)();
 } catch (err) {

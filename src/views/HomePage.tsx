@@ -4,7 +4,7 @@ import { TrustBand } from '../components/TrustBand';
 import { ProductCard } from '../components/ProductCard';
 import { FoundryStandard } from '../components/FoundryStandard';
 import { BatchVerificationEngine } from '../components/BatchVerificationEngine';
-import { PRODUCTS } from '../data/products';
+import { PUBLIC_PRODUCTS } from '../data/products';
 import { getBatchRecord } from '../data/batches';
 import { VERIFIED_BATCH_RECORDS } from '../data/verified-batch-records';
 import { Product, ProductCategory } from '../types';
@@ -22,7 +22,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
   const [activeCOALot, setActiveCOALot] = useState<string | null>(null);
 
   // Featured 4 Best Sellers / Popular Reference Standards
-  const bestSellers = PRODUCTS.slice(0, 4);
+  const bestSellers = PUBLIC_PRODUCTS.slice(0, 4);
 
   // Category tiles. Counts are derived from the catalog so they cannot drift, and
   // each tile carries its category through to the catalog's own filter.
@@ -38,7 +38,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
     () =>
       (Object.keys(CATEGORY_BLURBS) as ProductCategory[])
         .map((title) => {
-          const count = PRODUCTS.filter((p) => p.category === title).length;
+          const count = PUBLIC_PRODUCTS.filter((p) => p.category === title).length;
           return {
             title,
             desc: CATEGORY_BLURBS[title],
