@@ -54,7 +54,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
                     setIsCartOpen(false);
                     navigate('/catalog');
                   }}
-                  className="px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-medium text-xs font-display shadow-xs"
+                  className="px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-brand-paper font-medium text-xs font-display shadow-xs"
                 >
                   Browse Catalog
                 </button>
@@ -142,7 +142,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
                   setIsCartOpen(false);
                   navigate('/checkout');
                 }}
-                className="w-full py-3.5 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-medium text-sm shadow-xs flex items-center justify-center space-x-2 font-display transition-all"
+                className="w-full py-3.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-brand-paper font-medium text-sm shadow-xs flex items-center justify-center space-x-2 font-display transition-all"
               >
                 <span>Proceed to Checkout</span>
                 <ArrowRight className="w-4 h-4" />

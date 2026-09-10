@@ -39,7 +39,7 @@ export const LegalDocument: React.FC<{ doc: LegalDoc }> = ({ doc }) => {
           </div>
           <a
             href="/affiliates"
-            className="flex-shrink-0 px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-bold text-xs shadow-xs transition-all"
+            className="flex-shrink-0 px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-bold text-xs shadow-xs transition-all"
           >
             Join Affiliate Program
           </a>

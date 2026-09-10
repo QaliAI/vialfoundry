@@ -76,12 +76,31 @@ export class SandboxPaymentAdapter implements PaymentAdapter {
   }
 }
 
+/**
+ * Selects the active gateway.
+ *
+ * Stripe is only ever returned when it is explicitly selected AND every
+ * required credential is present. A partially configured environment falls
+ * back to the sandbox adapter rather than half-enabling card payments, so
+ * Stripe is never exposed to customers before the merchant account is live.
+ */
 export function getPaymentAdapter(): PaymentAdapter {
   const gatewayType = process.env.PAYMENT_GATEWAY_TYPE || 'sandbox';
-  
-  switch (gatewayType) {
-    case 'sandbox':
-    default:
-      return new SandboxPaymentAdapter();
+
+  if (gatewayType === 'stripe') {
+    // Required lazily so the SDK is never pulled into builds that do not use it.
+    const { isStripeEnabled, StripePaymentAdapter, missingStripeEnv } =
+      require('./stripeAdapter') as typeof import('./stripeAdapter');
+
+    if (isStripeEnabled()) {
+      return new StripePaymentAdapter();
+    }
+
+    console.warn(
+      `[payments] PAYMENT_GATEWAY_TYPE=stripe but ${missingStripeEnv().join(', ')} ` +
+        'is not configured. Falling back to the sandbox adapter; card payments stay disabled.',
+    );
   }
+
+  return new SandboxPaymentAdapter();
 }

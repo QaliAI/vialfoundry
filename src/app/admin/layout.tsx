@@ -47,7 +47,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           
           {/* Logo Header */}
           <div className="px-2 py-1">
-            <BrandLogo variant="compact" size="md" inverted={true} />
+            <BrandLogo variant="horizontal" height={26} tone="white" />
             <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mt-2">
               Admin Console
             </span>
@@ -65,7 +65,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-sans font-medium transition-all ${
                     isActive
                       ? 'bg-brand-graphite text-white font-semibold shadow-xs'
-                      : 'text-slate-400 hover:text-white hover:bg-brand-graphite/40'
+                      : 'text-slate-400 hover:text-white hover:bg-brand-primary-hover/40'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -80,7 +80,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="space-y-2 pt-4 border-t border-brand-graphite/40">
           <button
             onClick={() => router.push('/')}
-            className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-sans text-slate-400 hover:text-white hover:bg-brand-graphite/40"
+            className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-sans text-slate-400 hover:text-white hover:bg-brand-primary-hover/40"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>View Live Site</span>

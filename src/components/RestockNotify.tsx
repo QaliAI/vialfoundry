@@ -53,7 +53,7 @@ export const RestockNotify: React.FC<{ product: Product }> = ({ product }) => {
           <button
             type="submit"
             disabled={status === 'loading'}
-            className="px-5 py-2.5 rounded-xl bg-brand-primary text-brand-paper font-display font-bold text-xs hover:bg-brand-graphite transition-all flex items-center space-x-1.5 disabled:opacity-60 shadow-2xs"
+            className="px-5 py-2.5 rounded-xl bg-brand-primary text-white font-display font-bold text-xs hover:bg-brand-primary-hover transition-all flex items-center space-x-1.5 disabled:opacity-60 shadow-2xs"
           >
             {status === 'loading' ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />

@@ -1,84 +1,113 @@
 import React from 'react';
 
+/**
+ * The single canonical Vial Foundry brand implementation.
+ *
+ * Every surface - navbar, footer, age gate, checkout, admin, email, favicon -
+ * renders the identity through this component or through the approved files in
+ * /public/brand. Never re-create the wordmark with a browser font and never
+ * draw the monogram by hand anywhere else in the app.
+ *
+ * Lockups are served as the approved SVG artwork so the wordmark is always the
+ * real outlines. The monogram is inlined below because it is the one variant
+ * that has to inherit `currentColor` (buttons, badges, dark sections).
+ */
+
+/** Approved VF monogram, authored in a 1000 x 841 box (157:132 aspect). */
+const MARK_V =
+  'M5 0L257 0L232 37.8L409 475.9L409 819.8L405 829L83 84.1Q56 42 5 0Z';
+const MARK_F =
+  'M680 0L1000 0L942 121.9L648 121.9L600 161.4L570 227L886 227' +
+  'L828 349.8L672 350.6L660 369.9L660 724.7' +
+  'C660 769.3 618 840.8 556 840.8C496 840.8 452 812.2 452 733.2' +
+  'L452 417L527 417L527 438.9L481 475.9L481 728.1' +
+  'A47 39.5 0 0 0 575 728.1' +
+  'L575 458.2C576 424.6 589 401.9 600 393.5L600 380.1' +
+  'C599 371.6 597 367.4 594 366.6L458 363.2L630 21Z';
+
+export const MARK_ASPECT = 1000 / 841;
+
+export type BrandLogoVariant = 'horizontal' | 'stacked' | 'mark';
+export type BrandLogoTone = 'midnight' | 'white' | 'black';
+
 export interface BrandLogoProps {
-  variant?: 'horizontal' | 'compact' | 'mark-only' | 'one-color';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: BrandLogoVariant;
+  /** Rendered height in pixels. Width follows the lockup's own ratio. */
+  height?: number;
+  tone?: BrandLogoTone;
   className?: string;
-  inverted?: boolean;
+  /** Decorative instances (next to a visible wordmark) should pass true. */
+  decorative?: boolean;
 }
+
+const LOCKUPS: Record<
+  Exclude<BrandLogoVariant, 'mark'>,
+  Record<BrandLogoTone, { src: string; ratio: number }>
+> = {
+  horizontal: {
+    midnight: { src: '/brand/logo-horizontal.svg', ratio: 676.19 / 100 },
+    white: { src: '/brand/logo-white.svg', ratio: 676.19 / 100 },
+    black: { src: '/brand/logo-black.svg', ratio: 676.19 / 100 },
+  },
+  stacked: {
+    midnight: { src: '/brand/logo-stacked.svg', ratio: 537.6 / 222 },
+    white: { src: '/brand/logo-stacked-white.svg', ratio: 537.6 / 222 },
+    black: { src: '/brand/logo-black.svg', ratio: 676.19 / 100 },
+  },
+};
+
+const ALT = 'Vial Foundry — Research Peptides';
+
+/** The monogram on its own, inheriting the current text colour. */
+export const BrandMark: React.FC<{ className?: string; title?: string }> = ({
+  className = '',
+  title,
+}) => (
+  <svg
+    viewBox="0 0 1000 841"
+    className={className}
+    fill="currentColor"
+    role={title ? 'img' : 'presentation'}
+    aria-hidden={title ? undefined : true}
+    aria-label={title}
+  >
+    {title ? <title>{title}</title> : null}
+    <path d={MARK_V} />
+    <path d={MARK_F} />
+  </svg>
+);
 
 export const BrandLogo: React.FC<BrandLogoProps> = ({
   variant = 'horizontal',
-  size = 'md',
+  height = 34,
+  tone = 'midnight',
   className = '',
-  inverted = false,
+  decorative = false,
 }) => {
-  const markDimensions = {
-    sm: 'w-7 h-7',
-    md: 'w-8 h-8',
-    lg: 'w-10 h-10',
-  }[size];
-
-  const titleSizes = {
-    sm: 'text-base',
-    md: 'text-lg sm:text-xl',
-    lg: 'text-xl sm:text-2xl',
-  }[size];
-
-  const subtitleSizes = {
-    sm: 'text-[9px]',
-    md: 'text-[10px]',
-    lg: 'text-xs',
-  }[size];
-
-  const textColor = inverted ? 'text-white' : 'text-brand-ink';
-  const mutedColor = inverted ? 'text-slate-400' : 'text-brand-steel';
-  const markBg = inverted ? 'bg-white text-slate-900' : 'bg-brand-ink text-brand-paper';
-  const accentDot = inverted ? 'bg-amber-400' : 'bg-brand-metal';
-
-  if (variant === 'mark-only') {
+  if (variant === 'mark') {
     return (
-      <div className={`inline-flex items-center justify-center rounded-lg ${markBg} ${markDimensions} ${className}`} aria-label="Vial Foundry Logo">
-        <svg className="w-1/2 h-1/2" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M7 4H13V6H11.5V8.5L15 14C15.5 14.8 15 16 14 16H6C5 16 4.5 14.8 5 14L8.5 8.5V6H7V4Z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-          <circle cx="10" cy="12" r="1.2" className={accentDot.replace('bg-', 'fill-')} />
-        </svg>
-      </div>
+      <BrandMark
+        className={className}
+        title={decorative ? undefined : ALT}
+      />
     );
   }
 
-  if (variant === 'compact') {
-    return (
-      <div className={`inline-flex items-center space-x-2.5 ${className}`}>
-        <div className={`inline-flex items-center justify-center rounded-lg ${markBg} ${markDimensions} shrink-0`}>
-          <svg className="w-1/2 h-1/2" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M7 4H13V6H11.5V8.5L15 14C15.5 14.8 15 16 14 16H6C5 16 4.5 14.8 5 14L8.5 8.5V6H7V4Z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-            <circle cx="10" cy="12" r="1.2" fill="currentColor" />
-          </svg>
-        </div>
-        <span className={`font-display font-bold tracking-tight ${textColor} ${titleSizes}`}>
-          VIAL FOUNDRY
-        </span>
-      </div>
-    );
-  }
+  const { src, ratio } = LOCKUPS[variant][tone];
 
   return (
-    <div className={`inline-flex items-center space-x-3 ${className}`}>
-      <div className={`inline-flex items-center justify-center rounded-lg ${markBg} ${markDimensions} shrink-0 shadow-xs transition-colors`}>
-        <svg className="w-1/2 h-1/2" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M7 4H13V6H11.5V8.5L15 14C15.5 14.8 15 16 14 16H6C5 16 4.5 14.8 5 14L8.5 8.5V6H7V4Z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-          <circle cx="10" cy="12" r="1.2" fill="#A47342" />
-        </svg>
-      </div>
-      <div className="flex flex-col text-left leading-none">
-        <span className={`font-display font-bold tracking-tight ${textColor} ${titleSizes}`}>
-          VIAL <span className={inverted ? 'text-slate-300 font-medium' : 'text-brand-graphite font-medium'}>FOUNDRY</span>
-        </span>
-        <span className={`font-sans uppercase tracking-[0.18em] font-medium mt-1 ${mutedColor} ${subtitleSizes}`}>
-          Research Peptides
-        </span>
-      </div>
-    </div>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={decorative ? '' : ALT}
+      aria-hidden={decorative || undefined}
+      width={Math.round(height * ratio)}
+      height={height}
+      style={{ height, width: 'auto' }}
+      className={className}
+      draggable={false}
+    />
   );
 };
+
+export default BrandLogo;

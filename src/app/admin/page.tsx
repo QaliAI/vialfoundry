@@ -125,7 +125,7 @@ export default function AdminDashboardPage() {
                   <td className="p-3 text-right">
                     <button
                       onClick={() => router.push('/admin/inventory')}
-                      className="px-3 py-1 rounded bg-brand-graphite border border-brand-graphite/60 hover:bg-brand-graphite/80 text-white text-[10px] font-sans"
+                      className="px-3 py-1 rounded bg-brand-graphite border border-brand-graphite/60 hover:bg-brand-primary-hover/80 text-white text-[10px] font-sans"
                     >
                       Adjust Stock
                     </button>

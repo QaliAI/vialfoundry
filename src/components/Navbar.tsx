@@ -48,7 +48,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
               }}
               className="flex items-center group text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-graphite rounded-lg"
             >
-              <BrandLogo variant="horizontal" size="md" />
+              <BrandLogo variant="horizontal" height={32} />
             </button>
 
             {/* Desktop Navigation Links */}

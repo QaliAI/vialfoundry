@@ -49,8 +49,8 @@ export default function AdminProductsPage() {
         storageConditions: 'Store at -20°C',
         appearance: 'White lyophilized powder',
         solubility: 'Soluble in sterile water',
-        image: '/assets/vials/single-vial-dark.webp',
-        transparentImage: '/assets/vials/vial-transparent.webp',
+        image: '/assets/vials/products/bpc-157.webp',
+        transparentImage: '/assets/vials/products/bpc-157-transparent.webp',
         coaAvailable: true,
         coaDate: '2026-08-01'
       };
@@ -74,7 +74,7 @@ export default function AdminProductsPage() {
             });
             setIsCreating(true);
           }}
-          className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-primary text-brand-paper font-display font-bold text-xs hover:bg-brand-graphite"
+          className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-primary text-white font-display font-bold text-xs hover:bg-brand-primary-hover"
         >
           <Plus className="w-4 h-4" />
           <span>New Product</span>

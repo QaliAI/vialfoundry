@@ -153,7 +153,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             <div className="p-6 rounded-2xl bg-brand-paper border border-brand-border shadow-sm space-y-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-mono text-3xl font-bold text-brand-ink">${product.price.toFixed(2)}</div>
+                  <div className="font-display text-3xl font-bold text-brand-ink tracking-tight">${product.price.toFixed(2)}</div>
                   <div className="text-[11px] font-medium text-brand-mineral flex items-center space-x-1 mt-0.5">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-accent" />
                     <span>In Stock — Dispatched in Insulated Cold Packaging</span>
@@ -190,7 +190,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                       documentation: docStatus,
                     });
                   }}
-                  className="py-3.5 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-bold text-xs shadow-xs flex items-center justify-center space-x-2 transition-all"
+                  className="py-3.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-bold text-xs shadow-xs flex items-center justify-center space-x-2 transition-all"
                 >
                   <ShoppingBag className="w-4 h-4" />
                   <span>Add to Cart</span>
@@ -237,7 +237,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           {/* Technical Specs Checklist */}
           <div className="space-y-2 border-t border-brand-border pt-5">
             <h4 className="text-xs font-sans font-semibold text-brand-graphite uppercase tracking-wider">Physical Characteristics</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[13px] leading-relaxed">
               <div className="p-3 rounded-lg bg-brand-paper border border-brand-border">
                 <span className="text-brand-steel block text-[10px] uppercase font-sans font-medium">APPEARANCE</span>
                 <span className="text-brand-ink font-medium">{product.appearance}</span>

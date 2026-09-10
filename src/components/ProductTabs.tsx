@@ -124,7 +124,7 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
                 {onViewCOA && (
                   <button
                     onClick={onViewCOA}
-                    className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-semibold text-xs transition-all shadow-xs"
+                    className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-semibold text-xs transition-all shadow-xs"
                   >
                     <FileCheck className="w-4 h-4" />
                     <span>Read the certificate</span>
@@ -161,7 +161,7 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
                     });
                     navigate('/contact');
                   }}
-                  className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-semibold text-xs transition-all shadow-xs"
+                  className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-semibold text-xs transition-all shadow-xs"
                 >
                   <span>Ask about this lot&apos;s documentation</span>
                 </button>
