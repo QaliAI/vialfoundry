@@ -61,7 +61,7 @@ export const PaymentInstructions: React.FC<Props> = ({ method, total, orderRef, 
           href={method.link}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full py-3 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-bold text-xs transition-all flex items-center justify-center space-x-2 shadow-xs"
+          className="w-full py-3 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-bold text-xs transition-all flex items-center justify-center space-x-2 shadow-xs"
         >
           <span>Open Secure {method.label} Link</span>
           <ExternalLink className="w-3.5 h-3.5" />

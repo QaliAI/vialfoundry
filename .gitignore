@@ -50,3 +50,7 @@ next-env.d.ts
 
 .vercel
 supabase/.temp
+
+# Python bytecode from the brand asset scripts
+__pycache__/
+*.pyc

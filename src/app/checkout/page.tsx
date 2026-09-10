@@ -204,7 +204,7 @@ export default function CheckoutPage() {
         <p className="text-xs text-brand-steel font-sans">Add reference materials or standards to proceed with checkout.</p>
         <button
           onClick={() => router.push('/catalog')}
-          className="px-6 py-3 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-semibold text-xs font-display shadow-xs"
+          className="px-6 py-3 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-brand-paper font-semibold text-xs font-display shadow-xs"
         >
           Explore Catalog
         </button>
@@ -500,7 +500,7 @@ export default function CheckoutPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3.5 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-bold text-sm shadow-xs flex items-center justify-center space-x-2 transition-all"
+              className="w-full py-3.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-bold text-sm shadow-xs flex items-center justify-center space-x-2 transition-all"
             >
               <Lock className="w-4 h-4" />
               <span>{isSubmitting ? 'Submitting Request...' : 'Submit Order Request'}</span>

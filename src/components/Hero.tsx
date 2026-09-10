@@ -23,20 +23,20 @@ export const Hero: React.FC<HeroProps> = ({ navigate }) => {
             </div>
 
             {/* Headline */}
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-[50px] font-extrabold text-brand-ink tracking-tight leading-[1.12]">
-              Precision research peptides. <span className="text-brand-graphite font-bold">Documented by lot.</span>
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-[52px] font-bold text-brand-ink tracking-tight leading-[1.1]">
+              Research fuels <span className="text-brand-graphite">what&rsquo;s next.</span>
             </h1>
 
             {/* Subtitle */}
             <p className="text-base sm:text-lg text-brand-steel max-w-xl font-normal leading-relaxed">
-              Synthesized peptide standards and biochemical compounds delivered with lot-specific analytical documentation and cold-chain integrity.
+              Premium research peptides built around quality, traceability and transparent documentation.
             </p>
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 pt-2">
               <button
                 onClick={() => navigate('/catalog')}
-                className="flex items-center justify-center space-x-2 px-7 py-3.5 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-semibold text-sm shadow-xs transition-all"
+                className="flex items-center justify-center space-x-2 px-7 py-3.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-semibold text-sm shadow-xs transition-all"
               >
                 <span>Shop Research Peptides</span>
                 <ArrowRight className="w-4 h-4" />
@@ -69,15 +69,16 @@ export const Hero: React.FC<HeroProps> = ({ navigate }) => {
           </div>
 
           {/* Right Hero Column: Physical Product Showcase */}
+          {/* The physical product is the visual interest here - no UI decoration. */}
           <div className="lg:col-span-6 relative flex items-center justify-center">
-            <div className="relative w-full max-w-lg rounded-2xl overflow-hidden bg-brand-paper border border-brand-border shadow-card p-4 sm:p-6">
-              <img
-                src="/assets/vials/products/hero-product-composition.svg"
-                alt="Vial Foundry Research Reference Materials"
-                className="w-full h-auto object-contain rounded-xl"
-                loading="eager"
-              />
-            </div>
+            <img
+              src="/assets/vials/hero-composition.webp"
+              alt="Vial Foundry research peptide vials: BPC-157, Tirzepatide and Semaglutide"
+              className="w-full max-w-xl h-auto object-contain"
+              width={1600}
+              height={980}
+              loading="eager"
+            />
           </div>
 
         </div>

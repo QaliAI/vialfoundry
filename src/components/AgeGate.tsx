@@ -1,28 +1,83 @@
-﻿'use client';
+'use client';
 
-import React, { useEffect, useState } from 'react';
-import { ShieldCheck, AlertTriangle } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { BrandLogo } from './BrandLogo';
 
-const ACK_KEY = 'vf_ruo_ack';
+const ACK_KEY = 'vf_ruo_ack_v2';
+
+type AckId = 'age' | 'ruo' | 'terms';
+
+const ACKNOWLEDGEMENTS: ReadonlyArray<{ id: AckId; label: React.ReactNode }> = [
+  {
+    id: 'age',
+    label: <>I confirm that I am 21 years of age or older.</>,
+  },
+  {
+    id: 'ruo',
+    label: (
+      <>
+        I understand that Vial Foundry products are sold strictly for research use and are not
+        intended for human or animal consumption.
+      </>
+    ),
+  },
+  {
+    id: 'terms',
+    label: (
+      <>
+        I have read and agree to the{' '}
+        <a
+          href="/legal/ruo-disclaimer"
+          className="text-brand-teal underline underline-offset-2 hover:text-white transition-colors"
+        >
+          Research Use Only Policy
+        </a>{' '}
+        and{' '}
+        <a
+          href="/legal/terms"
+          className="text-brand-teal underline underline-offset-2 hover:text-white transition-colors"
+        >
+          Terms
+        </a>
+        .
+      </>
+    ),
+  },
+];
 
 /**
- * Research-Use-Only acknowledgment gate.
- * Shown once per browser; acceptance persisted in localStorage.
- * Confirms user is 18+ and understands RUO policies.
+ * Research-Use-Only entry gate.
+ *
+ * All three acknowledgements must be checked before the site can be entered.
+ * Acceptance is persisted per browser under `vf_ruo_ack_v2`.
+ *
+ * The 21+ requirement is Vial Foundry company policy. It is deliberately not
+ * described as a federal or legal age requirement, because it is not one.
  */
 export const AgeGate: React.FC = () => {
   const [acknowledged, setAcknowledged] = useState(true);
+  const [checked, setChecked] = useState<Record<AckId, boolean>>({
+    age: false,
+    ruo: false,
+    terms: false,
+  });
 
   useEffect(() => {
     try {
       setAcknowledged(localStorage.getItem(ACK_KEY) === 'true');
     } catch {
+      // Private mode or storage disabled: fail open rather than trapping the user.
       setAcknowledged(true);
     }
   }, []);
 
+  const allChecked = useMemo(
+    () => ACKNOWLEDGEMENTS.every((a) => checked[a.id]),
+    [checked],
+  );
+
   const accept = () => {
+    if (!allChecked) return;
     try {
       localStorage.setItem(ACK_KEY, 'true');
     } catch {
@@ -38,52 +93,65 @@ export const AgeGate: React.FC = () => {
   if (acknowledged) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-brand-ink/60 backdrop-blur-xs px-4">
-      <div className="w-full max-w-lg rounded-2xl border border-brand-border bg-brand-paper shadow-2xl overflow-hidden text-brand-ink">
-        <div className="p-6 border-b border-brand-border/60 flex items-center justify-between">
-          <BrandLogo variant="horizontal" size="md" />
-          <span className="text-[10px] font-sans uppercase tracking-widest text-brand-steel font-medium">
-            RUO Confirmation
-          </span>
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-brand-midnight-deep/80 backdrop-blur-sm px-4 py-8 overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="vf-ruo-title"
+    >
+      <div className="w-full max-w-xl rounded-2xl bg-brand-midnight text-white shadow-2xl overflow-hidden ring-1 ring-white/10">
+        <div className="px-8 pt-9 pb-7 text-center border-b border-white/10">
+          <BrandLogo variant="stacked" height={104} tone="white" className="mx-auto" />
+          <p
+            id="vf-ruo-title"
+            className="mt-6 font-display text-[11px] font-semibold uppercase tracking-[0.3em] text-brand-teal"
+          >
+            Research Use Only
+          </p>
         </div>
 
-        <div className="p-6 space-y-4 text-sm text-brand-steel">
-          <div className="flex items-start space-x-3 p-3.5 rounded-xl bg-brand-canvas border border-brand-border">
-            <AlertTriangle className="w-5 h-5 text-brand-metal flex-shrink-0 mt-0.5" />
-            <p className="text-brand-ink text-xs leading-relaxed">
-              All products are sold strictly as <strong>research materials</strong>. They are
-              <strong> not for human or animal consumption</strong>, medical, clinical, veterinary,
-              diagnostic, or therapeutic use of any kind.
-            </p>
+        <div className="px-8 py-7 space-y-5">
+          <p className="text-sm leading-relaxed text-slate-300">
+            Vial Foundry supplies materials for qualified laboratory and analytical research.
+            Please confirm the following before entering.
+          </p>
+
+          <div className="space-y-3">
+            {ACKNOWLEDGEMENTS.map(({ id, label }) => (
+              <label
+                key={id}
+                className="flex items-start gap-3 p-4 rounded-xl bg-white/[0.04] border border-white/10 hover:border-brand-teal/50 transition-colors cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  checked={checked[id]}
+                  onChange={(e) =>
+                    setChecked((prev) => ({ ...prev, [id]: e.target.checked }))
+                  }
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-white/30 bg-transparent text-brand-teal accent-[#2F9E9A] focus:ring-2 focus:ring-brand-teal focus:ring-offset-0 cursor-pointer"
+                />
+                <span className="text-[13px] leading-relaxed text-slate-200">{label}</span>
+              </label>
+            ))}
           </div>
 
-          <p className="text-xs font-semibold text-brand-graphite uppercase tracking-wider">By entering this site, you confirm that:</p>
-          <ul className="space-y-2 text-xs text-brand-steel">
-            <li className="flex items-start space-x-2">
-              <ShieldCheck className="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
-              <span>You are at least <strong className="text-brand-ink">18 years of age</strong>.</span>
-            </li>
-            <li className="flex items-start space-x-2">
-              <ShieldCheck className="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
-              <span>You are a <strong className="text-brand-ink">qualified researcher or institution</strong> purchasing for laboratory research only.</span>
-            </li>
-            <li className="flex items-start space-x-2">
-              <ShieldCheck className="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
-              <span>You have read and accept the <strong className="text-brand-ink">RUO Disclaimer, Terms of Service, and Privacy Policy</strong>.</span>
-            </li>
-          </ul>
+          <p className="text-[11px] leading-relaxed text-slate-400">
+            The 21+ requirement is Vial Foundry company policy for access to this catalogue.
+          </p>
         </div>
 
-        <div className="p-6 pt-2 flex flex-col sm:flex-row gap-3 border-t border-brand-border/60">
+        <div className="px-8 pb-8 flex flex-col sm:flex-row gap-3">
           <button
             onClick={accept}
-            className="flex-1 px-5 py-3 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-bold text-sm shadow-xs transition-all"
+            disabled={!allChecked}
+            aria-disabled={!allChecked}
+            className="flex-1 px-6 py-3.5 rounded-xl font-display font-semibold text-sm transition-all bg-white text-brand-midnight hover:bg-brand-mist disabled:bg-white/10 disabled:text-slate-500 disabled:cursor-not-allowed"
           >
-            I Confirm — Enter Site
+            Enter Site
           </button>
           <button
             onClick={decline}
-            className="flex-1 px-5 py-3 rounded-xl bg-brand-canvas border border-brand-border text-brand-graphite font-display font-medium text-sm hover:bg-brand-surface-muted transition-all"
+            className="flex-1 sm:flex-none sm:px-8 px-6 py-3.5 rounded-xl border border-white/20 text-slate-300 font-display font-medium text-sm hover:bg-white/5 hover:text-white transition-all"
           >
             Leave
           </button>

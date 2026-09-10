@@ -206,7 +206,7 @@ export default function AdminAffiliatesPage() {
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-primary text-brand-paper font-display font-bold text-xs hover:bg-brand-graphite transition-all shadow-lg"
+          className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-primary text-white font-display font-bold text-xs hover:bg-brand-primary-hover transition-all shadow-lg"
         >
           <Plus className="w-4 h-4" />
           <span>New Affiliate Partner</span>

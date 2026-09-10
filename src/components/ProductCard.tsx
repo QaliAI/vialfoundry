@@ -27,11 +27,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         onClick={() => onViewProduct(product)}
         className="relative aspect-square w-full bg-brand-canvas p-6 flex items-center justify-center overflow-hidden cursor-pointer border-b border-brand-border/60"
       >
-        {/* Category tag and the lot's actual documentation status */}
-        <div className="absolute top-3 left-3 right-3 z-10 flex items-start justify-between gap-2">
-          <span className="text-[10px] font-sans font-medium text-brand-graphite bg-brand-paper/95 border border-brand-border px-2 py-0.5 rounded shadow-2xs">
-            {product.category}
-          </span>
+        {/* Only the lot's real documentation status - no category jargon. */}
+        <div className="absolute top-3 right-3 z-10">
           <DocumentationStatusBadge status={docStatus} className="bg-brand-paper/95 shadow-2xs" />
         </div>
 
@@ -55,21 +52,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           {/* Product Title */}
           <h3
             onClick={() => onViewProduct(product)}
-            className="font-display text-base font-bold text-brand-ink group-hover:text-brand-graphite transition-colors cursor-pointer line-clamp-1 leading-snug"
+            className="font-display text-[15px] font-semibold text-brand-ink group-hover:text-brand-accent transition-colors cursor-pointer line-clamp-2 leading-snug"
           >
             {product.name}
           </h3>
-
-          {/* Brief Factual Subtext */}
-          <p className="text-xs text-brand-steel line-clamp-2 leading-relaxed">
-            {product.description}
-          </p>
         </div>
 
         {/* Pricing & Cart Action Bar */}
         <div className="pt-3 border-t border-brand-border/60 flex items-center justify-between gap-2">
           <div>
-            <div className="font-mono text-lg font-bold text-brand-ink">
+            <div className="font-display text-lg font-bold text-brand-ink tracking-tight">
               ${product.price.toFixed(2)}
             </div>
             {product.inStock ? (
@@ -78,7 +70,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 <span>In Stock</span>
               </div>
             ) : (
-              <div className="text-[11px] text-brand-metal font-medium">Out of Stock</div>
+              <div className="text-[11px] text-brand-steel font-medium mt-0.5">Out of stock</div>
             )}
           </div>
 
@@ -111,7 +103,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                     documentation: docStatus,
                   });
                 }}
-                className="flex items-center space-x-1.5 px-3.5 py-2 rounded-lg bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-semibold text-xs shadow-xs transition-all"
+                className="flex items-center space-x-1.5 px-3.5 py-2 rounded-lg bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-semibold text-xs shadow-xs transition-all"
                 aria-label={`Add ${product.name} to cart`}
               >
                 <ShoppingBag className="w-3.5 h-3.5" />

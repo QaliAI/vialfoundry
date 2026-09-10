@@ -43,7 +43,7 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-md bg-brand-paper p-8 rounded-2xl border border-brand-border space-y-6 shadow-card">
         
         <div className="text-center space-y-3 flex flex-col items-center">
-          <BrandLogo variant="horizontal" size="lg" />
+          <BrandLogo variant="stacked" height={104} />
           <p className="text-xs font-sans text-brand-steel">Administrator Operations Portal</p>
         </div>
 
@@ -86,7 +86,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-xl bg-brand-primary text-brand-paper font-display font-bold text-xs hover:bg-brand-graphite transition-all shadow-xs flex items-center justify-center space-x-2"
+            className="w-full py-3.5 rounded-xl bg-brand-primary text-white font-display font-bold text-xs hover:bg-brand-primary-hover transition-all shadow-xs flex items-center justify-center space-x-2"
           >
             <span>{loading ? 'Authenticating...' : 'Sign In to Console'}</span>
             <ArrowRight className="w-4 h-4" />

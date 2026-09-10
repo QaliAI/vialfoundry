@@ -1,4 +1,4 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -6,33 +6,62 @@
   :root {
     color-scheme: light;
     
-    /* Core Temporary Brand Palette */
-    --brand-canvas: #F2EFE7;
-    --brand-paper: #FFFDF8;
-    --brand-ink: #1B1D1F;
-    --brand-graphite: #34383B;
-    --brand-steel: #777C80;
-    --brand-metal: #A47342;
-    --brand-mineral: #28463E;
+    /* ------------------------------------------------------------------
+       APPROVED PALETTE - Vial Foundry Brand Identity & Visual System
+       These five values are the source of truth. Everything below is a
+       semantic role mapped onto them; components never use raw hex.
+       ------------------------------------------------------------------ */
+    --brand-midnight: #0F2740;  /* Trust, stability - authority + recognition */
+    --brand-teal:     #2F9E9A;  /* Science, calming - ACCENT ONLY, use sparingly */
+    --brand-slate:    #6B8FA1;  /* Modern, balanced - secondary information */
+    --brand-mist:     #C9D6DD;  /* Clean, neutral - borders and dividers */
+    --brand-cloud:    #F4F7F9;  /* Minimal, versatile - dominant page surface */
 
-    /* Semantic Tokens */
-    --brand-primary: #1B1D1F;
-    --brand-primary-hover: #34383B;
-    --brand-accent: #28463E;
-    --brand-accent-hover: #1E352F;
-    --brand-bronze: #A47342;
-    --brand-background: #F2EFE7;
-    --brand-surface: #FFFDF8;
-    --brand-surface-muted: #E8E4D9;
-    --brand-text: #1B1D1F;
-    --brand-text-muted: #777C80;
-    --brand-border: #E0DACD;
-    --brand-border-strong: #C4BCAC;
-    --brand-success: #28463E;
-    --brand-warning: #A47342;
-    --brand-danger: #991B1B;
+    /* Supporting tints derived from the approved palette */
+    --brand-midnight-light: #1B3E60;
+    --brand-midnight-deep:  #0A1D30;
+    --brand-teal-deep:      #227C79;
+
+    /* Semantic roles ------------------------------------------------- */
+    --brand-primary:        var(--brand-midnight);
+    --brand-primary-hover:  var(--brand-midnight-light);
+    --brand-accent:         var(--brand-teal);
+    --brand-accent-hover:   var(--brand-teal-deep);
+    --brand-background:     var(--brand-cloud);
+    --brand-paper:          #FFFFFF;
+    --brand-surface:        #FFFFFF;
+    --brand-surface-muted:  #EDF2F5;
+    --brand-text:           var(--brand-midnight);
+    --brand-text-muted:     #5B7183;
+    --brand-border:         #DFE7EC;
+    --brand-border-strong:  var(--brand-mist);
+
+    /* Legacy role aliases - kept so components stay on semantic names.
+       Every one of these now resolves to the approved palette. */
+    --brand-canvas:   var(--brand-cloud);
+    --brand-ink:      var(--brand-midnight);
+    --brand-graphite: var(--brand-midnight-light);
+    --brand-steel:    var(--brand-text-muted);
+    --brand-mineral:  var(--brand-teal-deep);
+    --brand-metal:    var(--brand-warning);
+
+    /* Functional status colours - deliberately NOT brand colours, so a
+       warning never reads as an accent and success never reads as teal. */
+    --brand-success: #1F7A5C;
+    --brand-warning: #B45309;
+    --brand-danger:  #B42318;
   }
   
+  html {
+    font-size: 16px;
+  }
+
+  @media (min-width: 1024px) {
+    html {
+      font-size: 17px;
+    }
+  }
+
   body {
     background-color: var(--brand-canvas);
     color: var(--brand-ink);
@@ -43,8 +72,8 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Outfit', 'Inter', system-ui, sans-serif;
-    letter-spacing: -0.02em;
+    font-family: 'Montserrat', 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.015em;
     color: var(--brand-ink);
   }
 }

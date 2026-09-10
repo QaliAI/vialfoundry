@@ -105,7 +105,7 @@ export const BatchVerificationEngine: React.FC<Props> = ({ navigate, showHeader 
             </div>
             <button
               type="submit"
-              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-semibold text-sm shadow-xs transition-all flex items-center justify-center space-x-2"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-semibold text-sm shadow-xs transition-all flex items-center justify-center space-x-2"
             >
               <span>Look up lot</span>
               <ArrowRight className="w-4 h-4" />
@@ -135,7 +135,7 @@ export const BatchVerificationEngine: React.FC<Props> = ({ navigate, showHeader 
                       setActiveCOABatch(result.batch);
                       trackEvent('documentation_viewed', { source: 'lot_lookup' });
                     }}
-                    className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-semibold text-xs shadow-xs transition-all"
+                    className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-semibold text-xs shadow-xs transition-all"
                   >
                     <FileCheck className="w-4 h-4" />
                     <span>Read the certificate</span>
@@ -195,7 +195,7 @@ export const BatchVerificationEngine: React.FC<Props> = ({ navigate, showHeader 
                       trackEvent('documentation_requested', { lot: result.lot });
                       navigate?.('/contact');
                     }}
-                    className="px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-semibold text-xs shadow-xs transition-all"
+                    className="px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-semibold text-xs shadow-xs transition-all"
                   >
                     Request documentation for this lot
                   </button>

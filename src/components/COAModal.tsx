@@ -130,7 +130,7 @@ export const COAModal: React.FC<COAModalProps> = ({ batch, onClose }) => {
           <div className="flex items-center space-x-2">
             <button
               onClick={() => generateCOAPDF(batch)}
-              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-semibold text-xs shadow-xs transition-all"
+              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-semibold text-xs shadow-xs transition-all"
             >
               <Download className="w-4 h-4" />
               <span>Download summary</span>

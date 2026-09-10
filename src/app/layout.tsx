@@ -13,6 +13,7 @@ const organizationJsonLd = {
   name: 'Vial Foundry',
   url: SITE_URL,
   logo: `${SITE_URL}/brand/logo-horizontal.svg`,
+  image: `${SITE_URL}/brand/og-image.png`,
   description:
     'Precision research peptides and reference compounds supported by lot-specific documentation and analytical verification. For research use only.',
   email: 'support@vialfoundry.com',
@@ -28,19 +29,30 @@ export const metadata: Metadata = {
     description: 'Precision-manufactured research peptides and reference standards supported by lot-specific documentation. For research use only.',
     url: 'https://vialfoundry.com/',
     siteName: 'Vial Foundry',
-    images: [{ url: '/brand/logo-horizontal.svg' }],
+    images: [{ url: '/brand/og-image.png', width: 1200, height: 630, alt: 'Vial Foundry — Research Peptides' }],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Vial Foundry — Research Peptides | Reference Standards & Batch Documentation',
     description: 'Precision-manufactured research peptides and reference standards supported by lot-specific documentation. For research use only.',
-    images: ['/brand/logo-horizontal.svg'],
+    images: ['/brand/og-image.png'],
   },
   robots: {
     index: true,
     follow: true,
   },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/brand/icon-32.png', type: 'image/png', sizes: '32x32' },
+      { url: '/brand/icon-192.png', type: 'image/png', sizes: '192x192' },
+      { url: '/brand/icon-512.png', type: 'image/png', sizes: '512x512' },
+    ],
+    apple: [{ url: '/brand/apple-touch-icon.png', sizes: '180x180' }],
+    shortcut: ['/favicon.ico'],
+  },
+  manifest: '/site.webmanifest',
 };
 
 export default function RootLayout({
@@ -53,9 +65,10 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <meta name="theme-color" content="#0F2740" />
       </head>
-      <body className="bg-brand-canvas text-brand-ink font-sans antialiased selection:bg-brand-mineral selection:text-white min-h-screen flex flex-col justify-between">
+      <body className="bg-brand-canvas text-brand-ink font-sans antialiased selection:bg-brand-teal selection:text-white min-h-screen flex flex-col justify-between">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}

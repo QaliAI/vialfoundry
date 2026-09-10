@@ -90,7 +90,7 @@ function Confirmation() {
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
         <button
           onClick={() => router.push('/catalog')}
-          className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-bold text-xs shadow-xs flex items-center justify-center space-x-2 transition-all"
+          className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-bold text-xs shadow-xs flex items-center justify-center space-x-2 transition-all"
         >
           <span>Return to Catalog</span>
           <ArrowRight className="w-4 h-4" />

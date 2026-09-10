@@ -6,6 +6,7 @@ import { FoundryStandard } from '../components/FoundryStandard';
 import { BatchVerificationEngine } from '../components/BatchVerificationEngine';
 import { PRODUCTS } from '../data/products';
 import { getBatchRecord } from '../data/batches';
+import { VERIFIED_BATCH_RECORDS } from '../data/verified-batch-records';
 import { Product, ProductCategory } from '../types';
 import { COAModal } from '../components/COAModal';
 import { ArrowRight, ChevronRight, Layers } from 'lucide-react';
@@ -139,8 +140,14 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
       {/* 4. Quality / The Foundry Standard Section */}
       <FoundryStandard navigate={navigate} />
 
-      {/* 5. Lot documentation lookup */}
-      <BatchVerificationEngine navigate={navigate} />
+      {/* 5. Lot documentation lookup.
+             Only featured on the homepage once at least one authentic certificate
+             has actually been loaded. An empty lookup promoted as a headline
+             feature reads as a credibility claim we cannot yet back up; the
+             /verify page and the per-lot status badges stay available regardless. */}
+      {Object.keys(VERIFIED_BATCH_RECORDS).length > 0 && (
+        <BatchVerificationEngine navigate={navigate} />
+      )}
 
       {/* 6. Research Resources & Documentation Articles */}
       <section className="py-16 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-brand-border">

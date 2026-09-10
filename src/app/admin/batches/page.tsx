@@ -57,7 +57,7 @@ export default function AdminBatchesPage() {
         </div>
         <button
           onClick={() => setIsCreating(true)}
-          className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-primary text-brand-paper font-display font-bold text-xs hover:bg-brand-graphite"
+          className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-primary text-white font-display font-bold text-xs hover:bg-brand-primary-hover"
         >
           <Plus className="w-4 h-4" />
           <span>New Batch Record</span>

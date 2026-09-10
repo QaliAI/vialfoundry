@@ -86,8 +86,8 @@ export const VialStudioViewer: React.FC<VialStudioViewerProps> = ({ onVerifyClic
         <img
           src={
             lightingMode === 'dark'
-              ? '/assets/vials/single-vial-dark.webp'
-              : '/assets/vials/single-vial-light.webp'
+              ? '/assets/vials/single-vial-dark.png'
+              : '/assets/vials/single-vial-light.png'
           }
           alt="Vial Foundry Physical Reference Vial"
           className="max-h-full max-w-full object-contain filter drop-shadow-md transition-all duration-700 group-hover:scale-105"

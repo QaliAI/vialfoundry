@@ -35,9 +35,13 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pb-12 border-b border-brand-graphite/40 items-start">
           
           <div className="lg:col-span-6 space-y-3">
-            <BrandLogo variant="horizontal" size="md" inverted={true} />
+            <BrandLogo variant="horizontal" height={34} tone="white" />
             <p className="text-sm text-slate-400 font-normal max-w-md leading-relaxed pt-2">
               Precision research peptides and reference compounds supported by lot-specific documentation and cold-chain integrity.
+            </p>
+            {/* Approved brand statement (Brand Identity &amp; Visual System board) */}
+            <p className="font-display text-[11px] font-semibold uppercase tracking-[0.28em] text-brand-teal pt-2">
+              Research fuels what&rsquo;s next.
             </p>
           </div>
 

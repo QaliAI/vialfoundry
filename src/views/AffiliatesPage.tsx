@@ -137,7 +137,7 @@ export const AffiliatesPage: React.FC = () => {
               </div>
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-xl bg-brand-primary hover:bg-brand-graphite text-brand-paper font-display font-bold text-xs shadow-xs transition-all"
+                className="w-full py-3.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-bold text-xs shadow-xs transition-all"
               >
                 Apply to the Affiliate Program
               </button>
