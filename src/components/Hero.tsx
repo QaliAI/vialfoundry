@@ -24,12 +24,16 @@ export const Hero: React.FC<HeroProps> = ({ navigate }) => {
 
             {/* Headline */}
             <h1 className="font-display text-4xl sm:text-5xl lg:text-[52px] font-bold text-brand-ink tracking-tight leading-[1.1]">
-              Research fuels <span className="text-brand-graphite">what&rsquo;s next.</span>
+              Premium research peptides.
             </h1>
+            <p className="font-display text-base sm:text-lg font-medium text-brand-graphite -mt-2">
+              Quality products. Clear information. Straightforward ordering.
+            </p>
 
             {/* Subtitle */}
             <p className="text-base sm:text-lg text-brand-steel max-w-xl font-normal leading-relaxed">
-              Premium research peptides built around quality, traceability and transparent documentation.
+              Shop research peptides with clear product details, lot tracking and batch
+              documents when available.
             </p>
 
             {/* CTAs */}
@@ -47,23 +51,23 @@ export const Hero: React.FC<HeroProps> = ({ navigate }) => {
                 className="flex items-center justify-center space-x-2 px-6 py-3.5 rounded-xl bg-brand-paper border border-brand-border text-brand-ink font-display font-semibold text-sm hover:bg-brand-surface-muted hover:border-brand-border-strong transition-all shadow-2xs"
               >
                 <FileCheck className="w-4 h-4 text-brand-accent" />
-                <span>Quality &amp; Standards</span>
+                <span>How We Handle Quality</span>
               </button>
             </div>
 
-            {/* Factual micro-points. Each one is verifiable from the site itself. */}
+            {/* Plain facts only. Nothing here claims a process we cannot show. */}
             <div className="pt-6 grid grid-cols-3 gap-4 border-t border-brand-border/80 max-w-lg">
               <div>
-                <div className="text-[11px] font-sans font-medium text-brand-steel uppercase tracking-wider">Traceability</div>
-                <div className="font-sans text-sm font-semibold text-brand-ink mt-0.5">Lot-numbered vials</div>
+                <div className="text-[11px] font-sans font-medium text-brand-steel uppercase tracking-wider">Lot tracking</div>
+                <div className="font-sans text-sm font-semibold text-brand-ink mt-0.5">Lot number on every vial</div>
               </div>
               <div>
-                <div className="text-[11px] font-sans font-medium text-brand-steel uppercase tracking-wider">Documentation</div>
-                <div className="font-sans text-sm font-semibold text-brand-ink mt-0.5">Status shown per lot</div>
+                <div className="text-[11px] font-sans font-medium text-brand-steel uppercase tracking-wider">Documents</div>
+                <div className="font-sans text-sm font-semibold text-brand-ink mt-0.5">See what&rsquo;s available</div>
               </div>
               <div>
-                <div className="text-[11px] font-sans font-medium text-brand-steel uppercase tracking-wider">Dispatch</div>
-                <div className="font-sans text-sm font-semibold text-brand-ink mt-0.5">Insulated cold packing</div>
+                <div className="text-[11px] font-sans font-medium text-brand-steel uppercase tracking-wider">Shipping</div>
+                <div className="font-sans text-sm font-semibold text-brand-ink mt-0.5">Carefully packed</div>
               </div>
             </div>
           </div>

@@ -2,7 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { PUBLIC_PRODUCTS } from '../data/products';
-import { Product } from '../types';
+import { categoryLabel } from '../lib/catalog-display';
+import { Product, ProductCategory } from '../types';
 import { ProductCard } from '../components/ProductCard';
 import { getBatchRecord, getDocumentationStatus } from '../data/batches';
 import { COAModal } from '../components/COAModal';
@@ -15,13 +16,11 @@ interface CatalogPageProps {
   initialCategory?: string;
 }
 
-const CATEGORIES = [
+// Derived from the live catalogue so a category with no public products
+// (e.g. Lab Supplies while both supplies SKUs are withheld) never renders.
+const CATEGORIES: string[] = [
   'All',
-  'Reference Materials',
-  'Analytical Standards',
-  'Single Compounds',
-  'Specialty Materials',
-  'Lab Supplies',
+  ...Array.from(new Set(PUBLIC_PRODUCTS.map((p) => p.category))),
 ];
 
 type DocFilter = 'any' | 'verified' | 'pending';
@@ -80,11 +79,11 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct, initi
           Catalog
         </div>
         <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-brand-ink tracking-tight">
-          Research Peptides &amp; Reference Standards
+          Shop Research Peptides
         </h1>
         <p className="text-brand-steel text-sm sm:text-base font-normal max-w-2xl leading-relaxed">
-          {PUBLIC_PRODUCTS.length} research peptides in stock or on backorder. Each card states whether we hold a
-          certificate of analysis for that lot, so you know before you order.
+          {PUBLIC_PRODUCTS.length} research peptides. Every vial has a batch number, and you can
+          see which documents we hold before you order.
         </p>
       </div>
 
@@ -103,7 +102,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct, initi
                   : 'text-brand-steel hover:text-brand-ink hover:bg-brand-surface-muted'
               }`}
             >
-              {cat}
+              {cat === 'All' ? 'All' : categoryLabel(cat as ProductCategory)}
             </button>
           ))}
         </div>
@@ -120,7 +119,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct, initi
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search compounds, CAS or lot..."
+              placeholder="Search peptides..."
               className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-brand-canvas border border-brand-border text-brand-ink placeholder-brand-steel text-xs font-sans focus:outline-none focus:bg-brand-paper focus:border-brand-graphite"
             />
           </div>
@@ -128,7 +127,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct, initi
           <div className="flex items-center space-x-1.5 bg-brand-canvas border border-brand-border rounded-lg px-2.5 py-1.5 text-xs font-sans text-brand-graphite">
             <ArrowUpDown className="w-3.5 h-3.5 text-brand-steel" />
             <label htmlFor="catalog-sort" className="sr-only">
-              Sort catalog
+              Sort products
             </label>
             <select
               id="catalog-sort"
@@ -152,8 +151,8 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct, initi
           {(
             [
               ['any', `All ${PUBLIC_PRODUCTS.length}`],
-              ['verified', `COA on file (${documentedCount})`],
-              ['pending', `COA pending (${PUBLIC_PRODUCTS.length - documentedCount})`],
+              ['verified', `Documents on file (${documentedCount})`],
+              ['pending', `No documents yet (${PUBLIC_PRODUCTS.length - documentedCount})`],
             ] as [DocFilter, string][]
           ).map(([value, label]) => (
             <button

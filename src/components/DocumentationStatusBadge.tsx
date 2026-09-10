@@ -13,17 +13,17 @@ const CONFIG: Record<
   { label: string; icon: React.ElementType; tone: string }
 > = {
   verified: {
-    label: 'COA on file',
+    label: 'Documents available',
     icon: FileCheck,
     tone: 'text-brand-mineral border-brand-mineral/30 bg-brand-mineral/[0.06]',
   },
   pending: {
-    label: 'COA pending',
+    label: 'Not yet available online',
     icon: FileClock,
     tone: 'text-brand-graphite border-brand-border bg-brand-canvas',
   },
   none: {
-    label: 'No lot record',
+    label: 'No batch record',
     icon: FileX,
     tone: 'text-brand-steel border-brand-border bg-brand-canvas',
   },

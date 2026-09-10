@@ -7,7 +7,7 @@ export const ContactPage: React.FC = () => {
     name: '',
     institution: '',
     email: '',
-    subject: 'Institutional Procurement Inquiry',
+    subject: 'Bulk Order Enquiry',
     message: ''
   });
 
@@ -36,7 +36,7 @@ export const ContactPage: React.FC = () => {
           Contact Vial Foundry
         </h1>
         <p className="text-brand-steel text-sm sm:text-base font-normal leading-relaxed">
-          Contact our team for institutional procurement inquiries, lot documentation requests, or reference standard specifications.
+          Questions about a product, a batch document or bulk pricing? Send us a message.
         </p>
       </div>
 
@@ -45,9 +45,9 @@ export const ContactPage: React.FC = () => {
         {/* Left Column Contact Info */}
         <div className="lg:col-span-5 space-y-6">
           <div className="storefront-card p-6 sm:p-8 rounded-2xl bg-brand-paper border border-brand-border shadow-2xs space-y-4">
-            <h3 className="font-display text-lg font-bold text-brand-ink">Institutional Support</h3>
+            <h3 className="font-display text-lg font-bold text-brand-ink">Support</h3>
             <p className="text-xs text-brand-steel font-normal leading-relaxed">
-              We respond to qualified research and institutional procurement inquiries within standard business hours.
+              We reply during normal business hours.
             </p>
 
             <div className="space-y-3 pt-2 text-xs font-sans text-brand-ink">
@@ -106,7 +106,7 @@ export const ContactPage: React.FC = () => {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-sans text-brand-ink font-semibold">Institutional Email</label>
+                <label className="text-xs font-sans text-brand-ink font-semibold">Email</label>
                 <input
                   type="email"
                   required
@@ -124,10 +124,10 @@ export const ContactPage: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-brand-canvas border border-brand-border text-brand-ink text-xs font-sans focus:outline-none focus:bg-brand-paper focus:border-brand-graphite cursor-pointer"
                 >
-                  <option value="Institutional Procurement Inquiry">Institutional Procurement Inquiry</option>
+                  <option value="Bulk Order Enquiry">Bulk Order Enquiry</option>
                   <option value="Batch COA Verification Request">Batch COA Verification Request</option>
                   <option value="Custom Synthesis Quote">Custom Synthesis Quote</option>
-                  <option value="Shipping & Cold Chain Support">Shipping & Cold Chain Support</option>
+                  <option value="Shipping Support">Shipping Support</option>
                 </select>
               </div>
 

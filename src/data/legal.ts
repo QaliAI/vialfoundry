@@ -153,14 +153,14 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
   },
   shipping: {
     slug: 'shipping',
-    title: 'Shipping & Cold Storage Policy',
+    title: 'Shipping & Storage Policy',
     updated: UPDATED,
     intro: `This policy describes how ${COMPANY} packages, stores, and ships research materials.`,
     sections: [
       {
-        heading: 'Handling & Cold Chain',
+        heading: 'Handling & Packaging',
         body: [
-          'Lyophilized research materials are stable at ambient temperature for standard transit windows. Where required, items are shipped with insulated packaging and cold packs to preserve integrity.',
+          'Lyophilized research materials are stable at ambient temperature for standard transit windows. Orders are sealed and packed protectively for transit.',
           'Upon receipt, materials should be stored per the storage conditions listed on each product page (typically desiccated at -20°C).',
         ],
       },

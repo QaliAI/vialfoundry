@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { productTitle, productSize } from '../lib/catalog-display';
 
 interface CartDrawerProps {
   navigate: (path: string) => void;
@@ -128,7 +129,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
                   <span className="font-bold font-mono text-brand-ink">${subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-brand-steel">
-                  <span>Packaging & Cold Pack</span>
+                  <span>Packaging</span>
                   <span className="text-brand-mineral font-semibold">Included</span>
                 </div>
                 <div className="flex justify-between text-brand-ink font-bold text-sm pt-2 border-t border-brand-border/60">

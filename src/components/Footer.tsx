@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Mail, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
+import { VERIFIED_BATCH_RECORDS } from '../data/verified-batch-records';
 
 interface FooterProps {
   navigate: (path: string) => void;
 }
+
+const hasBatchDocuments = Object.keys(VERIFIED_BATCH_RECORDS).length > 0;
 
 export const Footer: React.FC<FooterProps> = ({ navigate }) => {
   const [email, setEmail] = useState('');
@@ -37,7 +40,7 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
           <div className="lg:col-span-6 space-y-3">
             <BrandLogo variant="horizontal" height={34} tone="white" />
             <p className="text-sm text-slate-400 font-normal max-w-md leading-relaxed pt-2">
-              Precision research peptides and reference compounds supported by lot-specific documentation and cold-chain integrity.
+              Research peptides with clear product details, batch numbers and documents when we have them.
             </p>
             {/* Approved brand statement (Brand Identity &amp; Visual System board) */}
             <p className="font-display text-[11px] font-semibold uppercase tracking-[0.28em] text-brand-teal pt-2">
@@ -47,10 +50,10 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
 
           <div className="lg:col-span-6 space-y-3">
             <h4 className="font-display text-sm font-bold text-white">
-              Batch documentation & product availability updates.
+              Get product updates
             </h4>
             <p className="text-xs text-slate-400">
-              Subscribe to receive new lot notifications and analytical reference updates.
+              Hear about new products, batch documents and availability.
             </p>
 
             {subscribed ? (
@@ -67,7 +70,7 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter institutional email..."
+                    placeholder="Enter your email"
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-brand-graphite/40 border border-brand-graphite text-white placeholder-slate-500 text-xs font-sans focus:outline-none focus:border-slate-300"
                   />
                 </div>
@@ -90,21 +93,25 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
           <div className="space-y-3">
             <h5 className="font-sans text-xs font-semibold text-slate-200 uppercase tracking-wider">Shop Catalog</h5>
             <ul className="space-y-2 text-xs">
-              <li><button onClick={() => navigate('/catalog')} className="text-slate-400 hover:text-white transition-colors">All Research Peptides</button></li>
-              <li><button onClick={() => navigate('/catalog?category=Reference+Materials')} className="text-slate-400 hover:text-white transition-colors">Reference Materials</button></li>
-              <li><button onClick={() => navigate('/catalog?category=Analytical+Standards')} className="text-slate-400 hover:text-white transition-colors">Analytical Standards</button></li>
-              <li><button onClick={() => navigate('/catalog?category=Single+Compounds')} className="text-slate-400 hover:text-white transition-colors">Single Compounds</button></li>
-              <li><button onClick={() => navigate('/catalog?category=Specialty+Materials')} className="text-slate-400 hover:text-white transition-colors">Specialty Materials</button></li>
-              <li><button onClick={() => navigate('/catalog?category=Lab+Supplies')} className="text-slate-400 hover:text-white transition-colors">Lab Supplies</button></li>
+              <li><button onClick={() => navigate('/catalog')} className="text-slate-400 hover:text-white transition-colors">All Peptides</button></li>
+              <li><button onClick={() => navigate('/catalog?category=Reference+Materials')} className="text-slate-400 hover:text-white transition-colors">Research Peptides</button></li>
+              <li><button onClick={() => navigate('/catalog?category=Analytical+Standards')} className="text-slate-400 hover:text-white transition-colors">Peptide Standards</button></li>
+              <li><button onClick={() => navigate('/catalog?category=Single+Compounds')} className="text-slate-400 hover:text-white transition-colors">Single Peptides</button></li>
+              <li><button onClick={() => navigate('/catalog?category=Specialty+Materials')} className="text-slate-400 hover:text-white transition-colors">Specialty Peptides</button></li>
+              <li><button onClick={() => navigate('/catalog?category=Lab+Supplies')} className="text-slate-400 hover:text-white transition-colors">Research Supplies</button></li>
             </ul>
           </div>
 
           <div className="space-y-3">
-            <h5 className="font-sans text-xs font-semibold text-slate-200 uppercase tracking-wider">Quality & Testing</h5>
+            <h5 className="font-sans text-xs font-semibold text-slate-200 uppercase tracking-wider">Quality & Documents</h5>
             <ul className="space-y-2 text-xs">
-              <li><button onClick={() => navigate('/verify')} className="text-slate-200 font-semibold hover:text-white transition-colors">Lot Documentation Lookup</button></li>
-              <li><button onClick={() => navigate('/quality')} className="text-slate-400 hover:text-white transition-colors">The Foundry Standard</button></li>
-              <li><button onClick={() => navigate('/resources')} className="text-slate-400 hover:text-white transition-colors">COA Interpretation Guide</button></li>
+              {/* Only promoted once we actually hold a certificate. The /verify
+                  route stays available either way. */}
+              {hasBatchDocuments && (
+                <li><button onClick={() => navigate('/verify')} className="text-slate-400 hover:text-white transition-colors">Batch Documents</button></li>
+              )}
+              <li><button onClick={() => navigate('/quality')} className="text-slate-400 hover:text-white transition-colors">How We Handle Quality</button></li>
+              <li><button onClick={() => navigate('/resources')} className="text-slate-400 hover:text-white transition-colors">How to Read a Document</button></li>
             </ul>
           </div>
 
@@ -121,10 +128,10 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
           <div className="space-y-3">
             <h5 className="font-sans text-xs font-semibold text-slate-200 uppercase tracking-wider">Support</h5>
             <ul className="space-y-2 text-xs">
-              <li><button onClick={() => navigate('/contact')} className="text-slate-400 hover:text-white transition-colors">Institutional Procurement</button></li>
-              <li><button onClick={() => navigate('/legal/shipping')} className="text-slate-400 hover:text-white transition-colors">Shipping & Cold Storage</button></li>
+              <li><button onClick={() => navigate('/contact')} className="text-slate-400 hover:text-white transition-colors">Bulk Orders</button></li>
+              <li><button onClick={() => navigate('/legal/shipping')} className="text-slate-400 hover:text-white transition-colors">Shipping & Storage</button></li>
               <li><button onClick={() => navigate('/legal/refunds')} className="text-slate-400 hover:text-white transition-colors">Return Policy</button></li>
-              <li><button onClick={() => navigate('/contact')} className="text-slate-400 hover:text-white transition-colors">Bulk Quote Inquiries</button></li>
+              <li><button onClick={() => navigate('/contact')} className="text-slate-400 hover:text-white transition-colors">Bulk Pricing</button></li>
             </ul>
           </div>
 
@@ -145,7 +152,7 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
           <div className="flex items-center space-x-3 text-slate-300">
             <ShieldCheck className="w-5 h-5 text-slate-400 flex-shrink-0" />
             <span className="leading-relaxed">
-              <strong>FOR RESEARCH USE ONLY:</strong> All materials provided by Vial Foundry are intended strictly for laboratory and analytical research purposes. Not for human, clinical, veterinary, or therapeutic administration.
+              <strong>FOR RESEARCH USE ONLY:</strong> All Vial Foundry products are supplied strictly for laboratory research use. Not for human or animal consumption, and not for medical, veterinary, therapeutic or diagnostic use.
             </span>
           </div>
           <span className="text-slate-500 whitespace-nowrap text-[11px] font-mono">

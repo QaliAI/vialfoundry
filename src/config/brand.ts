@@ -67,7 +67,10 @@ export interface BrandConfig {
 export const vialFoundryBrandConfig: BrandConfig = {
   brandId: process.env.NEXT_PUBLIC_BRAND_ID || "vial-foundry",
   name: process.env.NEXT_PUBLIC_BRAND_NAME || "Vial Foundry",
-  legalName: process.env.NEXT_PUBLIC_BRAND_LEGAL_NAME || "Vial Foundry Laboratories LLC",
+  // No invented entity. Until the real registered company name is set in
+  // NEXT_PUBLIC_BRAND_LEGAL_NAME, fall back to the trading name rather than
+  // presenting an LLC that may not exist.
+  legalName: process.env.NEXT_PUBLIC_BRAND_LEGAL_NAME || "Vial Foundry",
   domain: process.env.NEXT_PUBLIC_BRAND_DOMAIN || "vialfoundry.com",
   supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@vialfoundry.com",
   orderNotificationEmails: (process.env.ADMIN_NOTIFICATION_EMAIL || process.env.NOTIFICATION_EMAIL_TO || "orders@vialfoundry.com, admin@vialfoundry.com")
@@ -82,20 +85,20 @@ export const vialFoundryBrandConfig: BrandConfig = {
   emailSenderName: process.env.EMAIL_SENDER_NAME || "Vial Foundry Procurement",
   emailSenderDomain: process.env.EMAIL_SENDER_DOMAIN || "vialfoundry.com",
   researchUseOnlyDisclaimer:
-    "All Vial Foundry materials and reference standards are strictly synthesized and supplied for qualified in vitro laboratory and analytical research. Not for human, veterinary, therapeutic, or diagnostic administration.",
+    "All Vial Foundry products are supplied strictly for laboratory research use. Not for human or animal consumption, and not for medical, veterinary, therapeutic or diagnostic use.",
   checkoutNotice:
-    "Orders submit a formal research procurement request. Formal quotes, invoices, and payment instructions will be issued upon review.",
+    "Placing an order sends us a request. We confirm stock, then email your invoice and payment instructions.",
   paymentMethods: {
     manualInvoice: true,
     zelle: {
-      enabled: true,
-      recipientName: process.env.ZELLE_RECIPIENT_NAME || "Vial Foundry LLC",
-      emailOrPhone: process.env.ZELLE_EMAIL || "payments@vialfoundry.com",
+      enabled: Boolean(process.env.ZELLE_EMAIL),
+      recipientName: process.env.ZELLE_RECIPIENT_NAME || "",
+      emailOrPhone: process.env.ZELLE_EMAIL || "",
       noteFormat: "VF Order #[ORDER_NUMBER]",
     },
     venmo: {
-      enabled: true,
-      handle: process.env.VENMO_HANDLE || "@VialFoundry",
+      enabled: Boolean(process.env.VENMO_HANDLE),
+      handle: process.env.VENMO_HANDLE || "",
       verificationNote: "Include VF Order #[ORDER_NUMBER] in note",
     },
   },
@@ -111,21 +114,21 @@ export const vialFoundryBrandConfig: BrandConfig = {
   shippingOptions: [
     {
       id: "standard",
-      name: "Standard Ground (3-5 Days)",
-      description: "Temperature-monitored ground shipping with cold insulation pack.",
+      name: "Standard Shipping (3-5 days)",
+      description: "Carefully packed and shipped by ground.",
       costCents: 1500,
       freeShippingThresholdCents: 20000,
     },
     {
       id: "priority",
-      name: "Priority Air (2-Day)",
-      description: "Expedited cold-chain transit with tracking notification.",
+      name: "Priority Shipping (2 days)",
+      description: "Faster shipping with tracking.",
       costCents: 3500,
     },
     {
       id: "express",
-      name: "Express Overnight (1-Day)",
-      description: "Next-day priority delivery with thermal insulation.",
+      name: "Overnight Shipping (1 day)",
+      description: "Next-day delivery with tracking.",
       costCents: 6500,
     },
   ],

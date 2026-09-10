@@ -34,7 +34,7 @@ export const LegalDocument: React.FC<{ doc: LegalDoc }> = ({ doc }) => {
           <div>
             <h3 className="font-display text-base font-bold text-brand-ink">Refer researchers, earn commission</h3>
             <p className="text-xs text-brand-steel mt-1">
-              Qualified research educators and community operators can join the Vial Foundry Affiliate Program.
+              Researchers and community operators can join the Vial Foundry Affiliate Program.
             </p>
           </div>
           <a

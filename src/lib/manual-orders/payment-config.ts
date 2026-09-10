@@ -11,20 +11,22 @@ export interface ManualPaymentRecipientConfig {
 
 export function getManualPaymentConfig(): ManualPaymentRecipientConfig {
   const brand = getBrandConfig();
+  // No invented recipients. An unset handle stays empty so the caller can hide
+  // the method rather than print an address nobody monitors.
   const zelleName =
     sanitizeEnvValue(process.env.ZELLE_RECIPIENT_NAME) ||
     brand.paymentMethods.zelle.recipientName ||
-    "Vial Foundry LLC";
+    "";
 
   const zelleEmail =
     sanitizeEnvValue(process.env.ZELLE_EMAIL) ||
     brand.paymentMethods.zelle.emailOrPhone ||
-    "payments@vialfoundry.com";
+    "";
 
   const venmoHandle =
     sanitizeEnvValue(process.env.VENMO_HANDLE) ||
     brand.paymentMethods.venmo.handle ||
-    "@VialFoundry";
+    "";
 
   return {
     zelleRecipientName: zelleName,

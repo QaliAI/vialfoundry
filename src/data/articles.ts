@@ -8,7 +8,7 @@ export const RESEARCH_ARTICLES: ResearchArticle[] = [
     readTime: '4 min read',
     date: 'August 2026',
     author: 'Vial Foundry Quality Assurance Team',
-    excerpt: 'A comprehensive guide to interpreting chromatographic peak integration, mass spectrum confirmation, and batch-specific testing metrics.',
+    excerpt: 'What a certificate of analysis actually tells you, and how to read one.',
     tags: ['COA', 'HPLC', 'Quality Control', 'Analytical Method'],
     content: [
       'A Certificate of Analysis (COA) is the definitive technical passport of any chemical or peptide reference material. It documents empirical testing results performed on a specific lot number by an independent or certified analytical testing laboratory.',
@@ -27,7 +27,7 @@ export const RESEARCH_ARTICLES: ResearchArticle[] = [
     readTime: '6 min read',
     date: 'July 2026',
     author: 'Vial Foundry Analytical Chemistry',
-    excerpt: 'Why high-performance liquid chromatography and mass spectrometry must be combined to guarantee chemical identity and purity.',
+    excerpt: 'The two main lab tests used on peptides, and why each one on its own is not enough.',
     tags: ['HPLC', 'LC-MS', 'Mass Spec', 'Chromatography'],
     content: [
       'Evaluating research materials requires both quantity and identity metrics. A compound can produce a clean, single HPLC peak while being an entirely incorrect peptide sequence if the amino acid assembly was mismatched during synthesis.',
@@ -46,7 +46,7 @@ export const RESEARCH_ARTICLES: ResearchArticle[] = [
     readTime: '5 min read',
     date: 'June 2026',
     author: 'Vial Foundry Operational Compliance',
-    excerpt: 'Why generic "template" COAs undermine scientific rigor and how true lot-level tracking ensures material consistency.',
+    excerpt: 'Why a document has to match the exact batch you received to mean anything.',
     tags: ['Documentation', 'Lot Tracking', 'Sourcing', 'Audit'],
     content: [
       'In chemical manufacturing, no two synthesis runs are 100% identical. Reagent grade variations, humidity, purification column wear, and lyophilization cycle parameters create subtle lot-to-lot differences.',
@@ -63,7 +63,7 @@ export const RESEARCH_ARTICLES: ResearchArticle[] = [
     readTime: '6 min read',
     date: 'August 2026',
     author: 'Vial Foundry Technical Applications',
-    excerpt: 'A step-by-step laboratory protocol for reconstituting lyophilized peptide reference materials while preserving analytical integrity.',
+    excerpt: 'A step-by-step guide to mixing a freeze-dried peptide correctly.',
     tags: ['Reconstitution', 'Handling', 'Solubility', 'Best Practices'],
     content: [
       'Lyophilized (freeze-dried) peptides arrive as a stable powder or cake. Correct reconstitution is essential to preserve the compound and to keep your experimental concentrations accurate. The following describes general laboratory technique for research handling only.',
@@ -82,12 +82,12 @@ export const RESEARCH_ARTICLES: ResearchArticle[] = [
   },
   {
     slug: 'storage-and-handling-best-practices',
-    title: 'Storage & Handling Best Practices for Reference Materials',
+    title: 'How to Store and Handle Research Peptides',
     category: 'Material Integrity',
     readTime: '5 min read',
     date: 'July 2026',
     author: 'Vial Foundry Quality Assurance Team',
-    excerpt: 'How temperature, light, moisture, and freeze-thaw cycles affect reference material stability — and how to control them.',
+    excerpt: 'How temperature, light and moisture affect peptides, and how to store them properly.',
     tags: ['Storage', 'Stability', 'Cold Chain', 'Handling'],
     content: [
       'The analytical value of a reference standard depends on maintaining its integrity from the moment it leaves the testing lab to the moment it enters your assay. Four environmental factors dominate stability.',
@@ -109,7 +109,7 @@ export const RESEARCH_ARTICLES: ResearchArticle[] = [
     readTime: '7 min read',
     date: 'June 2026',
     author: 'Vial Foundry Editorial',
-    excerpt: 'Plain-language definitions of the chromatography, spectrometry, and peptide chemistry terms you will encounter on our documentation.',
+    excerpt: 'Plain-English definitions of the terms you will see on peptide documents.',
     tags: ['Glossary', 'Definitions', 'HPLC', 'Mass Spec'],
     content: [
       'A shared vocabulary makes analytical documentation easier to interpret. The following terms appear throughout Vial Foundry product pages and certificates.',

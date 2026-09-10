@@ -32,7 +32,7 @@ export const RestockNotify: React.FC<{ product: Product }> = ({ product }) => {
         </span>
       </div>
       <p className="text-xs text-brand-steel font-normal leading-relaxed">
-        This reference standard is currently in production. Enter your institutional email to be notified when a new lot of <span className="font-semibold text-brand-ink">{product.name}</span> is archived and available.
+        This product is out of stock. Leave your email and we&rsquo;ll let you know when <span className="font-semibold text-brand-ink">{product.displayName || product.name}</span> is back.
       </p>
 
       {status === 'done' ? (
@@ -47,7 +47,7 @@ export const RestockNotify: React.FC<{ product: Product }> = ({ product }) => {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your institutional email..."
+            placeholder="Enter your email"
             className="flex-1 px-4 py-2.5 rounded-xl bg-brand-paper border border-brand-border text-brand-ink placeholder-brand-steel text-xs font-sans focus:outline-none focus:border-brand-graphite"
           />
           <button

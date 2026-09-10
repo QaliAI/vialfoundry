@@ -15,7 +15,12 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { cart, subtotal, clearCart } = useCart();
 
-  const availablePaymentMethods = CONFIGURED_PAYMENT_METHODS.length > 0 ? CONFIGURED_PAYMENT_METHODS : PAYMENT_METHODS;
+  // Only methods with real production configuration are ever offered. If none
+  // are configured we show no selector at all and tell the customer we will
+  // email payment instructions — which is what actually happens. Falling back
+  // to the full list would print unconfigured, unmonitored payment handles.
+  const availablePaymentMethods = CONFIGURED_PAYMENT_METHODS;
+  const hasPaymentMethods = availablePaymentMethods.length > 0;
   const [discountCode, setDiscountCode] = useState('');
   const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; discountCents: number; name?: string } | null>(null);
   const [discountError, setDiscountError] = useState('');
@@ -23,7 +28,7 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [paymentMethodId, setPaymentMethodId] = useState<PaymentMethodId>(
-    (availablePaymentMethods[0]?.id as PaymentMethodId) || 'zelle'
+    (availablePaymentMethods[0]?.id as PaymentMethodId) || 'manual_invoice'
   );
   const [shippingMethodId, setShippingMethodId] = useState('standard');
   const [affiliateCode, setAffiliateCode] = useState<string | null>(null);
@@ -205,7 +210,7 @@ export default function CheckoutPage() {
           <ShoppingBag className="w-6 h-6" />
         </div>
         <h2 className="font-display text-2xl font-bold text-brand-ink">Your Cart is Empty</h2>
-        <p className="text-xs text-brand-steel font-sans">Add reference materials or standards to proceed with checkout.</p>
+        <p className="text-xs text-brand-steel font-sans">Add some peptides to get started.</p>
         <button
           onClick={() => router.push('/catalog')}
           className="px-6 py-3 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-brand-paper font-semibold text-xs font-display shadow-xs"
@@ -221,13 +226,13 @@ export default function CheckoutPage() {
       
       <div className="space-y-2">
         <div className="text-xs font-sans font-semibold text-brand-steel uppercase tracking-wider">
-          Procurement Order
+          Your Order
         </div>
         <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-brand-ink tracking-tight">
-          Submit Research Order Request
+          Place Your Order
         </h1>
         <p className="text-sm text-brand-steel font-normal max-w-2xl leading-relaxed">
-          Submit your order request and our procurement team will log your order, verify lot allocation, and issue invoice and payment instructions.
+          Send us your order and we&rsquo;ll confirm stock, then email you an invoice and payment instructions.
         </p>
       </div>
 
@@ -336,7 +341,7 @@ export default function CheckoutPage() {
                 <Truck className="w-5 h-5 text-brand-accent" />
                 <span>Shipping Method</span>
               </h3>
-              <span className="text-[11px] font-sans font-medium text-brand-mineral">Insulated Packaging</span>
+              <span className="text-[11px] font-sans font-medium text-brand-mineral">Protective Packaging</span>
             </div>
             
             <div className="grid gap-3">
@@ -371,12 +376,20 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* Payment Method Selector */}
+          {/* Payment Method Selector. Hidden entirely when nothing is configured. */}
           <div className="storefront-card p-6 sm:p-8 rounded-2xl bg-brand-paper border border-brand-border shadow-2xs space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-display text-lg font-bold text-brand-ink">Payment Method</h3>
-              <span className="text-[11px] font-sans text-brand-steel">Select preference</span>
+              <h3 className="font-display text-lg font-bold text-brand-ink">Payment</h3>
+              {hasPaymentMethods && (
+                <span className="text-[11px] font-sans text-brand-steel">Choose one</span>
+              )}
             </div>
+            {!hasPaymentMethods && (
+              <p className="text-sm text-brand-steel leading-relaxed">
+                We&rsquo;ll email you payment instructions once we confirm your order. No payment is
+                taken on this site.
+              </p>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {availablePaymentMethods.map((m) => {
                 const Icon = m.icon;

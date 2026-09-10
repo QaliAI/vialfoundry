@@ -17,7 +17,7 @@ type TabKey = 'overview' | 'specifications' | 'documentation' | 'storage' | 'ref
 const TABS: { key: TabKey; label: string; icon: React.ElementType }[] = [
   { key: 'overview', label: 'Overview', icon: Info },
   { key: 'specifications', label: 'Specifications', icon: FlaskConical },
-  { key: 'documentation', label: 'Documentation', icon: FileCheck },
+  { key: 'documentation', label: 'Batch Documents', icon: FileCheck },
   { key: 'storage', label: 'Storage & Handling', icon: Snowflake },
   { key: 'references', label: 'References', icon: BookOpen },
 ];
@@ -79,7 +79,7 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
                 ))}
               </ul>
               <p className="text-xs text-brand-steel font-sans leading-relaxed pt-1">
-                Analytical results are not listed here. See the Documentation tab for what we hold
+                Test results are not listed here. See the Batch Documents tab for what we hold
                 on this lot.
               </p>
             </div>
@@ -127,7 +127,7 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
                     className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-semibold text-xs transition-all shadow-xs"
                   >
                     <FileCheck className="w-4 h-4" />
-                    <span>Read the certificate</span>
+                    <span>Read the document</span>
                   </button>
                 )}
                 <button
@@ -143,13 +143,12 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
                   <FileClock className="w-5 h-5 text-brand-graphite flex-shrink-0 mt-0.5" />
                   <div className="space-y-1.5">
                     <p className="text-sm font-display font-bold text-brand-ink">
-                      Documentation pending for lot {product.lotNumber}
+                      No documents online yet for batch {product.lotNumber}
                     </p>
                     <p className="text-xs text-brand-steel font-sans leading-relaxed">
-                      We do not hold a certificate of analysis for this lot yet, so there is nothing
-                      to show you here. We would rather say that than publish figures we cannot
-                      evidence. Ask us before you order and we will tell you exactly what
-                      documentation ships with the current lot.
+                      We don&rsquo;t have a document for this batch online yet, so there&rsquo;s nothing to
+                      show here. We&rsquo;d rather tell you that than publish numbers we can&rsquo;t back up.
+                      Contact us and we&rsquo;ll tell you what comes with the current batch.
                     </p>
                   </div>
                 </div>
@@ -223,7 +222,7 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
                 </li>
                 <li>
                   <button onClick={() => navigate('/resources')} className="text-brand-ink hover:text-brand-graphite font-medium">
-                    → Storage and handling best practices for reference materials
+                    → How to store and handle research peptides
                   </button>
                 </li>
                 <li>

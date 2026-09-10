@@ -3,16 +3,37 @@ import { ShieldCheck } from 'lucide-react';
 import { FoundryStandard } from '../components/FoundryStandard';
 
 export const QualityPage: React.FC = () => {
+  // Only what we can actually show. The previous list described upstream
+  // manufacturing controls (precursor qualification, racemisation checks,
+  // synthesis runs, climate-controlled vaults, retain archives) that we do not
+  // perform and cannot evidence. Those are removed rather than reworded.
   const qualityPillars = [
-    { title: '1. Sourcing & Qualification', desc: 'Precursor materials and reagents undergo chromatographic qualification prior to peptide assembly.' },
-    { title: '2. Precursor Evaluation', desc: 'Protected amino acids are verified for optical rotation, identity, and absence of racemized impurities.' },
-    { title: '3. Batch-Specific Records', desc: 'Every synthesis run receives a unique lot number tied to physical chromatographic records.' },
-    { title: '4. Analytical Testing', desc: 'Where a lot has been analysed, the issuing laboratory and method are published with it. We do not describe testing that has not been performed.' },
-    { title: '5. Lot Documentation Index', desc: 'Certificates we hold are indexed in the public lot lookup. Lots without a certificate are listed as documentation pending.' },
-    { title: '6. Sealed Packaging', desc: 'Vials are stoppered with inert fluoropolymer septa to minimize atmospheric and moisture interaction.' },
-    { title: '7. Desiccated Cold Storage', desc: 'Inventory is maintained in climate-controlled storage vaults prior to insulated dispatch.' },
-    { title: '8. Batch Retain Archives', desc: 'Retain samples from production lots are archived to support lot traceability and reference checks.' },
+    {
+      title: 'Batch numbers',
+      desc: 'Every vial carries a batch number, printed on the label and recorded against your order.',
+    },
+    {
+      title: 'Documents when we have them',
+      desc: 'If we hold a document for a batch, you can read it exactly as the issuing lab wrote it — method, date and results included.',
+    },
+    {
+      title: 'We say when we don’t',
+      desc: 'If we have no document for a batch, the site says so plainly. We never describe testing that has not been done.',
+    },
+    {
+      title: 'Sealed vials',
+      desc: 'Products are supplied in sealed, stoppered glass vials.',
+    },
+    {
+      title: 'Careful packing',
+      desc: 'Orders are packed protectively for transit.',
+    },
+    {
+      title: 'Ask us anything',
+      desc: 'Not sure what comes with a batch? Contact us before you order and we will tell you.',
+    },
   ];
+
 
   return (
     <div className="pt-28 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 bg-brand-canvas">
@@ -21,20 +42,20 @@ export const QualityPage: React.FC = () => {
         <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-brand-paper border border-brand-border text-brand-ink text-xs font-sans font-medium shadow-2xs">
           <ShieldCheck className="w-4 h-4 text-brand-accent" />
           <span className="tracking-wider uppercase text-[11px] text-brand-graphite font-semibold">
-            Quality & Testing Protocol
+            How We Handle Quality
           </span>
         </div>
         <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-brand-ink tracking-tight">
-          How we handle material and documentation
+          Know what you&rsquo;re ordering
         </h1>
         <p className="text-brand-steel text-sm sm:text-base font-normal leading-relaxed">
-          Our commitment is narrow and checkable: every lot is traceable by number, and the site
-          states what documentation exists for it — including when the answer is none yet.
+          We keep this simple and checkable: every batch has a number, and the site tells you
+          which documents we hold for it &mdash; including when the answer is none yet.
         </p>
       </div>
 
       {/* Grid of Pillars */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {qualityPillars.map((p, i) => (
           <div key={i} className="storefront-card p-6 rounded-2xl bg-brand-paper border border-brand-border shadow-2xs space-y-3">
             <h3 className="font-display text-base font-bold text-brand-ink">{p.title}</h3>

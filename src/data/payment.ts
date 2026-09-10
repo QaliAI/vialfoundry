@@ -1,6 +1,6 @@
 import { LucideIcon, Banknote, Bitcoin, Landmark, Smartphone } from 'lucide-react';
 
-export type PaymentMethodId = 'cashapp' | 'crypto' | 'zelle' | 'ach';
+export type PaymentMethodId = 'cashapp' | 'crypto' | 'zelle' | 'ach' | 'manual_invoice';
 
 export interface PaymentMethod {
   id: PaymentMethodId;
@@ -16,11 +16,22 @@ export interface PaymentMethod {
   steps: string[];
 }
 
-// NEXT_PUBLIC_* so values are available in client components. Fill these in Vercel / .env.local.
-const CASHAPP = process.env.NEXT_PUBLIC_CASHAPP_CASHTAG || '$YourCashtag';
-const ZELLE = process.env.NEXT_PUBLIC_ZELLE_HANDLE || 'payments@vialfoundry.com';
+// NEXT_PUBLIC_* so values are available in client components. Set these in Vercel.
+//
+// There are deliberately NO fallback values. A payment handle that merely looks
+// plausible ("payments@vialfoundry.com", "$YourCashtag") is worse than none at
+// all: it would send a real customer's money to an address nobody monitors.
+// A method with no configured value is hidden entirely.
+const CASHAPP = process.env.NEXT_PUBLIC_CASHAPP_CASHTAG || '';
+const ZELLE = process.env.NEXT_PUBLIC_ZELLE_HANDLE || '';
 const NOWPAYMENTS = process.env.NEXT_PUBLIC_NOWPAYMENTS_LINK || '';
 const LINKMONEY = process.env.NEXT_PUBLIC_LINKMONEY_LINK || '';
+
+/** Rejects obvious placeholder values that were never real configuration. */
+const PLACEHOLDER = /yourcashtag|example\.com|changeme|placeholder|your-|xxx/i;
+function configured(value: string): boolean {
+  return Boolean(value && value.trim() && !PLACEHOLDER.test(value));
+}
 
 export const CASHAPP_DISCOUNT = 0.05;
 export const CRYPTO_DISCOUNT = 0.05;
@@ -87,19 +98,18 @@ export const PAYMENT_METHODS: PaymentMethod[] = [
 ];
 
 export function isPaymentMethodConfigured(m: PaymentMethod): boolean {
-  if (m.id === 'cashapp') {
-    return Boolean(m.handle && m.handle !== '$YourCashtag' && !m.handle.includes('YourCashtag'));
+  switch (m.id) {
+    case 'cashapp':
+      return configured(CASHAPP);
+    case 'zelle':
+      return configured(ZELLE);
+    case 'crypto':
+      return configured(NOWPAYMENTS);
+    case 'ach':
+      return configured(LINKMONEY);
+    default:
+      return false;
   }
-  if (m.id === 'crypto') {
-    return Boolean(process.env.NEXT_PUBLIC_NOWPAYMENTS_LINK);
-  }
-  if (m.id === 'ach') {
-    return Boolean(process.env.NEXT_PUBLIC_LINKMONEY_LINK);
-  }
-  if (m.id === 'zelle') {
-    return Boolean(m.handle && m.handle !== 'payments@example.com' && !m.handle.includes('example.com'));
-  }
-  return false;
 }
 
 export const CONFIGURED_PAYMENT_METHODS: PaymentMethod[] = PAYMENT_METHODS.filter(isPaymentMethodConfigured);
