@@ -76,8 +76,8 @@ export const vialFoundryBrandConfig: BrandConfig = {
     .filter(Boolean),
   logoUrl: "/brand/logo-horizontal.svg",
   faviconUrl: "/favicon.ico",
-  primaryColor: "#1B1D1F",
-  accentColor: "#28463E",
+  primaryColor: "#0F2740", // Midnight (approved)
+  accentColor: "#2F9E9A", // Teal (approved, accent only)
   currency: "USD",
   emailSenderName: process.env.EMAIL_SENDER_NAME || "Vial Foundry Procurement",
   emailSenderDomain: process.env.EMAIL_SENDER_DOMAIN || "vialfoundry.com",

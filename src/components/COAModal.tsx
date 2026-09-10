@@ -40,7 +40,7 @@ export const COAModal: React.FC<COAModalProps> = ({ batch, onClose }) => {
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, width, height);
 
-    ctx.fillStyle = '#FFFDF8';
+    ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, width, height);
 
     ctx.strokeStyle = '#E0DACD';
@@ -65,7 +65,7 @@ export const COAModal: React.FC<COAModalProps> = ({ batch, onClose }) => {
     const plotW = width - paddingLeft - paddingRight;
     const plotH = height - paddingTop - paddingBottom;
 
-    ctx.strokeStyle = '#777C80';
+    ctx.strokeStyle = '#6B8FA1';
     ctx.lineWidth = 1.2;
     ctx.beginPath();
     ctx.moveTo(paddingLeft, paddingTop);
@@ -73,7 +73,7 @@ export const COAModal: React.FC<COAModalProps> = ({ batch, onClose }) => {
     ctx.lineTo(width - paddingRight, height - paddingBottom);
     ctx.stroke();
 
-    ctx.fillStyle = '#34383B';
+    ctx.fillStyle = '#0F2740';
     ctx.font = '10px JetBrains Mono, monospace';
     ctx.fillText('Signal', 6, 14);
     ctx.fillText('Retention Time (min)', width / 2 - 50, height - 8);
@@ -83,7 +83,7 @@ export const COAModal: React.FC<COAModalProps> = ({ batch, onClose }) => {
     const maxSig = Math.max(...points.map((p) => p.signal)) * 1.1 || 1;
 
     ctx.beginPath();
-    ctx.strokeStyle = '#28463E';
+    ctx.strokeStyle = '#2F9E9A';
     ctx.lineWidth = 2;
     points.forEach((pt, i) => {
       const x = paddingLeft + (pt.time / maxTime) * plotW;
