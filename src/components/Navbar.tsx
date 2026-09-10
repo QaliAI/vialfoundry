@@ -117,7 +117,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
 
       {/* Mobile Drawer Navigation */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-30 bg-brand-canvas/98 pt-20 px-6 md:hidden flex flex-col justify-between pb-10 animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-30 bg-brand-canvas pt-20 px-6 md:hidden flex flex-col justify-between pb-10 animate-in fade-in duration-150">
           <div className="space-y-2">
             <div className="text-xs font-sans font-medium text-brand-steel uppercase tracking-wider mb-2">Navigation</div>
             {navItems.map((item) => (
