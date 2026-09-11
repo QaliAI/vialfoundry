@@ -28,6 +28,7 @@ yarn-error.log*
 .env
 .env.production
 .env.development
+.env.vercel.*
 
 # vercel
 .vercel
@@ -53,6 +54,8 @@ supabase/.temp
 scripts/.stripe-listen.log
 scripts/.stripe-listen.pid
 scripts/.stripe-*
+scripts/wire-production-stripe.mjs
+scripts/classify-vercel-env.mjs
 
 # Python bytecode from the brand asset scripts
 __pycache__/
