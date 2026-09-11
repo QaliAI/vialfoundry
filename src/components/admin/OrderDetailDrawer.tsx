@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { X, Truck, RotateCcw, Mail, Clock, CreditCard } from 'lucide-react';
 
 /**
@@ -43,7 +43,7 @@ export const OrderDetailDrawer: React.FC<Props> = ({ orderKey, onClose, onChange
   const [refundAmount, setRefundAmount] = useState('');
   const [refundConfirm, setRefundConfirm] = useState(false);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/orders/${encodeURIComponent(orderKey)}`, { credentials: 'include' });
@@ -58,9 +58,9 @@ export const OrderDetailDrawer: React.FC<Props> = ({ orderKey, onClose, onChange
     } finally {
       setLoading(false);
     }
-  };
+  }, [orderKey]);
 
-  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [orderKey]);
+  useEffect(() => { load(); }, [load]);
 
   const o = data?.order;
 

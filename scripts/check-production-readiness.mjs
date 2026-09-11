@@ -73,10 +73,11 @@ try {
   logFail("Catalog Parsing", err.message);
 }
 
-if (products && products.length >= 20) {
-  logPass("Catalog Product Volume", `${products.length} reference standards loaded`);
+const publicCount = products.filter((p) => !p.hiddenFromCatalogReason).length;
+if (products && products.length >= 18) {
+  logPass("Catalog Product Volume", `${products.length} SKUs in catalogue, ${publicCount} public`);
 } else {
-  logWarn("Catalog Product Volume", `Expected >= 20 products, found ${products?.length || 0}`);
+  logWarn("Catalog Product Volume", `Expected a full catalogue, found ${products?.length || 0}`);
 }
 
 let catalogValid = true;

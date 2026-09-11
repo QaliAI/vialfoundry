@@ -19,7 +19,6 @@ export default function AdminProductsPage() {
     category: 'Reference Materials',
     size: '5 mg Lyophilized Vial',
     price: 64.00,
-    purityPercentage: 99.50,
     lotNumber: 'LOT-VF-8842',
     stockCount: 100
   });
@@ -39,7 +38,6 @@ export default function AdminProductsPage() {
         molecularWeight: formData.molecularWeight || '1000 g/mol',
         category: formData.category as any || 'Reference Materials',
         size: formData.size || '5 mg Lyophilized Vial',
-        purityPercentage: formData.purityPercentage || 99.5,
         lotNumber: formData.lotNumber || 'LOT-VF-8842',
         price: formData.price || 64.0,
         inStock: true,
@@ -51,8 +49,6 @@ export default function AdminProductsPage() {
         solubility: 'Soluble in sterile water',
         image: '/assets/vials/products/bpc-157.webp',
         transparentImage: '/assets/vials/products/bpc-157-transparent.webp',
-        coaAvailable: true,
-        coaDate: '2026-08-01'
       };
       setProductList([newProd, ...productList]);
       setIsCreating(false);
@@ -70,7 +66,7 @@ export default function AdminProductsPage() {
           onClick={() => {
             setFormData({
               name: '', sku: `VF-SKU-${Math.floor(Math.random()*1000)}`,
-              casNumber: '', price: 64.0, purityPercentage: 99.5, stockCount: 100
+              casNumber: '', price: 64.0, stockCount: 100
             });
             setIsCreating(true);
           }}
@@ -128,15 +124,6 @@ export default function AdminProductsPage() {
                 className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white"
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-slate-300">Purity %</label>
-              <input
-                type="number" step="0.01" required
-                value={formData.purityPercentage || 99.5}
-                onChange={e => setFormData({ ...formData, purityPercentage: parseFloat(e.target.value) })}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white"
-              />
-            </div>
           </div>
 
           <div className="flex space-x-3 pt-2">
@@ -163,7 +150,6 @@ export default function AdminProductsPage() {
               <th className="p-4">SKU</th>
               <th className="p-4">Category</th>
               <th className="p-4">Price</th>
-              <th className="p-4">Purity %</th>
               <th className="p-4">Lot Code</th>
               <th className="p-4">Stock</th>
               <th className="p-4 text-right">Actions</th>
@@ -176,7 +162,6 @@ export default function AdminProductsPage() {
                 <td className="p-4 text-slate-400">{p.sku}</td>
                 <td className="p-4 text-brand-paper">{p.category}</td>
                 <td className="p-4 text-white font-bold">${p.price.toFixed(2)}</td>
-                <td className="p-4 text-emerald-400 font-bold">{p.purityPercentage}%</td>
                 <td className="p-4 text-slate-300">{p.lotNumber}</td>
                 <td className="p-4 text-slate-300">{p.stockCount}</td>
                 <td className="p-4 text-right space-x-2">

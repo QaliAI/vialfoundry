@@ -75,6 +75,7 @@ async function run() {
       'supabase/migrations/05_commerce_core.sql',
       'supabase/migrations/06_stripe_commerce.sql',
       'supabase/migrations/07_stripe_lifecycle.sql',
+      'supabase/migrations/08_admin_users_inventory.sql',
     ];
 
     for (const file of migrationFiles) {

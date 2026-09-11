@@ -5,46 +5,46 @@ import {
   ADMIN_SESSION_COOKIE_NAME,
   ADMIN_SESSION_MAX_AGE_SECONDS,
   createAdminSessionToken,
+  parseAdminSessionToken,
   verifyAdminSessionToken,
 } from "./session-token.mjs";
 
 export interface AdminAuthConfig {
-  adminEmail: string;
-  accessPassword: string;
   sessionSecret: string;
 }
 
-/**
- * Reads admin auth configuration from the environment.
- *
- * There are deliberately NO hardcoded fallback credentials. This repository is
- * public, so a fallback password or session secret would be a published
- * credential — and a fallback session secret would let anyone forge a valid
- * admin cookie. When any required value is missing we return null, and every
- * caller treats that as "admin is unavailable" (fail closed) rather than
- * silently authenticating against a known-public default.
- */
+export interface AdminSession {
+  email: string;
+}
+
 export function getAdminAuthConfig(): AdminAuthConfig | null {
   return resolveAdminAuthConfig({
-    ADMIN_EMAIL: sanitizeEnvValue(process.env.ADMIN_EMAIL),
-    ADMIN_ACCESS_PASSWORD: sanitizeEnvValue(process.env.ADMIN_ACCESS_PASSWORD),
     ADMIN_SESSION_SECRET: sanitizeEnvValue(process.env.ADMIN_SESSION_SECRET),
   });
 }
 
-export async function verifyAdminSession(): Promise<boolean> {
+export async function getAdminSession(): Promise<AdminSession | null> {
   const config = getAdminAuthConfig();
-  if (!config) return false;
+  if (!config) return null;
 
   const cookieStore = cookies();
   const token = cookieStore.get(ADMIN_SESSION_COOKIE_NAME)?.value;
-  if (!token) return false;
+  if (!token) return null;
 
-  return verifyAdminSessionToken(token, config.sessionSecret);
+  return parseAdminSessionToken(token, config.sessionSecret);
+}
+
+export async function verifyAdminSession(): Promise<boolean> {
+  return Boolean(await getAdminSession());
+}
+
+export async function requireAdminActor(): Promise<string | null> {
+  const session = await getAdminSession();
+  return session?.email || null;
 }
 
 export function generateAdminSessionCookie(email: string, sessionSecret: string) {
-  const token = createAdminSessionToken(email, sessionSecret);
+  const token = createAdminSessionToken(email.trim().toLowerCase(), sessionSecret);
 
   return {
     name: ADMIN_SESSION_COOKIE_NAME,
@@ -58,3 +58,5 @@ export function generateAdminSessionCookie(email: string, sessionSecret: string)
     },
   };
 }
+
+export { verifyAdminSessionToken };

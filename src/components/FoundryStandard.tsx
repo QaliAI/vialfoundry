@@ -10,7 +10,7 @@ interface FoundryStandardProps {
  *
  * This replaced an interactive multi-stage panel that described upstream
  * manufacturing controls (solid-phase synthesis, precursor qualification,
- * sequence verification, cold-chain handling). None of those processes are
+ * sequence verification). None of those processes are
  * ones we perform or can evidence, so they are gone rather than reworded.
  * Everything below is something a customer can verify on the site itself.
  */

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifyAdminSession } from "@/lib/admin/auth";
+import { requireAdminActor, verifyAdminSession } from "@/lib/admin/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logAdminAudit } from "@/lib/admin/audit";
 
@@ -59,8 +59,8 @@ export async function POST(req: Request) {
       name,
       email,
       referralCode,
-      actor = "admin"
     } = body;
+    const actor = (await requireAdminActor()) || "admin";
     const supabase = createAdminClient();
     if (!supabase) throw new Error("Database client unavailable");
 

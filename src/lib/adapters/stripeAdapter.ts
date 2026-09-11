@@ -71,7 +71,7 @@ export interface StripeOrderCheckout {
 }
 
 function siteUrl(): string {
-  return (process.env.NEXT_PUBLIC_SITE_URL || 'https://vialfoundry.com').replace(/\/$/, '');
+  return (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.vialfoundry.com').replace(/\/$/, '');
 }
 
 export class StripePaymentAdapter implements PaymentAdapter {

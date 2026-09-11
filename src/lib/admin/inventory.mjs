@@ -1,26 +1,27 @@
 /**
  * Inventory policy for Stripe checkout (launch volume).
  *
+ * SINGLE SOURCE OF TRUTH: public.products.inventory_quantity in Supabase.
+ *
  * CHOSEN BEHAVIOR: decrement_on_payment
  *
- *   1. Stock is checked at checkout-session creation against the
- *      authoritative catalog (src/data/products.ts) and, when present,
- *      public.products.inventory_quantity.
+ *   1. Checkout resolves the trusted catalogue product (id/SKU), then reads
+ *      current inventory_quantity from Supabase. Static stockCount is used
+ *      ONLY when there is intentionally no database (local/dev). Production
+ *      never silently falls back to build-time stock.
  *   2. Stock is NOT reserved when a Stripe Checkout Session is created.
- *      Abandoned checkouts therefore cannot lock inventory. Sessions expire
- *      in Stripe's default window (~24h); expired sessions cancel the order
- *      without touching stock.
- *   3. Stock is decremented once, on confirmed payment (Stripe webhook),
- *      against public.products.inventory_quantity. The write is keyed by
- *      manual_orders.inventory_decremented_at so retries cannot
- *      double-decrement.
- *   4. Overselling risk: two customers can concurrently pay for the last
- *      unit. Acceptable at this launch volume. A paid order is always
- *      honoured; going through zero is logged as an oversell event.
- *   5. A full refund restocks once (inventory_restocked_at). A partial
- *      refund does not restock — the goods may already have shipped.
+ *   3. Confirmed payment decrements the SAME Supabase column, once, keyed by
+ *      manual_orders.inventory_decremented_at. The SQL function
+ *      apply_inventory_delta takes a row lock so concurrent payments cannot
+ *      double-apply.
+ *   4. A paid order is always honoured even if the row would go through zero
+ *      (oversell is logged). Checkout still rejects insufficient stock at
+ *      session creation.
+ *   5. A full refund restocks once (inventory_restocked_at). Partial refunds
+ *      do not restock.
  *
- * Do not introduce a reservation table unless volume requires it.
+ * Admin inventory adjustments write the same column, so checkout sees them
+ * immediately without a redeploy.
  */
 
 export const INVENTORY_POLICY = "decrement_on_payment";

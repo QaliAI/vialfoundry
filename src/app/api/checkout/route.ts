@@ -11,6 +11,12 @@ import { renderInternalOrderNotificationEmail } from "@/lib/email/templates/inte
 import { PRODUCTS } from "@/data/products";
 import { isStripeEnabled, stripeSecretMode, stripeConfigStatus } from "@/lib/adapters/stripe-gating.mjs";
 import { recordOrderEvent } from "@/lib/admin/order-events";
+import { isSupabaseOperational, isProductionRuntime } from "@/lib/supabase/operational.mjs";
+import {
+  UNKNOWN_PRODUCT_ERROR,
+  validateCheckoutItem,
+  assertSufficientStock,
+} from "@/lib/manual-orders/checkout-catalog.mjs";
 
 const PAYMENT_METHOD_DISCOUNT_BPS: Record<string, number> = {
   cashapp: 500, // 5%
@@ -34,6 +40,13 @@ export async function POST(req: Request) {
     const data = result.data;
     const brand = getBrandConfig();
     const supabase = createAdminClient();
+
+    if (isProductionRuntime() && !isSupabaseOperational()) {
+      return NextResponse.json(
+        { success: false, error: "Checkout is temporarily unavailable. Please try again shortly." },
+        { status: 503 },
+      );
+    }
 
     // 1. Check idempotency if database is connected
     if (supabase) {
@@ -75,59 +88,53 @@ export async function POST(req: Request) {
     }> = [];
 
     for (const item of data.items) {
-      const catalogProduct = PRODUCTS.find(
-        (p) =>
-          (item.productId && p.id === item.productId) ||
-          (item.sku && p.sku === item.sku) ||
-          p.name.toLowerCase() === item.productName.toLowerCase()
-      );
-
-      if (catalogProduct) {
-        if (!catalogProduct.inStock || catalogProduct.stockCount <= 0) {
-          return NextResponse.json(
-            { success: false, error: `Product "${catalogProduct.name}" is currently out of stock.` },
-            { status: 400 }
-          );
-        }
-        if (item.quantity > catalogProduct.stockCount) {
-          return NextResponse.json(
-            {
-              success: false,
-              error: `Requested quantity for "${catalogProduct.name}" (${item.quantity}) exceeds available inventory (${catalogProduct.stockCount}).`,
-            },
-            { status: 400 }
-          );
-        }
-
-        const authoritativePriceCents = Math.round(catalogProduct.price * 100);
-        validatedItems.push({
-          productId: catalogProduct.id,
-          variantId: item.variantId || null,
-          productName: catalogProduct.name,
-          configurationLabel: item.configurationLabel || `${catalogProduct.category} Standard`,
-          quantity: item.quantity,
-          unit_price_amount: authoritativePriceCents,
-          line_total_amount: authoritativePriceCents * item.quantity,
-          price_status: "fixed",
-          sku: catalogProduct.sku,
-          lotNumber: catalogProduct.lotNumber,
-        });
-      } else {
-        // Fallback for custom / non-catalog request
-        const priceCents = typeof item.unitPriceAmount === "number" ? Math.max(0, item.unitPriceAmount) : 0;
-        validatedItems.push({
-          productId: item.productId || null,
-          variantId: item.variantId || null,
-          productName: item.productName,
-          configurationLabel: item.configurationLabel || null,
-          quantity: item.quantity,
-          unit_price_amount: priceCents,
-          line_total_amount: priceCents * item.quantity,
-          price_status: item.priceStatus || "fixed",
-          sku: item.sku || null,
-          lotNumber: item.lotNumber || null,
-        });
+      const resolved = validateCheckoutItem(item, PRODUCTS);
+      if (!resolved.ok || !resolved.product || !resolved.quantity || !resolved.unit_price_amount) {
+        return NextResponse.json({ success: false, error: resolved.error || UNKNOWN_PRODUCT_ERROR }, { status: 400 });
       }
+
+      const catalogProduct = resolved.product;
+      let onHand = catalogProduct.stockCount;
+      if (supabase) {
+        const { data: stockRow, error: stockErr } = await supabase
+          .from("products")
+          .select("inventory_quantity")
+          .eq("id", catalogProduct.id)
+          .maybeSingle();
+        if (stockErr || !stockRow) {
+          if (isProductionRuntime()) {
+            return NextResponse.json(
+              { success: false, error: `Product "${catalogProduct.name}" is currently out of stock.` },
+              { status: 400 },
+            );
+          }
+        } else {
+          onHand = Number(stockRow.inventory_quantity);
+        }
+      } else if (isProductionRuntime()) {
+        return NextResponse.json(
+          { success: false, error: "Checkout is temporarily unavailable. Please try again shortly." },
+          { status: 503 },
+        );
+      }
+
+      const stockCheck = assertSufficientStock(onHand, resolved.quantity, catalogProduct.name);
+      if (!stockCheck.ok) {
+        return NextResponse.json({ success: false, error: stockCheck.error }, { status: 400 });
+      }
+
+      validatedItems.push({
+        productId: catalogProduct.id,
+        variantId: item.variantId || null,
+        productName: catalogProduct.name,
+        configurationLabel: item.configurationLabel || `${catalogProduct.category} Standard`,
+        quantity: resolved.quantity,
+        unit_price_amount: resolved.unit_price_amount,
+        line_total_amount: resolved.line_total_amount,
+        price_status: "fixed",
+        sku: catalogProduct.sku,
+        lotNumber: catalogProduct.lotNumber,
+      });
     }
 
     // Calculate preliminary subtotal to evaluate shipping

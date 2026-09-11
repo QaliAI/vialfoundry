@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { verifyAdminSession, getAdminAuthConfig } from '@/lib/admin/auth';
+import { requireAdminActor, verifyAdminSession } from '@/lib/admin/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { recordOrderEvent } from '@/lib/admin/order-events';
 import { isStripeEnabled } from '@/lib/adapters/stripe-gating.mjs';
@@ -23,8 +23,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
 
-  const config = getAdminAuthConfig();
-  const actor = config?.adminEmail || 'admin';
+  const actor = (await requireAdminActor()) || 'admin';
 
   let body: { orderId?: string; amountCents?: number; confirm?: boolean; reason?: string };
   try {

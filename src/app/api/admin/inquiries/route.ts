@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { verifyAdminSession, getAdminAuthConfig } from '@/lib/admin/auth';
+import { requireAdminActor, verifyAdminSession } from '@/lib/admin/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { logAdminAudit } from '@/lib/admin/audit';
 
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
   if (!(await verifyAdminSession())) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
-  const config = getAdminAuthConfig();
+  const actor = (await requireAdminActor()) || 'admin';
 
   let body: { id?: string; status?: string };
   try {
@@ -87,7 +87,7 @@ export async function POST(req: Request) {
   }
 
   await logAdminAudit({
-    actor: config?.adminEmail || 'admin',
+    actor,
     action: 'INQUIRY_STATUS_UPDATE',
     entityType: 'contact_request',
     entityId: body.id,

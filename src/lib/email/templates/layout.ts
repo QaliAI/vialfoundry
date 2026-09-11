@@ -24,10 +24,9 @@ export const EMAIL_COLORS = {
 } as const;
 
 function siteUrl(): string {
-  const brand = getBrandConfig();
   const configured = process.env.NEXT_PUBLIC_SITE_URL;
   if (configured) return configured.replace(/\/$/, "");
-  return `https://${brand.domain}`;
+  return "https://www.vialfoundry.com";
 }
 
 export function money(cents: number): string {

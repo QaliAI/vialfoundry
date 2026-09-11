@@ -1,48 +1,82 @@
 import { NextResponse } from "next/server";
-import { getAdminAuthConfig, generateAdminSessionCookie } from "@/lib/admin/auth";
-import crypto from "crypto";
+import { getAdminAuthConfig } from "@/lib/admin/auth";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { generateLoginToken, hashLoginToken } from "@/lib/admin/session-token.mjs";
+import { GENERIC_LOGIN_ACK, LOGIN_TOKEN_TTL_MS, isUsableAdmin, normalizeAdminEmail } from "@/lib/admin/login-tokens.mjs";
+import { sendEmailSafely } from "@/lib/email/resend";
+import { renderAdminLoginEmail } from "@/lib/email/templates/admin-login";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+function siteUrl() {
+  return (process.env.NEXT_PUBLIC_SITE_URL || "https://www.vialfoundry.com").replace(/\/$/, "");
+}
 
 export async function POST(req: Request) {
   try {
-    const { email, password } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const email = normalizeAdminEmail(body?.email);
     const config = getAdminAuthConfig();
 
-    // Fail closed: with no admin credentials configured, no one can sign in.
     if (!config) {
-      console.error("[admin/login] admin auth is not configured (ADMIN_EMAIL / ADMIN_ACCESS_PASSWORD / ADMIN_SESSION_SECRET)");
       return NextResponse.json(
         { success: false, error: "Admin access is not configured on this deployment." },
         { status: 503 },
       );
     }
 
-    if (!email || !password) {
-      return NextResponse.json({ success: false, error: "Email and password required" }, { status: 400 });
+    if (!email || !email.includes("@")) {
+      return NextResponse.json({ success: false, error: "Enter a valid email address." }, { status: 400 });
     }
 
-    const emailMatch = email.trim().toLowerCase() === config.adminEmail.toLowerCase();
-    
-    // Constant-time password check via fixed-length SHA-256 digests
-    const pwdHash = crypto.createHash("sha256").update(String(password)).digest();
-    const expectedHash = crypto.createHash("sha256").update(String(config.accessPassword)).digest();
-    const passwordMatch = crypto.timingSafeEqual(pwdHash, expectedHash);
+    // Always acknowledge the same way so unknown addresses cannot be enumerated.
+    const ack = { success: true, message: GENERIC_LOGIN_ACK };
 
-    if (!emailMatch || !passwordMatch) {
-      return NextResponse.json({ success: false, error: "Invalid administrative credentials" }, { status: 401 });
+    const supabase = createAdminClient();
+    if (!supabase) return NextResponse.json(ack);
+
+    const { data: user } = await supabase
+      .from("admin_users")
+      .select("id, email, name, role, active")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (!isUsableAdmin(user) || !user) return NextResponse.json(ack);
+    const admin = user;
+
+    const raw = generateLoginToken();
+    const tokenHash = hashLoginToken(raw);
+    const expiresAt = new Date(Date.now() + LOGIN_TOKEN_TTL_MS).toISOString();
+
+    const { error } = await supabase.from("admin_login_tokens").insert({
+      admin_user_id: admin.id,
+      token_hash: tokenHash,
+      expires_at: expiresAt,
+    });
+    if (error) {
+      console.error("[admin/login] token persist failed");
+      return NextResponse.json(ack);
     }
 
-    const sessionCookie = generateAdminSessionCookie(config.adminEmail, config.sessionSecret);
-    const response = NextResponse.json({ success: true, user: { email: config.adminEmail } });
-    
-    response.cookies.set(
-      sessionCookie.name,
-      sessionCookie.value,
-      sessionCookie.options
-    );
+    const loginUrl = `${siteUrl()}/admin/login?token=${encodeURIComponent(raw)}`;
+    const mail = renderAdminLoginEmail({
+      name: admin.name,
+      loginUrl,
+      expiresMinutes: Math.round(LOGIN_TOKEN_TTL_MS / 60000),
+    });
+    const sent = await sendEmailSafely({
+      to: admin.email,
+      subject: "[Vial Foundry] Admin sign-in link",
+      html: mail.html,
+    });
+    if (!sent.success) {
+      console.error("[admin/login] login email failed to send");
+    }
 
-    return response;
+    return NextResponse.json(ack);
   } catch (err: any) {
-    console.error("[admin/login] error:", err);
+    console.error("[admin/login] error");
     return NextResponse.json({ success: false, error: "Authentication system error" }, { status: 500 });
   }
 }

@@ -2,7 +2,7 @@
 import { Tag, FileText, MessageCircle, Boxes } from 'lucide-react';
 
 export const TrustBand: React.FC = () => {
-  // Only claims we can actually stand behind. No cold-chain or testing
+  // Only claims we can actually stand behind. No unverified fulfilment or testing
   // language here: we do not perform those processes.
   const trustItems = [
     {

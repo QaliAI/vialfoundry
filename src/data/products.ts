@@ -13,7 +13,6 @@ export const PRODUCTS: Product[] = [
     molecularWeight: '1419.56 g/mol',
     category: 'Reference Materials',
     size: '5 mg Lyophilized Vial',
-    purityPercentage: 99.64,
     lotNumber: 'LOT-VF-8842',
     price: 64.00,
     inStock: true,
@@ -27,8 +26,6 @@ export const PRODUCTS: Product[] = [
     solubility: 'Soluble in sterile ultra-pure water (18.2 MΩ·cm) up to 10 mg/mL',
     image: '/assets/vials/products/bpc-157.webp',
     transparentImage: '/assets/vials/products/bpc-157-transparent.webp',
-    coaAvailable: true,
-    coaDate: '2026-07-14'
   },
   {
     id: 'vf-std-002',
@@ -42,7 +39,6 @@ export const PRODUCTS: Product[] = [
     molecularWeight: '4963.50 g/mol',
     category: 'Reference Materials',
     size: '10 mg Lyophilized Vial',
-    purityPercentage: 99.48,
     lotNumber: 'LOT-VF-9921',
     price: 88.00,
     inStock: true,
@@ -54,8 +50,6 @@ export const PRODUCTS: Product[] = [
     solubility: 'Soluble in aqueous buffers (pH 6.5–7.4)',
     image: '/assets/vials/products/tb-500.webp',
     transparentImage: '/assets/vials/products/tb-500-transparent.webp',
-    coaAvailable: true,
-    coaDate: '2026-06-28'
   },
   {
     id: 'vf-std-003',
@@ -69,7 +63,6 @@ export const PRODUCTS: Product[] = [
     molecularWeight: '4113.58 g/mol',
     category: 'Analytical Standards',
     size: '5 mg Lyophilized Vial',
-    purityPercentage: 99.78,
     lotNumber: 'LOT-VF-7734',
     price: 112.00,
     inStock: true,
@@ -81,8 +74,6 @@ export const PRODUCTS: Product[] = [
     solubility: 'Soluble in 0.1M PBS pH 7.4',
     image: '/assets/vials/products/semaglutide.webp',
     transparentImage: '/assets/vials/products/semaglutide-transparent.webp',
-    coaAvailable: true,
-    coaDate: '2026-07-29'
   },
   {
     id: 'vf-std-004',
@@ -96,7 +87,6 @@ export const PRODUCTS: Product[] = [
     molecularWeight: '4813.45 g/mol',
     category: 'Analytical Standards',
     size: '10 mg Lyophilized Vial',
-    purityPercentage: 99.82,
     lotNumber: 'LOT-VF-8819',
     price: 145.00,
     inStock: true,
@@ -108,8 +98,6 @@ export const PRODUCTS: Product[] = [
     solubility: 'Soluble in phosphate buffer pH 7.2',
     image: '/assets/vials/products/tirzepatide.webp',
     transparentImage: '/assets/vials/products/tirzepatide-transparent.webp',
-    coaAvailable: true,
-    coaDate: '2026-08-02'
   },
   {
     id: 'vf-std-005',
@@ -123,7 +111,6 @@ export const PRODUCTS: Product[] = [
     molecularWeight: '4731.33 g/mol',
     category: 'Specialty Materials',
     size: '10 mg Lyophilized Vial',
-    purityPercentage: 99.52,
     lotNumber: 'LOT-VF-6612',
     price: 168.00,
     inStock: true,
@@ -135,8 +122,6 @@ export const PRODUCTS: Product[] = [
     solubility: 'Soluble in aqueous buffers',
     image: '/assets/vials/products/retatrutide.webp',
     transparentImage: '/assets/vials/products/retatrutide-transparent.webp',
-    coaAvailable: true,
-    coaDate: '2026-07-20'
   },
   {
     id: 'vf-std-006',
@@ -150,7 +135,6 @@ export const PRODUCTS: Product[] = [
     molecularWeight: '3367.97 g/mol',
     category: 'Single Compounds',
     size: '5 mg Lyophilized Vial',
-    purityPercentage: 99.35,
     lotNumber: 'LOT-VF-5590',
     price: 52.00,
     inStock: true,
@@ -164,8 +148,6 @@ export const PRODUCTS: Product[] = [
     solubility: 'Water soluble (>5 mg/mL)',
     image: '/assets/vials/products/cjc-1295.webp',
     transparentImage: '/assets/vials/products/cjc-1295-transparent.webp',
-    coaAvailable: true,
-    coaDate: '2026-06-15'
   },
   {
     id: 'vf-std-007',
@@ -179,7 +161,6 @@ export const PRODUCTS: Product[] = [
     molecularWeight: '711.85 g/mol',
     category: 'Single Compounds',
     size: '5 mg Lyophilized Vial',
-    purityPercentage: 99.71,
     lotNumber: 'LOT-VF-4431',
     price: 48.00,
     inStock: true,
@@ -191,8 +172,6 @@ export const PRODUCTS: Product[] = [
     solubility: 'Soluble in water and saline solutions',
     image: '/assets/vials/products/ipamorelin.webp',
     transparentImage: '/assets/vials/products/ipamorelin-transparent.webp',
-    coaAvailable: true,
-    coaDate: '2026-07-02'
   },
   {
     id: 'vf-std-008',
@@ -205,7 +184,6 @@ export const PRODUCTS: Product[] = [
     molecularWeight: '663.43 g/mol',
     category: 'Single Compounds',
     size: '1000 mg (1g) Crystalline Powder',
-    purityPercentage: 99.89,
     lotNumber: 'LOT-VF-3310',
     price: 75.00,
     inStock: true,
@@ -217,8 +195,6 @@ export const PRODUCTS: Product[] = [
     solubility: 'Soluble in water (50 mg/mL)',
     image: '/assets/vials/products/nad-plus.webp',
     transparentImage: '/assets/vials/products/nad-plus-transparent.webp',
-    coaAvailable: true,
-    coaDate: '2026-08-05'
   },
   {
     id: 'vf-std-009',
@@ -232,7 +208,6 @@ export const PRODUCTS: Product[] = [
     molecularWeight: '403.93 g/mol',
     category: 'Reference Materials',
     size: '50 mg Powder Vial',
-    purityPercentage: 99.41,
     lotNumber: 'LOT-VF-2209',
     price: 58.00,
     inStock: true,
@@ -244,8 +219,6 @@ export const PRODUCTS: Product[] = [
     solubility: 'Highly soluble in water',
     image: '/assets/vials/products/ghk-cu.webp',
     transparentImage: '/assets/vials/products/ghk-cu-transparent.webp',
-    coaAvailable: true,
-    coaDate: '2026-07-11'
   },
   {
     id: 'vf-std-010',
@@ -258,7 +231,6 @@ export const PRODUCTS: Product[] = [
     molecularWeight: '18.015 g/mol',
     category: 'Lab Supplies',
     size: '30 mL Sealed Glass Vial',
-    purityPercentage: 99.99,
     lotNumber: 'LOT-VF-1105',
     price: 14.00,
     inStock: true,
@@ -274,8 +246,6 @@ export const PRODUCTS: Product[] = [
     transparentImage: '/assets/vials/products/bacteriostatic-water-transparent.webp',
     hiddenFromCatalogReason:
       'Sold as a 30 mL container; the only product photography we hold is the 10 mL stoppered vial. Withheld until correctly sized photography exists.',
-    coaAvailable: true,
-    coaDate: '2026-08-01'
   },
   {
     id: 'vf-std-011',
@@ -289,7 +259,6 @@ export const PRODUCTS: Product[] = [
     molecularWeight: '3357.93 g/mol',
     category: 'Single Compounds',
     size: '5 mg Lyophilized Vial',
-    purityPercentage: 99.44,
     lotNumber: 'LOT-VF-3021',
     price: 54.00,
     inStock: true,
@@ -303,8 +272,6 @@ export const PRODUCTS: Product[] = [
     solubility: 'Soluble in sterile water (>2 mg/mL)',
     image: '/assets/vials/products/sermorelin.webp',
     transparentImage: '/assets/vials/products/sermorelin-transparent.webp',
-    coaAvailable: true,
-    coaDate: '2026-07-06'
   },
   {
     id: 'vf-std-012',
@@ -318,7 +285,6 @@ export const PRODUCTS: Product[] = [
     molecularWeight: '5135.90 g/mol',
     category: 'Reference Materials',
     size: '5 mg Lyophilized Vial',
-    purityPercentage: 99.28,
     lotNumber: 'LOT-VF-3088',
     price: 132.00,
     inStock: true,
@@ -330,8 +296,6 @@ export const PRODUCTS: Product[] = [
     solubility: 'Soluble in dilute acetic acid / water',
     image: '/assets/vials/products/tesamorelin.webp',
     transparentImage: '/assets/vials/products/tesamorelin-transparent.webp',
-    coaAvailable: true,
-    coaDate: '2026-07-18'
   },
   {
     id: 'vf-std-013',
@@ -345,7 +309,6 @@ export const PRODUCTS: Product[] = [
     molecularWeight: '1025.16 g/mol',
     category: 'Single Compounds',
     size: '10 mg Lyophilized Vial',
-    purityPercentage: 99.56,
     lotNumber: 'LOT-VF-3140',
     price: 62.00,
     inStock: true,
@@ -357,8 +320,6 @@ export const PRODUCTS: Product[] = [
     solubility: 'Water soluble',
     image: '/assets/vials/products/pt-141.webp',
     transparentImage: '/assets/vials/products/pt-141-transparent.webp',
-    coaAvailable: true,
-    coaDate: '2026-07-22'
   },
   {
     id: 'vf-std-014',
@@ -372,7 +333,6 @@ export const PRODUCTS: Product[] = [
     molecularWeight: '751.88 g/mol',
     category: 'Specialty Materials',
     size: '10 mg Lyophilized Vial',
-    purityPercentage: 99.33,
     lotNumber: 'LOT-VF-3202',
     price: 46.00,
     inStock: true,
@@ -386,8 +346,6 @@ export const PRODUCTS: Product[] = [
     solubility: 'Freely soluble in water',
     image: '/assets/vials/products/selank.webp',
     transparentImage: '/assets/vials/products/selank-transparent.webp',
-    coaAvailable: true,
-    coaDate: '2026-06-30'
   },
   {
     id: 'vf-std-015',
@@ -401,7 +359,6 @@ export const PRODUCTS: Product[] = [
     molecularWeight: '813.92 g/mol',
     category: 'Analytical Standards',
     size: '10 mg Lyophilized Vial',
-    purityPercentage: 99.61,
     lotNumber: 'LOT-VF-3277',
     price: 49.00,
     inStock: true,
@@ -413,8 +370,6 @@ export const PRODUCTS: Product[] = [
     solubility: 'Soluble in water',
     image: '/assets/vials/products/semax.webp',
     transparentImage: '/assets/vials/products/semax-transparent.webp',
-    coaAvailable: true,
-    coaDate: '2026-07-09'
   },
   {
     id: 'vf-std-016',
@@ -428,7 +383,6 @@ export const PRODUCTS: Product[] = [
     molecularWeight: '390.35 g/mol',
     category: 'Single Compounds',
     size: '10 mg Lyophilized Vial',
-    purityPercentage: 99.47,
     lotNumber: 'LOT-VF-3315',
     price: 42.00,
     inStock: true,
@@ -442,8 +396,6 @@ export const PRODUCTS: Product[] = [
     solubility: 'Water soluble',
     image: '/assets/vials/products/epithalon.webp',
     transparentImage: '/assets/vials/products/epithalon-transparent.webp',
-    coaAvailable: true,
-    coaDate: '2026-06-24'
   },
   {
     id: 'vf-std-017',
@@ -457,7 +409,6 @@ export const PRODUCTS: Product[] = [
     molecularWeight: '3108.29 g/mol',
     category: 'Reference Materials',
     size: '10 mg Lyophilized Vial',
-    purityPercentage: 99.38,
     lotNumber: 'LOT-VF-3390',
     price: 96.00,
     inStock: true,
@@ -469,8 +420,6 @@ export const PRODUCTS: Product[] = [
     solubility: 'Soluble in aqueous buffers pH 6-7',
     image: '/assets/vials/products/thymosin-alpha-1.webp',
     transparentImage: '/assets/vials/products/thymosin-alpha-1-transparent.webp',
-    coaAvailable: true,
-    coaDate: '2026-07-15'
   },
   {
     id: 'vf-std-018',
@@ -484,7 +433,6 @@ export const PRODUCTS: Product[] = [
     molecularWeight: '2174.61 g/mol',
     category: 'Specialty Materials',
     size: '10 mg Lyophilized Vial',
-    purityPercentage: 99.22,
     lotNumber: 'LOT-VF-3444',
     price: 118.00,
     inStock: false,
@@ -496,8 +444,6 @@ export const PRODUCTS: Product[] = [
     solubility: 'Soluble in water and dilute acetic acid',
     image: '/assets/vials/products/mots-c.webp',
     transparentImage: '/assets/vials/products/mots-c-transparent.webp',
-    coaAvailable: true,
-    coaDate: '2026-07-27'
   },
   {
     id: 'vf-std-019',
@@ -511,7 +457,6 @@ export const PRODUCTS: Product[] = [
     molecularWeight: '1815.08 g/mol',
     category: 'Reference Materials',
     size: '5 mg Lyophilized Vial',
-    purityPercentage: 99.50,
     lotNumber: 'LOT-VF-3501',
     price: 68.00,
     inStock: true,
@@ -523,8 +468,6 @@ export const PRODUCTS: Product[] = [
     solubility: 'Soluble in sterile water',
     image: '/assets/vials/products/aod-9604.webp',
     transparentImage: '/assets/vials/products/aod-9604-transparent.webp',
-    coaAvailable: true,
-    coaDate: '2026-08-04'
   },
   {
     id: 'vf-std-020',
@@ -537,7 +480,6 @@ export const PRODUCTS: Product[] = [
     molecularWeight: '41.05 g/mol',
     category: 'Lab Supplies',
     size: '1 L Amber Glass Bottle',
-    purityPercentage: 99.95,
     lotNumber: 'LOT-VF-3560',
     price: 38.00,
     inStock: true,
@@ -551,8 +493,6 @@ export const PRODUCTS: Product[] = [
     transparentImage: '/assets/vials/products/acetonitrile-transparent.webp',
     hiddenFromCatalogReason:
       'Sold as a 1 L amber HPLC bottle; the only product photography we hold is the 10 mL stoppered vial. Withheld rather than shown in a container it does not ship in.',
-    coaAvailable: true,
-    coaDate: '2026-08-06'
   }
 ];
 

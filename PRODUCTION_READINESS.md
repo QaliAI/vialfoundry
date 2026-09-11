@@ -1,99 +1,129 @@
-# Vial Foundry — Reference Platform Production Readiness & Handoff
+# Vial Foundry — Production Readiness
 
 **Repository**: `QaliAI/vialfoundry`  
-**Target**: Clean reference implementation for the reusable peptide commerce platform  
-**Status**: Ready for Production / Gold Standard Child Storefront  
-**Audit Date**: August 2026
+**Production**: https://www.vialfoundry.com  
+**Canonical URL**: `https://www.vialfoundry.com`
+
+This file describes **current reality**. Do not use it to reintroduce synthetic
+certificates, purity figures, HPLC/MS traces, or placeholder payment handles.
 
 ---
 
-## 1. Verified Release Gates
+## 1. What is live
 
-All quality and release gates are green and passing:
-
-| Gate | Command | Status | Details |
-|---|---|---|---|
-| **Production Audit** | `npm run check:prod` | **PASS** | Catalog volume (20 items), COA batch mapping, math stacking, shipping thresholds, secret isolation |
-| **Automated Tests** | `npm test` | **PASS** (34/34) | Order math, idempotency, inventory bounds, timing-safe HMAC sessions, constant-time password check |
-| **TypeScript Strict** | `npm run typecheck` | **PASS** | Strict type safety across all components, lib routines, and App Router API endpoints |
-| **ESLint** | `npm run lint` | **PASS** | Next.js core web vitals and code styling |
-| **Production Build** | `npm run build` | **PASS** | Clean build across all 43 static, dynamic, and API routes |
-
----
-
-## 2. Core Commerce & Operational Architecture
-
-### A. Critical Workflows Audited & Hardened
-1. **Visitor → Product → Cart → Checkout → Order Persisted → Confirmation → Admin Visibility**:
-   - **Catalog & PDP**: 20 authentic peptide reference materials with accurate CAS, purity, molecular weights, and lot numbers.
-   - **Cart & Inventory**: `CartContext` and `POST /api/checkout` enforce stock limits (`product.stockCount`) and reject out-of-stock additions.
-   - **Server-Authoritative Pricing**: Client-supplied prices and discounts are completely ignored; the server validates prices directly against authoritative catalog definitions.
-   - **Payment Methods & Discounts**: 5% discount automatically applied for CashApp and Crypto; Zelle, ACH, Venmo, and Manual Invoice fully supported.
-   - **Idempotent Checkout**: `submission_key` prevents accidental double-orders on repeated submissions.
-   - **Transactional Email**: Resend integration wrapped in safe try/catch so email delivery issues never block customer checkout.
-   - **Admin Management**: `/admin/orders` provides live status transitions (`new` → `invoice_sent` → `pending_payment` → `paid` → `preparing` → `shipped` → `fulfilled`), USPS tracking assignment, manual notes, and email resending.
-
-2. **Affiliate Landing → Application → Persistence → Admin Visibility**:
-   - **Attribution**: `/r/[code]` referral routes resolve alias codes, store 30-day `vf_ref_partner` cookie, and record click telemetry.
-   - **Applications**: Storefront `/affiliates` application form persists to `affiliate_applications` table.
-   - **Admin Applications Queue**: `/admin/affiliates` includes an Applications Queue tab with 1-click **Approve** (automatically generating affiliate record and commission rate) and **Reject** controls.
-   - **Commission Accounting**: Server calculates commission strictly on the product subtotal (excluding shipping) and writes to `referral_revenue`.
-
-3. **COA / Document → Product Association → Customer Access**:
-   - **100% Lot Mapping**: Every product in `src/data/products.ts` maps to a verified analytical batch in `src/data/batches.ts`.
-   - **Verification Engine**: Interactive HPLC chromatogram viewer, mass spectrometry verification, and client-side PDF COA generation at `/verify` and on every Product Detail Page.
+- Next.js App Router storefront with approved branding and plain-English copy.
+- Public catalogue: **18** products (`PUBLIC_PRODUCTS`). Two SKUs remain in
+  `PRODUCTS` but are withheld from the storefront until honest product imagery
+  exists (`hiddenFromCatalogReason`).
+- **Zero** authentic Certificates of Analysis are configured.
+  `src/data/verified-batch-records.ts` is empty by design. Public pages must
+  show documentation pending — never a fabricated purity, COA date, or lab.
+- Payments: **Stripe Checkout** (card / wallets Stripe attaches to card).
+  The webhook at `/api/webhooks/stripe` is the only authority that marks an
+  order paid. The success URL is never trusted.
+- Inventory: **Supabase `products.inventory_quantity`** is the single runtime
+  source of truth. Admin adjustments, checkout stock checks, payment decrements
+  and full-refund restocks all use that column.
+- Admin: passwordless email login for allowlisted `admin_users`. Sessions are
+  HMAC-signed HttpOnly cookies. Acting operator email is recorded on mutations.
 
 ---
 
-## 3. Security & Integrity Controls
+## 2. Release gates
 
-- **No Client-Side Discount Manipulation**: Promo code rules (`FOUNDRY10`, `RESEARCH25`) and payment discounts are calculated server-side in `src/lib/admin/order-math.mjs`.
-- **Service-Role Isolation**: `SUPABASE_SERVICE_ROLE_KEY` is restricted strictly to server-side API handlers and `src/lib/supabase/admin.ts`. No service credentials exist in the client bundle.
-- **Timing-Safe Admin Authentication**: Admin session cookies use HMAC SHA-256 signatures with constant-time equality checks and fixed-length SHA-256 password hash comparison.
-- **Duplicate Order Prevention**: Unique idempotency keys (`submission_key`) are verified before database insertion.
-- **Graceful Degradation**: If Supabase or Resend credentials are not configured in preview or development environments, mock fallbacks ensure routes do not crash with 500 errors.
+| Gate | Command | Meaning |
+|---|---|---|
+| Tests | `npm test` | Catalog authority, Stripe amounts, webhook rules, inventory policy, admin session HMAC, documentation integrity, secret scan |
+| Types | `npm run typecheck` | `tsc --noEmit` |
+| Lint | `npm run lint` | Next.js core-web-vitals |
+| Build | `npm run build` | Production compile |
+| Reality audit | `npm run check:prod` | Catalog parse, no synthetic batch generators, no unsupported public claims, commerce math, Stripe gating (names/modes only) |
 
----
-
-## 4. Production Environment Configuration
-
-Set the following environment variables in Vercel (Project `vialfoundry` → Settings → Environment Variables):
-
-| Key | Scope | Required | Purpose |
-|---|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Production, Preview | Yes | Supabase Project URL (`https://pmueqjoswsbavnkravth.supabase.co`) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Production, Preview | Yes | Supabase Anon Key (public inquiries, clicks) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Production, Preview | Yes | Supabase Service Role Key (server-side order & admin access) |
-| `ADMIN_EMAIL` | Production, Preview | Yes | Admin login email (default: `admin@vialfoundry.com`) |
-| `ADMIN_ACCESS_PASSWORD` | Production, Preview | Yes | Admin dashboard access password |
-| `ADMIN_SESSION_SECRET` | Production, Preview | Yes | 32+ character HMAC secret for signing admin session cookies |
-| `NEXT_PUBLIC_SITE_URL` | Production, Preview, Development | Yes | Canonical site URL (`https://www.vialfoundry.com` in production) |
-| `PAYMENT_GATEWAY_TYPE` | All | Yes for Stripe | Set to `stripe` to enable Checkout. Leave unset to keep manual invoice only. |
-| `NEXT_PUBLIC_PAYMENT_GATEWAY_TYPE` | All | Yes for Stripe | Must match `PAYMENT_GATEWAY_TYPE` so the storefront shows the Stripe CTA. |
-| `STRIPE_SECRET_KEY` | Preview: **TEST** `sk_test_`. Production: **LIVE** `sk_live_`. Never both. | Yes for Stripe | Server-only. Never `NEXT_PUBLIC_`. |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Preview: **TEST** `pk_test_`. Production: **LIVE** `pk_live_`. | Yes for Stripe | Publishable key only. |
-| `STRIPE_WEBHOOK_SECRET` | Separate test and live signing secrets | Yes for Stripe | Endpoint: `/api/webhooks/stripe`. Server-only. |
-| `RESEND_API_KEY` | Production, Preview | Yes for mail | Server-only. |
-| `TRANSACTIONAL_EMAIL_FROM` | Production, Preview | Recommended | `Vial Foundry <orders@vialfoundry.com>` |
-| `TRANSACTIONAL_EMAIL_REPLY_TO` | Production, Preview | Recommended | `support@vialfoundry.com` |
-| `EMAIL_SENDER_NAME` | Production, Preview | Optional | Default `Vial Foundry` |
-| `EMAIL_SENDER_DOMAIN` | Production, Preview | Optional | Default `vialfoundry.com` |
-| `NEXT_PUBLIC_HELLO_EMAIL` | Production, Preview | Optional | Public general inbox |
-| `NEXT_PUBLIC_SUPPORT_EMAIL` | Production, Preview | Optional | Public support inbox |
-| `NEXT_PUBLIC_INFO_EMAIL` | Production, Preview | Optional | Alias; not shown on the site |
-| `ADMIN_NOTIFICATION_EMAIL` | Production, Preview | Yes for ops alerts | Internal paid-order alerts. Not shown publicly. |
-| `NOTIFICATION_EMAIL_TO` | Production, Preview | Optional | Fallback for admin alerts if `ADMIN_NOTIFICATION_EMAIL` is unset |
-| `NEXT_PUBLIC_CASHAPP_CASHTAG` | Optional | No | Only if a real Cash App handle is configured. Leave blank otherwise. |
-| `NEXT_PUBLIC_ZELLE_HANDLE` | Optional | No | Only if a real Zelle handle is configured. Leave blank otherwise. |
-| `NEXT_PUBLIC_NOWPAYMENTS_LINK` | Optional | No | Leave blank unless a real hosted link exists. |
-| `NEXT_PUBLIC_LINKMONEY_LINK` | Optional | No | Leave blank unless a real hosted link exists. |
+`check:prod` **must not** assert universal COA coverage. Zero supplied records
+is a passing, honest state.
 
 ---
 
-## 5. Domain & DNS Configuration
+## 3. Commerce rules (do not weaken)
 
-1. **Vercel**: Add `vialfoundry.com` and `www.vialfoundry.com` to Domains.
-2. **Porkbun DNS**:
-   - `A` record: `@` → `76.76.21.21` (TTL 600)
-   - `CNAME` record: `www` → `cname.vercel-dns.com` (TTL 600)
-3. Set `vialfoundry.com` as canonical redirect.
+1. Public checkout resolves products by **id and/or SKU only**. Product name is
+   not authority. Unknown products return 400
+   `"This product is not available for checkout."`
+2. Client `unitPriceAmount` is ignored. The server charges `catalog.price`.
+3. There is no custom / non-catalog fallback on `POST /api/checkout`. Quotes
+   belong in a separate admin workflow.
+4. Production checkout **fails closed** if Supabase is not operational. It must
+   not silently use build-time `stockCount`.
+5. Stock is checked at session creation against Supabase, decremented once on
+   confirmed payment, restocked once on a full refund. Webhook retries must not
+   double-decrement (`inventory_decremented_at` / `apply_inventory_delta`).
+6. Stripe test keys on Preview; live keys on Production only.
+7. Do not invent payment handles. Unconfigured manual methods stay hidden.
+
+---
+
+## 4. Documentation integrity
+
+Authentic lot evidence lives only in `VERIFIED_BATCH_RECORDS`.
+
+Rules:
+
+- Never add a record without the physical certificate.
+- Never estimate purity, dates, chromatograms or issuing labs.
+- `src/data/products.ts` must not contain `purityPercentage`, `coaAvailable`
+  or `coaDate`.
+- `src/data/batches.ts` must not generate records.
+
+---
+
+## 5. Environment (names only — never commit values)
+
+### Stripe
+
+| Name | Preview | Production |
+|---|---|---|
+| `PAYMENT_GATEWAY_TYPE` | `stripe` | `stripe` |
+| `NEXT_PUBLIC_PAYMENT_GATEWAY_TYPE` | `stripe` | `stripe` |
+| `STRIPE_SECRET_KEY` | `sk_test_` | `sk_live_` |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `pk_test_` | `pk_live_` |
+| `STRIPE_WEBHOOK_SECRET` | test endpoint secret | live endpoint secret |
+| `NEXT_PUBLIC_SITE_URL` | `https://www.vialfoundry.com` | `https://www.vialfoundry.com` |
+
+Webhook URL: `https://www.vialfoundry.com/api/webhooks/stripe`  
+Events: `checkout.session.completed`, `checkout.session.expired`,
+`payment_intent.succeeded`, `payment_intent.payment_failed`, `charge.refunded`.
+
+### Data & mail
+
+`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+`SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`,
+`TRANSACTIONAL_EMAIL_FROM`, `TRANSACTIONAL_EMAIL_REPLY_TO`,
+`ADMIN_NOTIFICATION_EMAIL`, `NEXT_PUBLIC_SUPPORT_EMAIL`,
+`NEXT_PUBLIC_HELLO_EMAIL`, `ADMIN_SESSION_SECRET`.
+
+Admin users are rows in `admin_users`, not environment passwords.
+Do not set a shared `ADMIN_ACCESS_PASSWORD`.
+
+---
+
+## 6. Admin operators
+
+Allowlisted in `admin_users` (seeded by migration `08_admin_users_inventory.sql`):
+
+- owner
+- admin
+
+Login: `/admin/login` → email → single-use link (≈12 minutes) → HMAC session.
+Unauthenticated `/admin/*` redirects to login. APIs still 401 without a valid
+session. Order events record the acting email.
+
+---
+
+## 7. What this file must never claim
+
+- That every lot has a COA, HPLC trace, or third-party test.
+- A 20-product public storefront (18 are public).
+- Manual Cash App / Zelle / Venmo as primary checkout while Stripe is live.
+- A single shared admin password.
+- Cold-chain or temperature-monitored fulfilment.
+- That landing on the success URL means the order is paid.

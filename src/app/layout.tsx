@@ -5,7 +5,7 @@ import '../index.css';
 import { CartProvider } from '../context/CartContext';
 import { AppNavigationWrapper } from '../components/AppNavigationWrapper';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://vialfoundry.com';
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.vialfoundry.com').replace(/\/$/, '');
 
 const organizationJsonLd = {
   '@context': 'https://schema.org',
@@ -20,14 +20,14 @@ const organizationJsonLd = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://vialfoundry.com'),
+  metadataBase: new URL((process.env.NEXT_PUBLIC_SITE_URL || 'https://www.vialfoundry.com').replace(/\/$/, '')),
   title: 'Vial Foundry — Research Peptides',
   description: 'Shop research peptides with clear product details, batch numbers and documents when available. For research use only.',
   keywords: ['research peptides', 'buy research peptides', 'batch documents', 'peptide vials', 'RUO peptides'],
   openGraph: {
     title: 'Vial Foundry — Research Peptides',
     description: 'Shop research peptides with clear product details, batch numbers and documents when available. For research use only.',
-    url: 'https://vialfoundry.com/',
+    url: `${SITE_URL}/`,
     siteName: 'Vial Foundry',
     images: [{ url: '/brand/og-image.png', width: 1200, height: 630, alt: 'Vial Foundry — Research Peptides' }],
     type: 'website',

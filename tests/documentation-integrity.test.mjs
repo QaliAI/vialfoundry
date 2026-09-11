@@ -54,6 +54,13 @@ test('every verified record names its issuing document source', async () => {
   }
 });
 
+test('catalog products do not carry unsupported purity or COA metadata', () => {
+  const src = read('src/data/products.ts');
+  for (const banned of ['purityPercentage', 'coaAvailable', 'coaDate']) {
+    assert.ok(!src.includes(banned), `src/data/products.ts must not contain "${banned}"`);
+  }
+});
+
 test('no public copy asserts universal third-party testing', () => {
   const banned = [
     'Third-Party Tested',

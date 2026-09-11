@@ -6,7 +6,7 @@ export const defaultShippingOptions = [
     label: "Standard Shipping (3-5 Days)",
     priceCents: 1500,
     eta: "3-5 business days",
-    description: "Temperature-monitored ground shipping with cold insulation pack",
+    description: "Carefully packed and shipped by ground.",
     freeShippingThresholdCents: 20000,
   },
   {
@@ -14,14 +14,14 @@ export const defaultShippingOptions = [
     label: "Priority Shipping (2-Day)",
     priceCents: 3500,
     eta: "2 business days",
-    description: "Expedited cold-chain transit with guaranteed delivery window",
+    description: "Faster shipping with tracking.",
   },
   {
     id: "express",
     label: "Express Shipping (1-Day)",
     priceCents: 6500,
     eta: "1 business day",
-    description: "Next-day priority delivery with thermal ice insulation",
+    description: "Next-day delivery with tracking.",
   },
 ];
 

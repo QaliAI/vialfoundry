@@ -17,18 +17,17 @@ function clean(value) {
 }
 
 /**
+ * Passwordless admin login only needs a session-signing secret.
+ * Allowlisted users live in admin_users, not in environment variables.
+ *
  * @param {Record<string, string | undefined>} env
- * @returns {{ adminEmail: string, accessPassword: string, sessionSecret: string } | null}
+ * @returns {{ sessionSecret: string } | null}
  */
 export function resolveAdminAuthConfig(env = {}) {
-  const adminEmail = clean(env.ADMIN_EMAIL);
-  const accessPassword = clean(env.ADMIN_ACCESS_PASSWORD);
   const sessionSecret = clean(env.ADMIN_SESSION_SECRET);
-
-  if (!adminEmail || !accessPassword || !sessionSecret) return null;
+  if (!sessionSecret) return null;
   if (sessionSecret.length < MIN_SESSION_SECRET_LENGTH) return null;
-
-  return { adminEmail, accessPassword, sessionSecret };
+  return { sessionSecret };
 }
 
 export { MIN_SESSION_SECRET_LENGTH };

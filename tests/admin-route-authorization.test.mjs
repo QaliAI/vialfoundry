@@ -11,7 +11,7 @@ import path from "node:path";
 const ADMIN_API = "src/app/api/admin";
 
 /** Public by necessity: login IS the authentication entry point; logout only clears a cookie. */
-const PUBLIC_BY_DESIGN = new Set(["login/route.ts", "logout/route.ts"]);
+const PUBLIC_BY_DESIGN = new Set(["login/route.ts", "login/verify/route.ts", "logout/route.ts"]);
 
 function walk(dir, out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {

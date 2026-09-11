@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Package, Layers, FileCheck, ShoppingCart,
@@ -12,6 +12,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [actorEmail, setActorEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (pathname === '/admin/login') return;
+    fetch('/api/admin/session', { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d?.email) setActorEmail(d.email); })
+      .catch(() => {});
+  }, [pathname]);
 
   // If on admin login page, render children directly without sidebar
   if (pathname === '/admin/login') {
@@ -79,6 +88,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mt-2">
               Admin Console
             </span>
+            {actorEmail && (
+              <span className="text-[10px] font-mono text-slate-500 block mt-1 break-all">{actorEmail}</span>
+            )}
           </div>
 
           {/* Navigation Links */}

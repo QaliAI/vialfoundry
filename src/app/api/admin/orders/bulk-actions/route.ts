@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifyAdminSession } from "@/lib/admin/auth";
+import { requireAdminActor, verifyAdminSession } from "@/lib/admin/auth";
 import { performBulkOrderAction } from "@/lib/admin/orders";
 
 export async function POST(req: Request) {
@@ -10,7 +10,8 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { orderIds, action, statusValue, actor = "admin" } = body;
+    const { orderIds, action, statusValue } = body;
+    const actor = (await requireAdminActor()) || "admin";
 
     if (!Array.isArray(orderIds) || orderIds.length === 0 || !action) {
       return NextResponse.json({ success: false, error: "Valid order IDs array and action required" }, { status: 400 });

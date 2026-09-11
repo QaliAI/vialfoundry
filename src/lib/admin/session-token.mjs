@@ -13,27 +13,39 @@ export function createAdminSessionToken(email, secret) {
   return Buffer.from(`${payload}:${signature}`).toString("base64url");
 }
 
-export function verifyAdminSessionToken(token, secret, maxAgeSeconds = ADMIN_SESSION_MAX_AGE_SECONDS) {
-  if (!token || !secret) return false;
+export function parseAdminSessionToken(token, secret, maxAgeSeconds = ADMIN_SESSION_MAX_AGE_SECONDS) {
+  if (!token || !secret) return null;
   try {
     const decoded = Buffer.from(token, "base64url").toString("utf8");
     const parts = decoded.split(":");
-    if (parts.length !== 3) return false;
+    if (parts.length !== 3) return null;
     const [email, timestampStr, signature] = parts;
     const timestamp = Number(timestampStr);
-    if (!Number.isFinite(timestamp)) return false;
+    if (!email || !Number.isFinite(timestamp)) return null;
 
-    // Check expiration
     const ageSeconds = (Date.now() - timestamp) / 1000;
-    if (ageSeconds < 0 || ageSeconds > maxAgeSeconds) return false;
+    if (ageSeconds < 0 || ageSeconds > maxAgeSeconds) return null;
 
-    // Verify HMAC signature in constant time
     const expectedPayload = `${email}:${timestampStr}`;
     const expectedSignature = crypto.createHmac("sha256", secret).update(expectedPayload).digest("hex");
 
-    if (signature.length !== expectedSignature.length) return false;
-    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
+    if (signature.length !== expectedSignature.length) return null;
+    const match = crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
+    if (!match) return null;
+    return { email: email.toLowerCase() };
   } catch {
-    return false;
+    return null;
   }
+}
+
+export function verifyAdminSessionToken(token, secret, maxAgeSeconds = ADMIN_SESSION_MAX_AGE_SECONDS) {
+  return parseAdminSessionToken(token, secret, maxAgeSeconds) !== null;
+}
+
+export function hashLoginToken(raw) {
+  return crypto.createHash("sha256").update(String(raw)).digest("hex");
+}
+
+export function generateLoginToken() {
+  return crypto.randomBytes(32).toString("hex");
 }

@@ -65,20 +65,23 @@ export async function GET() {
     .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
     .slice(0, 10);
 
-  const lowStock = PRODUCTS.filter((p) => p.inStock && p.stockCount <= LOW_STOCK_THRESHOLD)
-    .sort((a, b) => a.stockCount - b.stockCount)
-    .map((p) => ({
-      id: p.id,
-      sku: p.sku,
-      name: p.displayName || p.name,
-      stockCount: p.stockCount,
-    }));
-
-  const outOfStock = PRODUCTS.filter((p) => !p.inStock || p.stockCount <= 0).map((p) => ({
-    id: p.id,
-    sku: p.sku,
-    name: p.displayName || p.name,
-  }));
+  const { data: stockRows } = await supabase
+    .from('products')
+    .select('id, sku, name, inventory_quantity');
+  const catalog = new Map(PRODUCTS.map((p) => [p.id, p]));
+  const liveStock = (stockRows || []).map((row: any) => {
+    const cat = catalog.get(row.id);
+    return {
+      id: row.id,
+      sku: row.sku || cat?.sku,
+      name: cat?.displayName || cat?.name || row.name,
+      stockCount: Number(row.inventory_quantity) || 0,
+    };
+  });
+  const lowStock = liveStock
+    .filter((p) => p.stockCount > 0 && p.stockCount <= LOW_STOCK_THRESHOLD)
+    .sort((a, b) => a.stockCount - b.stockCount);
+  const outOfStock = liveStock.filter((p) => p.stockCount <= 0);
 
   return NextResponse.json({
     success: true,

@@ -14,7 +14,6 @@ import {
 import {
   shouldDecrementInventory,
   shouldRestockInventory,
-  nextInventoryQuantity,
   isOversell,
 } from '../../../../lib/admin/inventory.mjs';
 import { createAdminClient } from '../../../../lib/supabase/admin';
@@ -367,18 +366,17 @@ async function decrementInventoryForOrder(
     const qty = Number(line.quantity) || 0;
     if (qty <= 0) continue;
 
-    const { data: product } = await supabase
-      .from('products')
-      .select('id, inventory_quantity')
-      .eq('id', line.product_id)
-      .maybeSingle();
-    if (!product) continue;
+    const { data: applied } = await supabase.rpc('apply_inventory_delta', {
+      p_id: line.product_id,
+      p_delta: -qty,
+    });
+    const row = Array.isArray(applied) ? applied[0] : applied;
+    if (!row) continue;
 
-    const previous = Number(product.inventory_quantity) || 0;
-    const next = nextInventoryQuantity(previous, -qty);
+    const previous = Number(row.previous_quantity) || 0;
+    const next = Number(row.new_quantity);
     const oversell = isOversell(previous, qty);
-
-    await supabase.from('products').update({ inventory_quantity: next, updated_at: new Date().toISOString() }).eq('id', product.id);
+    const product = { id: line.product_id };
     await supabase.from('inventory_transactions').insert({
       product_id: product.id,
       transaction_type: 'sale',
@@ -430,15 +428,15 @@ async function restockInventoryForOrder(
     if (!line.product_id) continue;
     const qty = Number(line.quantity) || 0;
     if (qty <= 0) continue;
-    const { data: product } = await supabase
-      .from('products')
-      .select('id, inventory_quantity')
-      .eq('id', line.product_id)
-      .maybeSingle();
-    if (!product) continue;
-    const previous = Number(product.inventory_quantity) || 0;
-    const next = previous + qty;
-    await supabase.from('products').update({ inventory_quantity: next, updated_at: new Date().toISOString() }).eq('id', product.id);
+    const { data: applied } = await supabase.rpc('apply_inventory_delta', {
+      p_id: line.product_id,
+      p_delta: qty,
+    });
+    const row = Array.isArray(applied) ? applied[0] : applied;
+    if (!row) continue;
+    const previous = Number(row.previous_quantity) || 0;
+    const next = Number(row.new_quantity);
+    const product = { id: line.product_id };
     await supabase.from('inventory_transactions').insert({
       product_id: product.id,
       transaction_type: 'refund',

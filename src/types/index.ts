@@ -24,7 +24,6 @@ export interface Product {
   size: string;
   /** Plain presentation for listings ("5 mg vial"). `size` stays the record value. */
   displaySize?: string;
-  purityPercentage: number;
   lotNumber: string;
   price: number;
   inStock: boolean;
@@ -50,8 +49,6 @@ export interface Product {
    * Clear the field to make the SKU public again.
    */
   hiddenFromCatalogReason?: string;
-  coaAvailable: boolean;
-  coaDate: string;
 }
 
 export interface PeakIntegration {
