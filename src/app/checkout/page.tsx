@@ -55,6 +55,9 @@ function CheckoutPageInner() {
   useEffect(() => {
     if (cartCount === 0) return;
     trackEvent('checkout_started', { items: cartCount, subtotal });
+    if (canceled) {
+      trackEvent('payment_failed', { reason: 'stripe_checkout_canceled' });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cartCount > 0]);
 
@@ -107,6 +110,10 @@ function CheckoutPageInner() {
         name: promoResult.name,
       });
       setDiscountError('');
+      trackEvent('promo_applied', {
+        code: promoResult.code || code,
+        discountCents: promoResult.discountCents,
+      });
     } else {
       setAppliedDiscount(null);
       setDiscountError(promoResult.error || 'Invalid or inapplicable promotional code.');
@@ -221,6 +228,7 @@ function CheckoutPageInner() {
     } catch (err: any) {
       console.error('[checkout] error submitting order:', err);
       setSubmitError(err?.message || 'An error occurred during submission.');
+      trackEvent('payment_failed', { reason: err?.message || 'submission_failed' });
       setIsSubmitting(false);
     }
   };

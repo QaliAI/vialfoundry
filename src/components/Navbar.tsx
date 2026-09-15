@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, ShoppingBag, ShieldCheck, Menu, X, ChevronRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { BrandLogo } from './BrandLogo';
+import { FREE_STANDARD_SHIPPING_THRESHOLD_CENTS } from '../lib/manual-orders/shipping.mjs';
 
 interface NavbarProps {
   currentPath: string;
@@ -34,11 +35,16 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
       <header
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-200 ${
           isScrolled
-            ? 'bg-brand-paper/95 backdrop-blur-md border-b border-brand-border py-3 shadow-2xs'
-            : 'bg-brand-canvas/90 backdrop-blur-xs py-4'
+            ? 'bg-brand-paper/95 backdrop-blur-md border-b border-brand-border shadow-2xs'
+            : 'bg-brand-canvas/90 backdrop-blur-xs'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {FREE_STANDARD_SHIPPING_THRESHOLD_CENTS > 0 && (
+          <div className="bg-brand-ink text-slate-300 text-[10px] sm:text-[11px] font-mono tracking-wider py-1.5 text-center border-b border-brand-graphite/40">
+            <span>FREE STANDARD SHIPPING ${FREE_STANDARD_SHIPPING_THRESHOLD_CENTS / 100}+</span>
+          </div>
+        )}
+        <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${isScrolled ? 'py-2.5' : 'py-3.5'} transition-all`}>
           <div className="flex items-center justify-between">
             {/* Brand Logo */}
             <button

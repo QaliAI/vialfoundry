@@ -102,7 +102,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 aria-label={`Add ${productTitle(product)} to cart`}
               >
                 <ShoppingBag className="w-3.5 h-3.5" />
-                <span>Add</span>
+                <span>Add to Cart</span>
               </button>
             ) : (
               <button

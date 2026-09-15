@@ -11,33 +11,34 @@ import type { Product, ProductCategory } from '../types';
 /**
  * Plain-English label for each internal category key.
  *
- * Every product currently in the catalogue is a single research peptide, so
- * these labels deliberately do not imply a research area or an effect — they
- * only describe what the item physically is.
+ * Merges overlapping internal laboratory categories into clean public categories:
+ * - 'Reference Materials', 'Analytical Standards', 'Single Compounds' -> 'Research Peptides'
+ * - 'Specialty Materials' -> 'Specialty Products'
+ * - 'Lab Supplies' -> 'Research Supplies'
  */
 const CATEGORY_LABELS: Record<ProductCategory, string> = {
   'Reference Materials': 'Research Peptides',
-  'Analytical Standards': 'Peptide Standards',
-  'Single Compounds': 'Single Peptides',
-  'Specialty Materials': 'Specialty Peptides',
+  'Analytical Standards': 'Research Peptides',
+  'Single Compounds': 'Research Peptides',
+  'Specialty Materials': 'Specialty Products',
   'Lab Supplies': 'Research Supplies',
 };
 
-/** Short description shown under a category tile. Facts only. */
-const CATEGORY_BLURBS: Record<ProductCategory, string> = {
-  'Reference Materials': 'Our core research peptides.',
-  'Analytical Standards': 'Peptides used as comparison standards.',
-  'Single Compounds': 'One peptide per vial.',
-  'Specialty Materials': 'Less commonly stocked peptides.',
-  'Lab Supplies': 'Diluents and lab consumables.',
+/** Short factual description shown under each category tile. */
+const CATEGORY_BLURBS: Record<string, string> = {
+  'Research Peptides': 'High-purity lyophilized single research peptides.',
+  'Specialty Products': 'Specialty research peptides and specialized sequences.',
+  'Research Supplies': 'Laboratory reconstitution reagents and consumables.',
 };
 
 export function categoryLabel(category: ProductCategory): string {
-  return CATEGORY_LABELS[category] ?? category;
+  return CATEGORY_LABELS[category] ?? 'Research Peptides';
 }
 
-export function categoryBlurb(category: ProductCategory): string {
-  return CATEGORY_BLURBS[category] ?? '';
+export function categoryBlurb(categoryOrLabel: string): string {
+  if (CATEGORY_BLURBS[categoryOrLabel]) return CATEGORY_BLURBS[categoryOrLabel];
+  const mapped = CATEGORY_LABELS[categoryOrLabel as ProductCategory];
+  return mapped ? CATEGORY_BLURBS[mapped] || '' : '';
 }
 
 /** The short name to show in listings, cards and the cart. */
@@ -48,4 +49,23 @@ export function productTitle(product: Pick<Product, 'name' | 'displayName'>): st
 /** The plain size to show in listings ("5 mg vial"). */
 export function productSize(product: Pick<Product, 'size' | 'displaySize'>): string {
   return product.displaySize || product.size;
+}
+
+/**
+ * Matches a product category against a user-selected category filter.
+ * Resolves both customer-facing names ('Research Peptides', 'Specialty Products')
+ * and legacy internal keys ('Reference Materials', etc.) seamlessly.
+ */
+export function matchesCustomerCategory(productCategory: ProductCategory, selectedCategory: string): boolean {
+  if (!selectedCategory || selectedCategory === 'All' || selectedCategory === 'All Products') {
+    return true;
+  }
+  const publicLabel = categoryLabel(productCategory);
+  if (publicLabel.toLowerCase() === selectedCategory.toLowerCase()) {
+    return true;
+  }
+  if (productCategory.toLowerCase() === selectedCategory.toLowerCase()) {
+    return true;
+  }
+  return false;
 }

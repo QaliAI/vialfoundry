@@ -1,9 +1,28 @@
 import type { Metadata } from 'next';
 import React from 'react';
 import { Analytics } from '@vercel/analytics/react';
+import { Inter, JetBrains_Mono, Montserrat } from 'next/font/google';
 import '../index.css';
 import { CartProvider } from '../context/CartContext';
 import { AppNavigationWrapper } from '../components/AppNavigationWrapper';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-jetbrains-mono',
+  display: 'swap',
+});
+
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  variable: '--font-montserrat',
+  display: 'swap',
+});
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.vialfoundry.com').replace(/\/$/, '');
 
@@ -61,11 +80,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} ${montserrat.variable}`}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <meta name="theme-color" content="#0F2740" />
       </head>
       <body className="bg-brand-canvas text-brand-ink font-sans antialiased selection:bg-brand-teal selection:text-white min-h-screen flex flex-col justify-between">

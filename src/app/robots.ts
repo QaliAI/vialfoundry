@@ -1,12 +1,12 @@
 import type { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://vialfoundry.com';
+  const base = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.vialfoundry.com').replace(/\/$/, '');
   return {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/admin', '/checkout', '/order-confirmation'],
+      disallow: ['/admin/', '/checkout', '/order-confirmation/', '/api/'],
     },
     sitemap: `${base}/sitemap.xml`,
   };

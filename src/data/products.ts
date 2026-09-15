@@ -506,3 +506,7 @@ export const PRODUCTS: Product[] = [
 export const PUBLIC_PRODUCTS: Product[] = PRODUCTS.filter(
   (p) => !p.hiddenFromCatalogReason,
 );
+
+export const WITHHELD_FROM_PUBLIC_CATALOG_PRODUCT_IDS = new Set(
+  PRODUCTS.filter((p) => Boolean(p.hiddenFromCatalogReason)).map((p) => p.id),
+);

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { PUBLIC_PRODUCTS } from '../data/products';
-import { categoryLabel } from '../lib/catalog-display';
+import { categoryLabel, matchesCustomerCategory } from '../lib/catalog-display';
 import { Product, ProductCategory } from '../types';
 import { ProductCard } from '../components/ProductCard';
 import { getBatchRecord, getDocumentationStatus } from '../data/batches';
@@ -16,19 +16,24 @@ interface CatalogPageProps {
   initialCategory?: string;
 }
 
-// Derived from the live catalogue so a category with no public products
-// (e.g. Lab Supplies while both supplies SKUs are withheld) never renders.
-const CATEGORIES: string[] = [
-  'All',
-  ...Array.from(new Set(PUBLIC_PRODUCTS.map((p) => p.category))),
+// Clean customer-facing categories derived from public catalogue
+const STORE_CATEGORIES: string[] = [
+  'All Products',
+  ...Array.from(new Set(PUBLIC_PRODUCTS.map((p) => categoryLabel(p.category)))),
 ];
 
 type DocFilter = 'any' | 'verified' | 'pending';
 
 export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct, initialCategory }) => {
-  const [selectedCategory, setSelectedCategory] = useState<string>(
-    initialCategory && CATEGORIES.includes(initialCategory) ? initialCategory : 'All'
-  );
+  const resolveInitialCategory = () => {
+    if (!initialCategory) return 'All Products';
+    if (STORE_CATEGORIES.includes(initialCategory)) return initialCategory;
+    const mapped = categoryLabel(initialCategory as ProductCategory);
+    if (STORE_CATEGORIES.includes(mapped)) return mapped;
+    return 'All Products';
+  };
+
+  const [selectedCategory, setSelectedCategory] = useState<string>(resolveInitialCategory());
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'price-asc' | 'price-desc'>('name');
   const [docFilter, setDocFilter] = useState<DocFilter>('any');
@@ -47,7 +52,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct, initi
 
   const filteredProducts = useMemo(() => {
     return PUBLIC_PRODUCTS.filter((product) => {
-      const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
+      const matchesCategory = matchesCustomerCategory(product.category, selectedCategory);
       const q = searchQuery.toLowerCase().trim();
       const matchesSearch =
         !q ||
@@ -92,7 +97,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct, initi
 
         {/* Category Pills */}
         <div className="flex items-center space-x-1.5 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
-          {CATEGORIES.map((cat) => (
+          {STORE_CATEGORIES.map((cat) => (
             <button
               key={cat}
               onClick={() => applyCategory(cat)}
@@ -102,7 +107,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct, initi
                   : 'text-brand-steel hover:text-brand-ink hover:bg-brand-surface-muted'
               }`}
             >
-              {cat === 'All' ? 'All' : categoryLabel(cat as ProductCategory)}
+              {cat}
             </button>
           ))}
         </div>

@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Product } from '../types';
 import { getBatchRecord, getDocumentationStatus } from '../data/batches';
 import { COAModal } from '../components/COAModal';
 import { useCart } from '../context/CartContext';
 import { FileCheck, FileClock, ShoppingBag, ArrowLeft, CheckCircle2, Copy } from 'lucide-react';
-import { PRODUCTS } from '../data/products';
+import { PUBLIC_PRODUCTS } from '../data/products';
 import { categoryLabel, productTitle, productSize } from '../lib/catalog-display';
 import { ProductCard } from '../components/ProductCard';
 import { ProductTabs } from '../components/ProductTabs';
@@ -29,6 +29,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   const [quantity, setQuantity] = useState(1);
   const [showCOAModal, setShowCOAModal] = useState(false);
   const [copiedSeq, setCopiedSeq] = useState(false);
+  const [showMobileStickyBar, setShowMobileStickyBar] = useState(false);
+  const buyPanelRef = useRef<HTMLDivElement>(null);
   const maxQuantity = product.inStock ? product.stockCount : Infinity;
 
   const batchRecord = getBatchRecord(product.lotNumber) ?? undefined;
@@ -44,6 +46,25 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     });
   }, [product.id, product.category, product.price, product.inStock, docStatus]);
 
+  useEffect(() => {
+    const el = buyPanelRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // Show the mobile sticky bar only once the primary buy panel scrolls above viewport
+        const rect = entry.boundingClientRect;
+        setShowMobileStickyBar(!entry.isIntersecting && rect.top < 0);
+      },
+      { threshold: 0 }
+    );
+
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+    };
+  }, [product.id]);
+
   const handleCopySeq = () => {
     if (product.sequence) {
       navigator.clipboard.writeText(product.sequence);
@@ -52,16 +73,21 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     }
   };
 
-  const relatedProducts = PRODUCTS.filter((p) => p.id !== product.id && p.category === product.category).slice(0, 3);
+  // Regression safety: only public catalog products may appear as recommendations
+  const relatedProducts = PUBLIC_PRODUCTS.filter((p) => p.id !== product.id && p.category === product.category).slice(0, 3);
+
+  const canonicalUrl = `https://www.vialfoundry.com/product/${product.id}`;
+  const absoluteImageUrl = `https://www.vialfoundry.com${product.image}`;
 
   const productJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    name: product.name,
+    name: productTitle(product),
     sku: product.sku,
     description: product.description,
-    category: product.category,
-    image: product.image,
+    category: categoryLabel(product.category),
+    image: absoluteImageUrl,
+    url: canonicalUrl,
     offers: {
       '@type': 'Offer',
       price: product.price.toFixed(2),
@@ -69,6 +95,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
       availability: product.inStock
         ? 'https://schema.org/InStock'
         : 'https://schema.org/OutOfStock',
+      url: canonicalUrl,
+      seller: {
+        '@type': 'Organization',
+        name: 'Vial Foundry',
+        url: 'https://www.vialfoundry.com',
+      },
     },
   };
 
@@ -151,7 +183,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
           {/* Pricing & Add to Cart (or Restock when out of stock) */}
           {product.inStock ? (
-            <div className="p-6 rounded-2xl bg-brand-paper border border-brand-border shadow-sm space-y-5">
+            <div ref={buyPanelRef} className="p-6 rounded-2xl bg-brand-paper border border-brand-border shadow-sm space-y-5">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="font-display text-3xl font-bold text-brand-ink tracking-tight">${product.price.toFixed(2)}</div>
@@ -232,7 +264,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
               </div>
             </div>
           ) : (
-            <RestockNotify product={product} />
+            <div ref={buyPanelRef}>
+              <RestockNotify product={product} />
+            </div>
           )}
 
           {/* Technical Specs Checklist */}
@@ -284,6 +318,59 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
       {/* COA Modal */}
       {showCOAModal && batchRecord && (
         <COAModal batch={batchRecord} onClose={() => setShowCOAModal(false)} />
+      )}
+
+      {/* Mobile Sticky Purchase Bar (shows only when primary buy panel scrolls away) */}
+      {showMobileStickyBar && (
+        <div
+          role="region"
+          aria-label="Quick mobile purchase"
+          className="fixed bottom-0 left-0 right-0 z-30 bg-brand-paper/95 backdrop-blur-md border-t border-brand-border p-3 shadow-lg md:hidden animate-in slide-in-from-bottom duration-200"
+        >
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="font-display font-bold text-xs sm:text-sm text-brand-ink truncate">
+                {productTitle(product)}
+              </div>
+              <div className="font-mono text-xs text-brand-steel font-semibold">
+                ${product.price.toFixed(2)}
+                {product.inStock && quantity > 1 && (
+                  <span className="font-sans text-[10px] text-brand-steel/80 ml-1.5">
+                    (Qty: {quantity} &middot; ${(product.price * quantity).toFixed(2)})
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {product.inStock ? (
+              <button
+                type="button"
+                onClick={() => {
+                  addToCart(product, quantity);
+                  trackEvent('add_to_cart', {
+                    productId: product.id,
+                    price: product.price,
+                    quantity,
+                    source: 'mobile_sticky_bar',
+                    documentation: docStatus,
+                  });
+                }}
+                className="px-4 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-bold text-xs shadow-xs flex items-center space-x-1.5 transition-all flex-shrink-0"
+              >
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span>Add to Cart</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => navigate('/contact')}
+                className="px-3.5 py-2.5 rounded-xl bg-brand-surface-muted text-brand-steel font-display font-medium text-xs border border-brand-border flex-shrink-0"
+              >
+                Notify
+              </button>
+            )}
+          </div>
+        </div>
       )}
 
     </div>

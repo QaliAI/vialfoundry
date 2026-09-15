@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Mail, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, Mail, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 import { VERIFIED_BATCH_RECORDS } from '../data/verified-batch-records';
+import { trackEvent } from '../lib/analytics';
 
 interface FooterProps {
   navigate: (path: string) => void;
@@ -9,24 +10,41 @@ interface FooterProps {
 
 const hasBatchDocuments = Object.keys(VERIFIED_BATCH_RECORDS).length > 0;
 
+type NewsletterState = 'idle' | 'submitting' | 'success' | 'error';
+
 export const Footer: React.FC<FooterProps> = ({ navigate }) => {
   const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
+  const [subscribeState, setSubscribeState] = useState<NewsletterState>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    setSubscribed(true);
-    const value = email;
-    setEmail('');
+    const cleanEmail = email.trim();
+    if (!cleanEmail) return;
+
+    setSubscribeState('submitting');
+    setErrorMessage('');
+
     try {
-      await fetch('/api/newsletter', {
+      const res = await fetch('/api/newsletter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: value, source: 'footer_form' }),
+        body: JSON.stringify({ email: cleanEmail, source: 'footer_form' }),
       });
+
+      const data = await res.json().catch(() => null);
+
+      if (res.ok && data?.success) {
+        setSubscribeState('success');
+        setEmail('');
+        trackEvent('newsletter_signup', { source: 'footer_form' });
+      } else {
+        setSubscribeState('error');
+        setErrorMessage(data?.error || 'Unable to subscribe. Please verify your email and try again.');
+      }
     } catch {
-      /* optimistic UI */
+      setSubscribeState('error');
+      setErrorMessage('Network connection error. Please try again.');
     }
   };
 
@@ -56,31 +74,44 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
               Hear about new products, batch documents and availability.
             </p>
 
-            {subscribed ? (
+            {subscribeState === 'success' ? (
               <div className="p-3 rounded-xl bg-brand-mineral/40 border border-brand-mineral text-brand-paper text-xs font-sans flex items-center space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>Thank you. You are subscribed to Vial Foundry updates.</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                <span>Thank you. You are subscribed.</span>
               </div>
             ) : (
-              <form onSubmit={handleSubscribe} className="flex items-center space-x-2 max-w-md">
-                <div className="relative flex-1">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-brand-graphite/40 border border-brand-graphite text-white placeholder-slate-500 text-xs font-sans focus:outline-none focus:border-slate-300"
-                  />
+              <form onSubmit={handleSubscribe} className="space-y-2 max-w-md">
+                <div className="flex items-center space-x-2">
+                  <div className="relative flex-1">
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      disabled={subscribeState === 'submitting'}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (subscribeState === 'error') setSubscribeState('idle');
+                      }}
+                      placeholder="Enter your email"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-brand-graphite/40 border border-brand-graphite text-white placeholder-slate-500 text-xs font-sans focus:outline-none focus:border-slate-300 disabled:opacity-50"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={subscribeState === 'submitting'}
+                    className="px-5 py-2.5 rounded-xl bg-brand-mineral hover:bg-brand-mineral/80 text-white font-medium text-xs shadow-sm transition-all flex items-center space-x-1.5 font-display disabled:opacity-50"
+                  >
+                    <span>{subscribeState === 'submitting' ? 'Subscribing...' : 'Subscribe'}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-brand-mineral hover:bg-brand-mineral/80 text-white font-medium text-xs shadow-sm transition-all flex items-center space-x-1.5 font-display"
-                >
-                  <span>Subscribe</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
+                {subscribeState === 'error' && (
+                  <div className="flex items-center space-x-1.5 text-[11px] text-rose-400 font-sans pl-1">
+                    <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span>{errorMessage}</span>
+                  </div>
+                )}
               </form>
             )}
           </div>
@@ -93,12 +124,10 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
           <div className="space-y-3">
             <h5 className="font-sans text-xs font-semibold text-slate-200 uppercase tracking-wider">Shop Catalog</h5>
             <ul className="space-y-2 text-xs">
-              <li><button onClick={() => navigate('/catalog')} className="text-slate-400 hover:text-white transition-colors">All Peptides</button></li>
-              <li><button onClick={() => navigate('/catalog?category=Reference+Materials')} className="text-slate-400 hover:text-white transition-colors">Research Peptides</button></li>
-              <li><button onClick={() => navigate('/catalog?category=Analytical+Standards')} className="text-slate-400 hover:text-white transition-colors">Peptide Standards</button></li>
-              <li><button onClick={() => navigate('/catalog?category=Single+Compounds')} className="text-slate-400 hover:text-white transition-colors">Single Peptides</button></li>
-              <li><button onClick={() => navigate('/catalog?category=Specialty+Materials')} className="text-slate-400 hover:text-white transition-colors">Specialty Peptides</button></li>
-              <li><button onClick={() => navigate('/catalog?category=Lab+Supplies')} className="text-slate-400 hover:text-white transition-colors">Research Supplies</button></li>
+              <li><button onClick={() => navigate('/catalog')} className="text-slate-400 hover:text-white transition-colors">All Products</button></li>
+              <li><button onClick={() => navigate('/catalog?category=Research+Peptides')} className="text-slate-400 hover:text-white transition-colors">Research Peptides</button></li>
+              <li><button onClick={() => navigate('/catalog?category=Specialty+Products')} className="text-slate-400 hover:text-white transition-colors">Specialty Products</button></li>
+              <li><button onClick={() => navigate('/catalog?category=Research+Supplies')} className="text-slate-400 hover:text-white transition-colors">Research Supplies</button></li>
             </ul>
           </div>
 

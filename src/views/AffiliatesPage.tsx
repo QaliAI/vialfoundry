@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Percent, TrendingUp, Wallet, CheckCircle2, Users, ShieldCheck } from 'lucide-react';
+import { trackEvent } from '../lib/analytics';
 
 const BENEFITS = [
   { icon: Percent, title: 'Competitive commission', body: 'Earn commission on verified research orders from your referrals.' },
@@ -16,6 +17,7 @@ export const AffiliatesPage: React.FC = () => {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
+    trackEvent('affiliate_application', { payoutMethod: form.payoutMethod });
     try {
       await fetch('/api/affiliate', {
         method: 'POST',

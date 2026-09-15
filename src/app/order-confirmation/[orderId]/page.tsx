@@ -60,7 +60,16 @@ function Confirmation() {
           if (data.paid) {
             setCheckingPayment(false);
             clearCart();
-            trackEvent('payment_completed', { orderId, totalCents: data.totalCents, provider: 'stripe' });
+            // Authoritative paid state check with refresh deduplication
+            const dedupeKey = `vf_purchase_tracked_${orderId}`;
+            const alreadyTracked = typeof window !== 'undefined' && sessionStorage.getItem(dedupeKey);
+            if (!alreadyTracked) {
+              if (typeof window !== 'undefined') {
+                sessionStorage.setItem(dedupeKey, 'true');
+              }
+              trackEvent('purchase_completed', { orderId, totalCents: data.totalCents, provider: 'stripe' });
+              trackEvent('payment_completed', { orderId, totalCents: data.totalCents, provider: 'stripe' });
+            }
             return;
           }
         }

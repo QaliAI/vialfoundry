@@ -24,7 +24,7 @@ test("alias codes resolve to primary partner codes", () => {
 });
 
 test("formatReferralLink constructs clean canonical URL", () => {
-  assert.equal(formatReferralLink("PARTNER01"), "https://vialfoundry.com/r/PARTNER01");
+  assert.equal(formatReferralLink("PARTNER01"), "https://www.vialfoundry.com/r/PARTNER01");
 });
 
 test("calculateOrderAffiliateCommission excludes shipping and applies bps", () => {

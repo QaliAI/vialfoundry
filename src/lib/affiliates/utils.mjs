@@ -81,8 +81,8 @@ export function generateAffiliateCode(input, existingCodes = new Set()) {
   return `${base}-${Date.now().toString(36).toUpperCase()}`;
 }
 
-export function formatReferralLink(code, origin = "https://vialfoundry.com") {
-  const baseUrl = String(origin || "https://vialfoundry.com").replace(/\/+$/g, "");
+export function formatReferralLink(code, origin = "https://www.vialfoundry.com") {
+  const baseUrl = String(origin || "https://www.vialfoundry.com").replace(/\/+$/g, "");
   return `${baseUrl}/r/${encodeURIComponent(String(code ?? "").trim())}`;
 }
 

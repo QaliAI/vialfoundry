@@ -143,12 +143,10 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
                   <FileClock className="w-5 h-5 text-brand-graphite flex-shrink-0 mt-0.5" />
                   <div className="space-y-1.5">
                     <p className="text-sm font-display font-bold text-brand-ink">
-                      No documents online yet for batch {product.lotNumber}
+                      Batch document not yet available online.
                     </p>
                     <p className="text-xs text-brand-steel font-sans leading-relaxed">
-                      We don&rsquo;t have a document for this batch online yet, so there&rsquo;s nothing to
-                      show here. We&rsquo;d rather tell you that than publish numbers we can&rsquo;t back up.
-                      Contact us and we&rsquo;ll tell you what comes with the current batch.
+                      Contact support if you need current documentation.
                     </p>
                   </div>
                 </div>
@@ -162,7 +160,7 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
                   }}
                   className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-semibold text-xs transition-all shadow-xs"
                 >
-                  <span>Ask about this lot&apos;s documentation</span>
+                  <span>Contact Support</span>
                 </button>
               </div>
             )}

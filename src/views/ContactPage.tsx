@@ -1,5 +1,6 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Mail, Building2, CheckCircle2, Send } from 'lucide-react';
+import { trackEvent } from '../lib/analytics';
 
 export const ContactPage: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
@@ -14,6 +15,10 @@ export const ContactPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
+    trackEvent('bulk_inquiry', {
+      subject: formData.subject || 'General Inquiry',
+      hasInstitution: Boolean(formData.institution),
+    });
     try {
       await fetch('/api/contact', {
         method: 'POST',

@@ -26,20 +26,19 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
   // popularity claim, so the wording stays neutral.
   const bestSellers = PUBLIC_PRODUCTS.slice(0, 4);
 
-  // Category tiles. Counts are derived from the catalog so they cannot drift, and
-  // each tile carries its category through to the catalog's own filter.
+  // Category tiles. Derived by public customer-facing category name.
   const categories = useMemo(() => {
-    const keys = Array.from(
-      new Set(PUBLIC_PRODUCTS.map((p) => p.category)),
-    ) as ProductCategory[];
-    return keys.map((key) => {
-      const count = PUBLIC_PRODUCTS.filter((p) => p.category === key).length;
+    const publicNames = Array.from(
+      new Set(PUBLIC_PRODUCTS.map((p) => categoryLabel(p.category)))
+    );
+    return publicNames.map((name) => {
+      const count = PUBLIC_PRODUCTS.filter((p) => categoryLabel(p.category) === name).length;
       return {
-        key,
-        title: categoryLabel(key),
-        desc: categoryBlurb(key),
+        key: name,
+        title: name,
+        desc: categoryBlurb(name),
         count: `${count} ${count === 1 ? 'product' : 'products'}`,
-        path: `/catalog?category=${encodeURIComponent(key)}`,
+        path: `/catalog?category=${encodeURIComponent(name)}`,
       };
     });
   }, []);
@@ -59,20 +58,19 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
             <div className="text-xs font-sans font-semibold text-brand-steel uppercase tracking-wider">
               Shop
             </div>
-            <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-brand-ink tracking-tight">
+            <h2 className="font-display text-2xl sm:text-3xl font-bold text-brand-ink tracking-tight">
               Featured Research Peptides
             </h2>
-            <p className="text-brand-steel text-sm">
-A selection from our catalogue. See the full range for everything in stock.
+            <p className="text-sm text-brand-steel font-normal">
+              High-purity reference materials for laboratory research.
             </p>
           </div>
-
           <button
             onClick={() => navigate('/catalog')}
-            className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-brand-paper border border-brand-border text-brand-ink hover:bg-brand-surface-muted hover:border-brand-border-strong transition-all font-display text-xs font-semibold shadow-2xs"
+            className="inline-flex items-center space-x-1.5 text-xs font-display font-semibold text-brand-ink hover:text-brand-graphite transition-colors group"
           >
-            <span>View Full Catalog</span>
-            <ArrowRight className="w-4 h-4 text-brand-accent" />
+            <span>View All {PUBLIC_PRODUCTS.length} Peptides</span>
+            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
 
@@ -101,7 +99,7 @@ A selection from our catalogue. See the full range for everything in stock.
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 max-w-3xl mx-auto gap-6">
             {categories.map((cat, idx) => (
               <div
                 key={idx}

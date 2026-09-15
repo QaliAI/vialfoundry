@@ -1,7 +1,9 @@
-import React from 'react';
-import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, ShieldCheck } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { productTitle, productSize } from '../lib/catalog-display';
+import { FREE_STANDARD_SHIPPING_THRESHOLD_CENTS } from '../lib/manual-orders/shipping.mjs';
+import { trackEvent } from '../lib/analytics';
 
 interface CartDrawerProps {
   navigate: (path: string) => void;
@@ -10,7 +12,18 @@ interface CartDrawerProps {
 export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
   const { cart, isCartOpen, setIsCartOpen, removeFromCart, updateQuantity, subtotal, totalItems } = useCart();
 
+  useEffect(() => {
+    if (isCartOpen) {
+      trackEvent('cart_viewed', { totalItems, subtotalCents: Math.round(subtotal * 100) });
+    }
+  }, [isCartOpen, totalItems, subtotal]);
+
   if (!isCartOpen) return null;
+
+  const subtotalCents = Math.round(subtotal * 100);
+  const isFreeShipping = subtotalCents >= FREE_STANDARD_SHIPPING_THRESHOLD_CENTS;
+  const remainingCents = Math.max(0, FREE_STANDARD_SHIPPING_THRESHOLD_CENTS - subtotalCents);
+  const progressPercent = Math.min(100, Math.round((subtotalCents / FREE_STANDARD_SHIPPING_THRESHOLD_CENTS) * 100));
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
@@ -41,6 +54,35 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
               <X className="w-5 h-5" />
             </button>
           </div>
+
+          {/* Free Standard Shipping Progress Bar */}
+          {cart.length > 0 && (
+            <div className="mt-3 p-3 rounded-xl bg-brand-canvas border border-brand-border space-y-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-sans font-medium text-brand-ink">
+                  {isFreeShipping ? (
+                    <span className="text-brand-mineral font-semibold flex items-center space-x-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-brand-accent flex-shrink-0" />
+                      <span>You qualify for free standard shipping.</span>
+                    </span>
+                  ) : (
+                    <span>${(remainingCents / 100).toFixed(2)} away from free shipping</span>
+                  )}
+                </span>
+                <span className="font-mono text-[11px] text-brand-steel font-semibold">
+                  ${(FREE_STANDARD_SHIPPING_THRESHOLD_CENTS / 100).toFixed(0)} threshold
+                </span>
+              </div>
+              <div className="w-full bg-brand-paper rounded-full h-1.5 overflow-hidden border border-brand-border/60">
+                <div
+                  className={`h-full transition-all duration-300 ${
+                    isFreeShipping ? 'bg-brand-mineral' : 'bg-brand-teal'
+                  }`}
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Item List */}
           <div className="flex-1 overflow-y-auto py-5 space-y-3">

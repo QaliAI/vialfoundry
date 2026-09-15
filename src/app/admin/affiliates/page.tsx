@@ -143,7 +143,7 @@ export default function AdminAffiliatesPage() {
   };
 
   const handleCopyLink = (code: string) => {
-    const link = `https://vialfoundry.com/r/${code}`;
+    const link = `https://www.vialfoundry.com/r/${code}`;
     navigator.clipboard.writeText(link);
     setCopiedCode(code);
     setTimeout(() => setCopiedCode(null), 2000);
