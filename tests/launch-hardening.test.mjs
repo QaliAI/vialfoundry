@@ -170,7 +170,7 @@ test('newsletter endpoint validates emails with strict RFC-compliant regex', () 
   const routeSrc = read('src/app/api/newsletter/route.ts');
   const startIdx = routeSrc.indexOf('const EMAIL_REGEX = ');
   assert.ok(startIdx !== -1, 'EMAIL_REGEX must be defined in newsletter route');
-  const endIdx = routeSrc.indexOf(';\n', startIdx);
+  const endIdx = routeSrc.indexOf(';', startIdx);
   const regexStr = routeSrc.slice(startIdx + 'const EMAIL_REGEX = '.length, endIdx).trim();
   // Strip enclosing slashes
   assert.ok(regexStr.startsWith('/') && regexStr.endsWith('/'));
