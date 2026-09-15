@@ -108,6 +108,39 @@ export function resolveSessionExpired(order) {
   };
 }
 
+/**
+ * Refuses an event whose Stripe mode disagrees with the mode the order was
+ * created in: a test event must never settle, refund or cancel a live order,
+ * and a live event must never be applied to a test one.
+ *
+ * Signing secrets are per-endpoint and per-mode, so a mismatch should already
+ * be impossible. This is defence in depth for one specific operator mistake:
+ * this account has both a test and a live endpoint, production reads its
+ * signing secret from an environment variable, and the Vercel project carries
+ * two similarly named key pairs (STRIPE_SECRET_KEY and STRIPE_SECRET_API_KEY).
+ * One mis-pasted secret is all it would take for test traffic to reach real
+ * orders, so the mismatch is refused rather than applied.
+ *
+ * `stripe_livemode` is null on manual-invoice orders and on rows created before
+ * 07_stripe_lifecycle. There is nothing to contradict in that case, so those
+ * orders are not blocked here.
+ *
+ * @param {object} order
+ * @param {boolean|undefined} eventLivemode  Stripe event's `livemode` flag
+ */
+export function resolveLivemodeMatch(order, eventLivemode) {
+  if (!order) return { apply: false, reason: 'order_not_found' };
+
+  const orderMode = order.stripe_livemode;
+  if (orderMode !== true && orderMode !== false) return { apply: true };
+  if (eventLivemode !== true && eventLivemode !== false) return { apply: true };
+
+  if (orderMode !== eventLivemode) {
+    return { apply: false, reason: 'livemode_mismatch' };
+  }
+  return { apply: true };
+}
+
 /** True when this event id has already been applied. */
 export function isDuplicateEvent(processedEventIds, eventId) {
   return processedEventIds.includes(eventId);

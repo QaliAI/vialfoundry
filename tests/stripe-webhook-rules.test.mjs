@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  isHandledEvent, resolvePaymentSuccess, resolveRefund, resolveSessionExpired, isDuplicateEvent, HANDLED_EVENT_TYPES,
+  isHandledEvent, resolvePaymentSuccess, resolveRefund, resolveSessionExpired, resolveLivemodeMatch, isDuplicateEvent, HANDLED_EVENT_TYPES,
 } from "../src/lib/adapters/stripe-webhook-rules.mjs";
 
 const unpaid = { id: "o1", payment_status: "unpaid", total_amount: 7900, amount_refunded: 0, affiliate_id: null };
@@ -109,4 +109,31 @@ test("expiry never overwrites a paid or refunded order", () => {
   assert.equal(resolveSessionExpired(paid).apply, false);
   assert.equal(resolveSessionExpired({ ...unpaid, payment_status: "refunded" }).apply, false);
   assert.equal(resolveSessionExpired({ ...unpaid, payment_status: "expired" }).apply, false);
+});
+
+test("a test-mode event never touches a live order, or the reverse", () => {
+  const liveOrder = { ...unpaid, stripe_livemode: true };
+  const testOrder = { ...unpaid, stripe_livemode: false };
+
+  assert.equal(resolveLivemodeMatch(liveOrder, false).apply, false);
+  assert.equal(resolveLivemodeMatch(liveOrder, false).reason, "livemode_mismatch");
+  assert.equal(resolveLivemodeMatch(testOrder, true).apply, false);
+  assert.equal(resolveLivemodeMatch(testOrder, true).reason, "livemode_mismatch");
+
+  // Matching modes are applied normally.
+  assert.equal(resolveLivemodeMatch(liveOrder, true).apply, true);
+  assert.equal(resolveLivemodeMatch(testOrder, false).apply, true);
+});
+
+test("orders with no recorded Stripe mode are not blocked by the livemode check", () => {
+  // manual_invoice orders, and rows created before 07_stripe_lifecycle, carry null
+  assert.equal(resolveLivemodeMatch({ ...unpaid, stripe_livemode: null }, true).apply, true);
+  assert.equal(resolveLivemodeMatch({ ...unpaid }, false).apply, true);
+  // An event without a usable livemode flag cannot contradict anything either.
+  assert.equal(resolveLivemodeMatch({ ...unpaid, stripe_livemode: true }, undefined).apply, true);
+});
+
+test("the livemode check still refuses a missing order", () => {
+  assert.equal(resolveLivemodeMatch(null, true).apply, false);
+  assert.equal(resolveLivemodeMatch(null, true).reason, "order_not_found");
 });

@@ -9,6 +9,7 @@ import {
   resolvePaymentSuccess,
   resolveRefund,
   resolveSessionExpired,
+  resolveLivemodeMatch,
   isHandledEvent,
 } from '../../../../lib/adapters/stripe-webhook-rules.mjs';
 import {
@@ -155,6 +156,19 @@ export async function POST(req: Request) {
   if (!order) {
     console.warn(`[stripe-webhook] no matching order for ${event.type} (${event.id})`);
     return NextResponse.json({ received: true, matched: false });
+  }
+
+  // Test traffic must never mutate a live order, or vice versa. Checked before
+  // the event is claimed, so that a genuine event replayed after the operator
+  // corrects the configuration can still be applied. 200 keeps Stripe from
+  // retry-storming a permanent misconfiguration.
+  const modeCheck = resolveLivemodeMatch(order, event.livemode);
+  if (!modeCheck.apply) {
+    console.error(
+      `[stripe-webhook] LIVEMODE MISMATCH on ${order.order_number}: event ${event.id} ` +
+        `is livemode=${event.livemode} but the order is livemode=${order.stripe_livemode}. Refusing to apply.`,
+    );
+    return NextResponse.json({ received: true, applied: false, reason: modeCheck.reason });
   }
 
   const fresh = await claimEvent(supabase, event, order.id);
