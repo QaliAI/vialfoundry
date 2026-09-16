@@ -108,9 +108,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
                   key={product.id}
                   className="p-3.5 rounded-xl bg-brand-canvas border border-brand-border/80 flex items-center justify-between space-x-3.5"
                 >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={product.transparentImage || product.image}
                     alt={productTitle(product)}
+                    width={56}
+                    height={56}
+                    loading="lazy"
                     className="w-14 h-14 object-contain bg-brand-paper rounded-lg p-1 border border-brand-border/60"
                   />
 

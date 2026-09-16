@@ -46,6 +46,7 @@ export const FoundryStandard: React.FC<FoundryStandardProps> = ({ navigate }) =>
           {/* Real product photography — not a simulated lab interface. */}
           <div className="lg:col-span-5">
             <div className="rounded-2xl overflow-hidden bg-brand-paper border border-brand-border">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/assets/vials/products/bpc-157.webp"
                 alt="A Vial Foundry research peptide vial, showing the batch label"

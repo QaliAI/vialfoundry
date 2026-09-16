@@ -179,31 +179,9 @@ async function run() {
     `);
     console.log('✓ Seeded standard discount codes (FOUNDRY10, RESEARCH25).');
 
-    // 5. Seed Starter Affiliates and Aliases
-    console.log('Seeding starter affiliates and referral aliases...');
-    const STARTER_AFFILIATES = [
-      { id: 'b1111111-1111-1111-1111-111111111111', code: 'PARTNER01', name: 'Research Partner 1', email: 'partner1@vialfoundry.com', rateBps: 1000, alias: 'vf01' },
-      { id: 'b2222222-2222-2222-2222-222222222222', code: 'PARTNER02', name: 'Research Partner 2', email: 'partner2@vialfoundry.com', rateBps: 1000, alias: 'vf02' },
-      { id: 'b3333333-3333-3333-3333-333333333333', code: 'LABS10', name: 'BioLabs Network', email: 'affiliates@biolabs.org', rateBps: 1000, alias: 'labs' },
-    ];
-
-    for (const aff of STARTER_AFFILIATES) {
-      await client.query(`
-        INSERT INTO public.affiliates (id, referral_code, name, email, commission_rate, commission_rate_bps, status, active)
-        VALUES ($1, $2, $3, $4, $5, $6, 'active', true)
-        ON CONFLICT (referral_code) DO UPDATE
-        SET name = EXCLUDED.name, email = EXCLUDED.email, commission_rate_bps = EXCLUDED.commission_rate_bps;
-      `, [aff.id, aff.code, aff.name, aff.email, aff.rateBps / 100, aff.rateBps]);
-
-      if (aff.alias) {
-        await client.query(`
-          INSERT INTO public.affiliate_aliases (affiliate_id, alias_code)
-          VALUES ($1, $2)
-          ON CONFLICT (alias_code) DO NOTHING;
-        `, [aff.id, aff.alias]);
-      }
-    }
-    console.log('✓ Seeded starter affiliates (PARTNER01, PARTNER02, LABS10) and aliases.');
+    // 5. Affiliates: Managed dynamically via admin panel / affiliate applications.
+    // No synthetic starter affiliates are auto-seeded in production.
+    console.log('Skipping synthetic affiliates auto-seed (managed dynamically).');
 
     // 6. Verify Table Counts
     console.log('\n--- VERIFICATION AUDIT ---');

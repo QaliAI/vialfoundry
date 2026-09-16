@@ -75,6 +75,7 @@ export const Hero: React.FC<HeroProps> = ({ navigate }) => {
           {/* Right Hero Column: Physical Product Showcase */}
           {/* The physical product is the visual interest here - no UI decoration. */}
           <div className="lg:col-span-6 relative flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/assets/vials/hero-composition.webp"
               alt="Vial Foundry research peptide vials: BPC-157, Tirzepatide and Semaglutide"

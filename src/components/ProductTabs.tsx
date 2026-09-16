@@ -95,8 +95,10 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
             <SpecRow label="Molecular Weight" value={product.molecularWeight} />
             <SpecRow label="Amino Acid Sequence" value={product.sequence} />
             <SpecRow label="Presentation" value={product.size} />
-            <SpecRow label="Physical Appearance" value={product.appearance} />
-            <SpecRow label="Solubility" value={product.solubility} />
+            <SpecRow label="Physical Appearance (Supplier Spec)" value={product.appearance} />
+            <SpecRow label="Solubility (Reference Spec)" value={product.solubility} />
+            <SpecRow label="Storage (Manufacturer Guideline)" value={product.storageConditions} />
+            <SpecRow label="Supplier Packaging Lot" value={product.lotNumber} />
             <SpecRow label="Category" value={product.category} />
           </div>
         )}
@@ -170,23 +172,40 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
         {active === 'storage' && (
           <div className="space-y-4 text-sm text-brand-steel font-normal leading-relaxed">
             <div className="p-4 rounded-xl bg-brand-canvas border border-brand-border">
-              <span className="text-[11px] font-sans font-semibold text-brand-graphite uppercase block mb-1">Storage Requirements</span>
+              <span className="text-[11px] font-sans font-semibold text-brand-graphite uppercase block mb-1">Storage Guidelines</span>
               <span className="text-brand-ink font-medium text-sm">{product.storageConditions}</span>
             </div>
-            <ul className="space-y-2 text-xs font-sans text-brand-steel">
-              <li className="flex items-start space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
-                <span>Equilibrate sealed vials to room temperature before opening to avoid ambient moisture intake.</span>
-              </li>
-              <li className="flex items-start space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
-                <span>Reconstitute with sterile bacteriostatic water or qualified analytical buffers per experimental protocol.</span>
-              </li>
-              <li className="flex items-start space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
-                <span>Aliquot reconstituted solution to minimize unnecessary freeze-thaw cycles.</span>
-              </li>
-            </ul>
+            {product.category === 'Lab Supplies' || product.appearance.toLowerCase().includes('liquid') ? (
+              <ul className="space-y-2 text-xs font-sans text-brand-steel">
+                <li className="flex items-start space-x-2">
+                  <CheckCircle2 className="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
+                  <span>Store sealed in original container at specified storage temperature away from direct light and heat.</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <CheckCircle2 className="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
+                  <span>Handle under aseptic laboratory conditions; inspect container clarity prior to research use.</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <CheckCircle2 className="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
+                  <span>Use appropriate personal protective equipment and containment per laboratory SDS protocols.</span>
+                </li>
+              </ul>
+            ) : (
+              <ul className="space-y-2 text-xs font-sans text-brand-steel">
+                <li className="flex items-start space-x-2">
+                  <CheckCircle2 className="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
+                  <span>Equilibrate sealed containers to ambient room temperature before opening to avoid moisture condensation.</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <CheckCircle2 className="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
+                  <span>Consult lot-specific supplier documentation and assay protocols for reconstitution solvents, buffer pH, and dilution limits.</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <CheckCircle2 className="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
+                  <span>Store according to specified temperature requirements; avoid repeated freeze-thaw cycles once solutions are prepared.</span>
+                </li>
+              </ul>
+            )}
             <div className="p-3.5 rounded-xl bg-brand-canvas border border-brand-border text-brand-graphite text-xs leading-relaxed">
               For laboratory research use only. Not for human, veterinary, or clinical administration.
             </div>

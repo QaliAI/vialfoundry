@@ -17,7 +17,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onViewProduct,
   onViewCOA
 }) => {
-  const { addToCart } = useCart();
+  const { addToCart, getLiveStock } = useCart();
+  const liveStock = getLiveStock ? getLiveStock(product) : { inStock: product.inStock, stockCount: product.stockCount };
+  const isAvailable = liveStock.inStock && liveStock.stockCount > 0;
   const docStatus = getDocumentationStatus(product);
 
   return (
@@ -28,9 +30,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         className="relative aspect-square w-full bg-brand-canvas p-6 flex items-center justify-center overflow-hidden cursor-pointer border-b border-brand-border/60"
       >
         {/* Product Vial Image */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={product.image}
           alt={productTitle(product)}
+          width={224}
+          height={224}
           className="relative z-10 max-h-56 w-full object-contain filter drop-shadow-sm group-hover:scale-[1.03] transition-transform duration-300"
           loading="lazy"
         />
@@ -59,7 +64,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <div className="font-display text-lg font-bold text-brand-ink tracking-tight">
               ${product.price.toFixed(2)}
             </div>
-            {product.inStock ? (
+            {isAvailable ? (
               <div className="text-[11px] text-brand-mineral font-medium flex items-center space-x-1 mt-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-brand-mineral" />
                 <span>In Stock</span>
@@ -85,7 +90,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               </button>
             )}
 
-            {product.inStock ? (
+            {isAvailable ? (
               <button
                 type="button"
                 onClick={(e) => {

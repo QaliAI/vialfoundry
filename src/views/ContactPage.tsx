@@ -9,7 +9,8 @@ export const ContactPage: React.FC = () => {
     institution: '',
     email: '',
     subject: 'Bulk Order Enquiry',
-    message: ''
+    message: '',
+    organization_website: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -111,13 +112,25 @@ export const ContactPage: React.FC = () => {
                   <label className="text-xs font-sans text-brand-ink font-semibold">Company or Lab (optional)</label>
                   <input
                     type="text"
-                    required
                     value={formData.institution}
                     onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
                     placeholder="BioTech Research Institute"
                     className="w-full px-3.5 py-2.5 rounded-xl bg-brand-canvas border border-brand-border text-brand-ink text-xs font-sans focus:outline-none focus:bg-brand-paper focus:border-brand-graphite"
                   />
                 </div>
+              </div>
+
+              {/* Anti-spam honeypot hidden from human researchers */}
+              <div className="hidden" aria-hidden="true" style={{ display: 'none' }}>
+                <label htmlFor="organization_website">Website</label>
+                <input
+                  id="organization_website"
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={formData.organization_website}
+                  onChange={(e) => setFormData({ ...formData, organization_website: e.target.value })}
+                />
               </div>
 
               <div className="space-y-1">

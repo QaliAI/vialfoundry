@@ -25,13 +25,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   navigate,
   onSelectProduct
 }) => {
-  const { addToCart } = useCart();
+  const { addToCart, getLiveStock } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [showCOAModal, setShowCOAModal] = useState(false);
   const [copiedSeq, setCopiedSeq] = useState(false);
   const [showMobileStickyBar, setShowMobileStickyBar] = useState(false);
   const buyPanelRef = useRef<HTMLDivElement>(null);
-  const maxQuantity = product.inStock ? product.stockCount : Infinity;
+  const liveStock = getLiveStock ? getLiveStock(product) : { inStock: product.inStock, stockCount: product.stockCount };
+  const isAvailable = liveStock.inStock && liveStock.stockCount > 0;
+  const maxQuantity = isAvailable ? liveStock.stockCount : 0;
 
   const batchRecord = getBatchRecord(product.lotNumber) ?? undefined;
   const docStatus = getDocumentationStatus(product);
@@ -42,9 +44,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
       category: product.category,
       price: product.price,
       documentation: docStatus,
-      inStock: product.inStock,
+      inStock: isAvailable,
     });
-  }, [product.id, product.category, product.price, product.inStock, docStatus]);
+  }, [product.id, product.category, product.price, isAvailable, docStatus]);
 
   useEffect(() => {
     const el = buyPanelRef.current;
@@ -138,9 +140,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           </div>
 
           {/* Vial Image */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={product.image}
             alt={productTitle(product)}
+            width={384}
+            height={384}
             className="max-h-96 w-full object-contain filter drop-shadow-sm transition-all duration-300"
           />
         </div>
@@ -182,7 +187,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           )}
 
           {/* Pricing & Add to Cart (or Restock when out of stock) */}
-          {product.inStock ? (
+          {isAvailable ? (
             <div ref={buyPanelRef} className="p-6 rounded-2xl bg-brand-paper border border-brand-border shadow-sm space-y-5">
               <div className="flex items-center justify-between">
                 <div>
@@ -334,7 +339,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
               </div>
               <div className="font-mono text-xs text-brand-steel font-semibold">
                 ${product.price.toFixed(2)}
-                {product.inStock && quantity > 1 && (
+                {isAvailable && quantity > 1 && (
                   <span className="font-sans text-[10px] text-brand-steel/80 ml-1.5">
                     (Qty: {quantity} &middot; ${(product.price * quantity).toFixed(2)})
                   </span>
@@ -342,7 +347,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
               </div>
             </div>
 
-            {product.inStock ? (
+            {isAvailable ? (
               <button
                 type="button"
                 onClick={() => {

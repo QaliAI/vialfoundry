@@ -83,6 +83,7 @@ export const VialStudioViewer: React.FC<VialStudioViewerProps> = ({ onVerifyClic
         />
 
         {/* Vial Image with Studio Lighting Swap */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={
             lightingMode === 'dark'
@@ -90,6 +91,9 @@ export const VialStudioViewer: React.FC<VialStudioViewerProps> = ({ onVerifyClic
               : '/assets/vials/single-vial-light.png'
           }
           alt="Vial Foundry Physical Reference Vial"
+          width={300}
+          height={300}
+          loading="lazy"
           className="max-h-full max-w-full object-contain filter drop-shadow-md transition-all duration-700 group-hover:scale-105"
         />
       </motion.div>

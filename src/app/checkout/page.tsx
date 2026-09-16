@@ -12,6 +12,60 @@ import { PAYMENT_METHODS, CONFIGURED_PAYMENT_METHODS, PaymentMethodId, getPaymen
 import { ShieldCheck, Lock, CheckCircle2, ShoppingBag, Truck } from 'lucide-react';
 import { trackEvent } from '../../lib/analytics';
 
+const US_STATES = [
+  { code: 'AL', name: 'Alabama' },
+  { code: 'AK', name: 'Alaska' },
+  { code: 'AZ', name: 'Arizona' },
+  { code: 'AR', name: 'Arkansas' },
+  { code: 'CA', name: 'California' },
+  { code: 'CO', name: 'Colorado' },
+  { code: 'CT', name: 'Connecticut' },
+  { code: 'DE', name: 'Delaware' },
+  { code: 'DC', name: 'District of Columbia' },
+  { code: 'FL', name: 'Florida' },
+  { code: 'GA', name: 'Georgia' },
+  { code: 'HI', name: 'Hawaii' },
+  { code: 'ID', name: 'Idaho' },
+  { code: 'IL', name: 'Illinois' },
+  { code: 'IN', name: 'Indiana' },
+  { code: 'IA', name: 'Iowa' },
+  { code: 'KS', name: 'Kansas' },
+  { code: 'KY', name: 'Kentucky' },
+  { code: 'LA', name: 'Louisiana' },
+  { code: 'ME', name: 'Maine' },
+  { code: 'MD', name: 'Maryland' },
+  { code: 'MA', name: 'Massachusetts' },
+  { code: 'MI', name: 'Michigan' },
+  { code: 'MN', name: 'Minnesota' },
+  { code: 'MS', name: 'Mississippi' },
+  { code: 'MO', name: 'Missouri' },
+  { code: 'MT', name: 'Montana' },
+  { code: 'NE', name: 'Nebraska' },
+  { code: 'NV', name: 'Nevada' },
+  { code: 'NH', name: 'New Hampshire' },
+  { code: 'NJ', name: 'New Jersey' },
+  { code: 'NM', name: 'New Mexico' },
+  { code: 'NY', name: 'New York' },
+  { code: 'NC', name: 'North Carolina' },
+  { code: 'ND', name: 'North Dakota' },
+  { code: 'OH', name: 'Ohio' },
+  { code: 'OK', name: 'Oklahoma' },
+  { code: 'OR', name: 'Oregon' },
+  { code: 'PA', name: 'Pennsylvania' },
+  { code: 'RI', name: 'Rhode Island' },
+  { code: 'SC', name: 'South Carolina' },
+  { code: 'SD', name: 'South Dakota' },
+  { code: 'TN', name: 'Tennessee' },
+  { code: 'TX', name: 'Texas' },
+  { code: 'UT', name: 'Utah' },
+  { code: 'VT', name: 'Vermont' },
+  { code: 'VA', name: 'Virginia' },
+  { code: 'WA', name: 'Washington' },
+  { code: 'WV', name: 'West Virginia' },
+  { code: 'WI', name: 'Wisconsin' },
+  { code: 'WY', name: 'Wyoming' },
+];
+
 function CheckoutPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -124,6 +178,17 @@ function CheckoutPageInner() {
     e.preventDefault();
     if (!ruoAgreed) {
       alert('You must confirm that materials are for Research Use Only (RUO).');
+      return;
+    }
+
+    const zipClean = shippingAddress.zip.trim();
+    if (!/^\d{5}(-\d{4})?$/.test(zipClean)) {
+      setSubmitError('Please enter a valid 5-digit US ZIP code (e.g. 90210).');
+      return;
+    }
+
+    if (!shippingAddress.state.trim()) {
+      setSubmitError('Please select a valid US state.');
       return;
     }
 
@@ -286,7 +351,14 @@ function CheckoutPageInner() {
         <div className="lg:col-span-7 space-y-6">
           
           <div className="storefront-card p-6 sm:p-8 rounded-2xl bg-brand-paper border border-brand-border shadow-2xs space-y-4">
-            <h3 className="font-display text-lg font-bold text-brand-ink">Shipping Address</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-display text-lg font-bold text-brand-ink">Shipping Address</h3>
+              <span className="text-[10px] font-mono uppercase bg-brand-canvas border border-brand-border px-2 py-0.5 rounded text-brand-steel">Domestic US Only</span>
+            </div>
+
+            <div className="p-3 rounded-xl bg-brand-canvas border border-brand-border text-xs text-brand-steel leading-relaxed">
+              Shipping exclusively to laboratories and research facilities within the United States. All packages ship with protective thermal packaging.
+            </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-sans">
               <div className="space-y-1">
@@ -316,18 +388,30 @@ function CheckoutPageInner() {
                   type="text"
                   value={shippingAddress.company}
                   onChange={e => setShippingAddress({ ...shippingAddress, company: e.target.value })}
+                  placeholder="Lab or Department"
                   className="w-full px-3.5 py-2.5 rounded-xl bg-brand-canvas border border-brand-border text-brand-ink focus:outline-none focus:bg-brand-paper focus:border-brand-graphite"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-brand-steel font-medium">Email Address *</label>
+                <label className="text-brand-steel font-medium">Phone Number (Optional)</label>
                 <input
-                  type="email" required
-                  value={shippingAddress.email}
-                  onChange={e => setShippingAddress({ ...shippingAddress, email: e.target.value })}
+                  type="tel"
+                  value={shippingAddress.phone}
+                  onChange={e => setShippingAddress({ ...shippingAddress, phone: e.target.value })}
+                  placeholder="(555) 000-0000"
                   className="w-full px-3.5 py-2.5 rounded-xl bg-brand-canvas border border-brand-border text-brand-ink focus:outline-none focus:bg-brand-paper focus:border-brand-graphite"
                 />
               </div>
+            </div>
+
+            <div className="space-y-1 text-xs font-sans">
+              <label className="text-brand-steel font-medium">Email Address *</label>
+              <input
+                type="email" required
+                value={shippingAddress.email}
+                onChange={e => setShippingAddress({ ...shippingAddress, email: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-brand-canvas border border-brand-border text-brand-ink focus:outline-none focus:bg-brand-paper focus:border-brand-graphite"
+              />
             </div>
 
             <div className="space-y-1 text-xs font-sans">
@@ -336,11 +420,23 @@ function CheckoutPageInner() {
                 type="text" required
                 value={shippingAddress.address}
                 onChange={e => setShippingAddress({ ...shippingAddress, address: e.target.value })}
+                placeholder="123 Research Parkway"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-brand-canvas border border-brand-border text-brand-ink focus:outline-none focus:bg-brand-paper focus:border-brand-graphite"
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-4 text-xs font-sans">
+            <div className="space-y-1 text-xs font-sans">
+              <label className="text-brand-steel font-medium">Apartment, suite, unit, etc. (Optional)</label>
+              <input
+                type="text"
+                value={shippingAddress.address2}
+                onChange={e => setShippingAddress({ ...shippingAddress, address2: e.target.value })}
+                placeholder="Suite 400, Lab B-12"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-brand-canvas border border-brand-border text-brand-ink focus:outline-none focus:bg-brand-paper focus:border-brand-graphite"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-sans">
               <div className="space-y-1">
                 <label className="text-brand-steel font-medium">City *</label>
                 <input
@@ -351,21 +447,31 @@ function CheckoutPageInner() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-brand-steel font-medium">State / Prov *</label>
-                <input
-                  type="text" required
+                <label className="text-brand-steel font-medium">State *</label>
+                <select
+                  required
                   value={shippingAddress.state}
                   onChange={e => setShippingAddress({ ...shippingAddress, state: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-brand-canvas border border-brand-border text-brand-ink focus:outline-none focus:bg-brand-paper focus:border-brand-graphite"
-                />
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-brand-canvas border border-brand-border text-brand-ink focus:outline-none focus:bg-brand-paper focus:border-brand-graphite cursor-pointer"
+                >
+                  <option value="">Select State</option>
+                  {US_STATES.map(st => (
+                    <option key={st.code} value={st.code}>
+                      {st.code} - {st.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="space-y-1">
-                <label className="text-brand-steel font-medium">ZIP / Postal *</label>
+                <label className="text-brand-steel font-medium">5-Digit ZIP *</label>
                 <input
                   type="text" required
+                  pattern="^\d{5}(-\d{4})?$"
+                  title="5-digit US ZIP code"
                   value={shippingAddress.zip}
                   onChange={e => setShippingAddress({ ...shippingAddress, zip: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-brand-canvas border border-brand-border text-brand-ink focus:outline-none focus:bg-brand-paper focus:border-brand-graphite"
+                  placeholder="90210"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-brand-canvas border border-brand-border text-brand-ink focus:outline-none focus:bg-brand-paper focus:border-brand-graphite font-mono"
                 />
               </div>
             </div>
@@ -514,7 +620,7 @@ function CheckoutPageInner() {
                   type="text"
                   value={discountCode}
                   onChange={e => setDiscountCode(e.target.value)}
-                  placeholder="Discount code (e.g. FOUNDRY10)..."
+                  placeholder="Promo code (e.g. PROMO10)..."
                   className="flex-1 px-3 py-2 rounded-xl bg-brand-canvas border border-brand-border text-brand-ink font-sans text-xs focus:outline-none focus:bg-brand-paper focus:border-brand-graphite"
                 />
                 <button
@@ -566,7 +672,7 @@ function CheckoutPageInner() {
               className="w-full py-3.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-bold text-sm shadow-xs flex items-center justify-center space-x-2 transition-all"
             >
               <Lock className="w-4 h-4" />
-              <span>{isSubmitting ? (stripeLive ? 'Redirecting to payment...' : 'Submitting Request...') : (stripeLive ? 'SECURE CHECKOUT' : 'Submit Order Request')}</span>
+              <span>{isSubmitting ? (stripeLive ? 'Redirecting to payment...' : 'Submitting Request...') : (stripeLive ? 'Continue to Secure Payment' : 'Submit Order Request')}</span>
             </button>
 
             <div className="text-center text-[11px] font-sans text-brand-steel flex items-center justify-center space-x-1.5">
