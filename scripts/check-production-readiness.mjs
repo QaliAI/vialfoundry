@@ -188,9 +188,9 @@ const testPromos = [
 ];
 
 const shippingTiers = [
-  { id: "standard", costCents: 1500, freeShippingThresholdCents: 20000 },
-  { id: "priority", costCents: 3500 },
-  { id: "express", costCents: 6500 },
+  { id: "standard", costCents: 999, freeShippingThresholdCents: 20000 },
+  { id: "priority", costCents: 2499 },
+  { id: "express", costCents: 4999 },
 ];
 
 // Test subtotal math
@@ -227,7 +227,7 @@ if (
 const shipBelow = calculateShipping(19900, "standard", shippingTiers);
 const shipAbove = calculateShipping(20000, "standard", shippingTiers);
 
-if (shipBelow.amountCents === 1500 && shipAbove.amountCents === 0) {
+if (shipBelow.amountCents === 999 && shipAbove.amountCents === 0) {
   logPass("Free Shipping Threshold", "Free standard shipping triggers exactly at $200.00");
 } else {
   logFail("Free Shipping Threshold", "Shipping threshold calculation mismatch");
@@ -236,7 +236,7 @@ if (shipBelow.amountCents === 1500 && shipAbove.amountCents === 0) {
 // Affiliate math test
 const commResult = recalculateAffiliateCommission({
   productSubtotalCents: 20000,
-  shippingCents: 1500,
+  shippingCents: 999,
   rateBps: 1000,
 });
 

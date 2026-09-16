@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import { createRouteClient } from '../../../../lib/supabase/route';
 import { PRODUCTS } from '../../../../data/products';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export interface InventoryItemAvailability {
   inStock: boolean;
   stockCount: number;
@@ -57,7 +61,7 @@ export async function GET() {
     },
     {
       headers: {
-        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
+        'Cache-Control': 'no-store, max-age=0, must-revalidate',
       },
     }
   );

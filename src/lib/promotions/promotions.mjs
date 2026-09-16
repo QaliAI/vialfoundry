@@ -10,6 +10,21 @@ export function resolvePromoCodeWithConfig(value, promotions = [], subtotalCents
     return { valid: true, code: null, discountRateBps: 0, fixedDiscountCents: 0 };
   }
 
+  // Check if promo is explicitly disabled in promotions config
+  const isExplicitlyDisabled =
+    Array.isArray(promotions) &&
+    promotions.some((p) => normalizePromoCode(p.code) === code && p.enabled === false);
+
+  if (isExplicitlyDisabled) {
+    return {
+      valid: false,
+      code,
+      error: "This promo code is currently inactive.",
+      discountRateBps: 0,
+      fixedDiscountCents: 0,
+    };
+  }
+
   // Find matching promo config
   const match = Array.isArray(promotions)
     ? promotions.find((p) => normalizePromoCode(p.code) === code && p.enabled !== false)

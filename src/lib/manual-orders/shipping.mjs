@@ -4,7 +4,7 @@ export const defaultShippingOptions = [
   {
     id: "standard",
     label: "Standard Shipping (3-5 Days)",
-    priceCents: 1500,
+    priceCents: 999,
     eta: "3-5 business days",
     description: "Carefully packed and shipped by ground.",
     freeShippingThresholdCents: 20000,
@@ -12,16 +12,16 @@ export const defaultShippingOptions = [
   {
     id: "priority",
     label: "Priority Shipping (2-Day)",
-    priceCents: 3500,
-    eta: "2 business days",
-    description: "Faster shipping with tracking.",
+    priceCents: 2499,
+    eta: "approx. 2 business days",
+    description: "Faster priority shipping with tracking.",
   },
   {
     id: "express",
-    label: "Express Shipping (1-Day)",
-    priceCents: 6500,
-    eta: "1 business day",
-    description: "Next-day delivery with tracking.",
+    label: "Overnight Shipping (1-Day)",
+    priceCents: 4999,
+    eta: "next business day where available",
+    description: "Next-business-day priority delivery with tracking.",
   },
 ];
 

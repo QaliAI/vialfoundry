@@ -357,7 +357,7 @@ function CheckoutPageInner() {
             </div>
 
             <div className="p-3 rounded-xl bg-brand-canvas border border-brand-border text-xs text-brand-steel leading-relaxed">
-              Shipping exclusively to laboratories and research facilities within the United States. All packages ship with protective thermal packaging.
+              Shipping exclusively to laboratories and research facilities within the United States. Carefully packed for shipping.
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-sans">
@@ -485,7 +485,7 @@ function CheckoutPageInner() {
                 <Truck className="w-5 h-5 text-brand-accent" />
                 <span>Shipping Method</span>
               </h3>
-              <span className="text-[11px] font-sans font-medium text-brand-mineral">Protective Packaging</span>
+              <span className="text-[11px] font-sans font-medium text-brand-mineral">Carefully Packed</span>
             </div>
             
             <div className="grid gap-3">
@@ -530,8 +530,7 @@ function CheckoutPageInner() {
             </div>
             {stripeLive && (
               <p className="text-sm text-brand-steel leading-relaxed">
-                You&rsquo;ll pay securely by card on the next step. We never see or store your card
-                details.
+                Continue to secure payment with Stripe. Card details are entered securely on the next step.
               </p>
             )}
             {!hasPaymentMethods && !stripeLive && (
@@ -620,7 +619,7 @@ function CheckoutPageInner() {
                   type="text"
                   value={discountCode}
                   onChange={e => setDiscountCode(e.target.value)}
-                  placeholder="Promo code (e.g. PROMO10)..."
+                  placeholder="Promo code"
                   className="flex-1 px-3 py-2 rounded-xl bg-brand-canvas border border-brand-border text-brand-ink font-sans text-xs focus:outline-none focus:bg-brand-paper focus:border-brand-graphite"
                 />
                 <button

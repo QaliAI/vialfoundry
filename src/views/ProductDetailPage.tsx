@@ -94,7 +94,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
       '@type': 'Offer',
       price: product.price.toFixed(2),
       priceCurrency: 'USD',
-      availability: product.inStock
+      availability: liveStock.inStock
         ? 'https://schema.org/InStock'
         : 'https://schema.org/OutOfStock',
       url: canonicalUrl,

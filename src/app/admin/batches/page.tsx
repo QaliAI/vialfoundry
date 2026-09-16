@@ -1,198 +1,118 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { BATCH_RECORDS } from '../../../data/batches';
-import { BatchRecord } from '../../../types';
-import { FileCheck, Plus, ShieldCheck, Upload, Trash2, CheckCircle2 } from 'lucide-react';
-import { PRODUCTS } from '../../../data/products';
+import { FileCheck, ShieldAlert, Search, ExternalLink } from 'lucide-react';
 
 export default function AdminBatchesPage() {
-  const [batches, setBatches] = useState<Record<string, BatchRecord>>(BATCH_RECORDS);
-  const [isCreating, setIsCreating] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // Every field starts empty. Defaults here would end up transcribed onto a public
-  // record, so the operator must copy each value off the certificate in front of them.
-  const [formData, setFormData] = useState({
-    lotNumber: '',
-    productId: PRODUCTS[0].id,
-    manufacturingDate: '',
-    testingDate: '',
-    issuedBy: '',
-    analyticalMethod: '',
-    purity: '',
-    labNotes: '',
-  });
+  const batchList = useMemo(() => {
+    return Object.values(BATCH_RECORDS);
+  }, []);
 
-  const handleCreateBatch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const lot = formData.lotNumber.toUpperCase().trim() || `LOT-VF-${Math.floor(1000 + Math.random()*9000)}`;
-    const selProd = PRODUCTS.find(p => p.id === formData.productId) || PRODUCTS[0];
-
-    // Transcription only: a blank field stays absent rather than becoming a default,
-    // and no peak or chromatogram data is derived from the purity figure.
-    const purity = parseFloat(formData.purity);
-    const newBatch: BatchRecord = {
-      lotNumber: lot,
-      productId: selProd.id,
-      productName: selProd.name,
-      issuedBy: formData.issuedBy.trim(),
-      casNumber: selProd.casNumber,
-      manufacturingDate: formData.manufacturingDate || undefined,
-      testingDate: formData.testingDate || undefined,
-      analyticalMethod: formData.analyticalMethod.trim() || undefined,
-      purity: Number.isFinite(purity) ? purity : undefined,
-      labNotes: formData.labNotes.trim() || undefined,
-    };
-
-    setBatches(prev => ({ ...prev, [lot]: newBatch }));
-    setIsCreating(false);
-  };
+  const filteredBatches = useMemo(() => {
+    const term = searchTerm.toLowerCase().trim();
+    if (!term) return batchList;
+    return batchList.filter(
+      b =>
+        b.lotNumber.toLowerCase().includes(term) ||
+        b.productName.toLowerCase().includes(term) ||
+        b.issuedBy.toLowerCase().includes(term) ||
+        (b.analyticalMethod && b.analyticalMethod.toLowerCase().includes(term))
+    );
+  }, [batchList, searchTerm]);
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between border-b border-white/10 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/10 pb-4">
         <div>
-          <h1 className="font-display text-2xl font-bold text-white">Batch & COA Document Management</h1>
-          <p className="text-xs font-mono text-slate-400">Transcribe certificates you physically hold. Anything not entered here shows publicly as documentation pending.</p>
+          <h1 className="font-display text-2xl font-bold text-white">Batch Records & COA Documentation</h1>
+          <p className="text-xs font-mono text-slate-400">
+            Authentic third-party Certificates of Analysis and laboratory verification records
+          </p>
         </div>
-        <button
-          onClick={() => setIsCreating(true)}
-          className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-primary text-white font-display font-bold text-xs hover:bg-brand-primary-hover"
+        <Link
+          href="/verify"
+          target="_blank"
+          className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-brand-paper font-display font-semibold text-xs border border-white/10 transition-colors"
         >
-          <Plus className="w-4 h-4" />
-          <span>New Batch Record</span>
-        </button>
+          <span>Customer Verify Portal</span>
+          <ExternalLink className="w-3.5 h-3.5 text-brand-accent" />
+        </Link>
       </div>
 
-      {/* New Batch Modal Form */}
-      {isCreating && (
-        <form onSubmit={handleCreateBatch} className="glass-panel p-6 rounded-2xl border border-white/15 space-y-4 max-w-2xl font-mono text-xs">
-          <h3 className="font-display text-lg font-bold text-white">Create New Batch Record & COA</h3>
+      {/* Authority Disclaimer */}
+      <div className="p-4 rounded-xl bg-slate-900/80 border border-brand-accent/20 flex items-start space-x-3 text-xs font-mono text-slate-300">
+        <ShieldAlert className="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <span className="font-bold text-white">Analytical Integrity Policy:</span>
+          <p className="text-slate-400 leading-relaxed">
+            Analytical batch records and Certificates of Analysis are strictly managed via verified files in{' '}
+            <code className="text-brand-paper bg-white/5 px-1 py-0.5 rounded">src/data/verified-batch-records.ts</code>.
+            Vial Foundry never publishes synthetic purity numbers or unverified batch records. Currently{' '}
+            <strong className="text-white">{batchList.length} authentic batch records</strong> are published.
+            Any product without an authentic certificate displays &ldquo;Documentation: Pending Supplier File&rdquo; on the storefront.
+          </p>
+        </div>
+      </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-slate-300">Lot Number (e.g. LOT-VF-8842)</label>
-              <input
-                type="text" required
-                value={formData.lotNumber}
-                onChange={e => setFormData({ ...formData, lotNumber: e.target.value })}
-                placeholder="LOT-VF-9988"
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-slate-300">Assigned Product</label>
-              <select
-                value={formData.productId}
-                onChange={e => setFormData({ ...formData, productId: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white"
-              >
-                {PRODUCTS.map(p => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-1">
-              <label className="text-slate-300">Issued By (exactly as printed)</label>
-              <input
-                type="text" required
-                value={formData.issuedBy}
-                onChange={e => setFormData({ ...formData, issuedBy: e.target.value })}
-                placeholder="Laboratory named on the certificate"
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-slate-300">Reported Purity % (leave blank if not stated)</label>
-              <input
-                type="number" step="0.01"
-                value={formData.purity}
-                onChange={e => setFormData({ ...formData, purity: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-slate-300">Testing Date</label>
-              <input
-                type="date"
-                value={formData.testingDate}
-                onChange={e => setFormData({ ...formData, testingDate: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-slate-300">Notes, copied verbatim from the certificate</label>
-            <textarea
-              rows={3}
-              value={formData.labNotes}
-              onChange={e => setFormData({ ...formData, labNotes: e.target.value })}
-              className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white"
-            />
-          </div>
-
-          <div className="flex space-x-3 pt-2">
-            <button type="submit" className="px-5 py-2 rounded-xl bg-brand-primary text-brand-paper font-bold">
-              Save Batch Record
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsCreating(false)}
-              className="px-5 py-2 rounded-xl bg-slate-800 text-slate-300"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
+      {/* Search Filter */}
+      {batchList.length > 0 && (
+        <div className="relative max-w-md">
+          <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            placeholder="Search lot number, product, lab..."
+            className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-950 border border-white/15 text-white placeholder:text-slate-500 font-mono text-xs focus:outline-none focus:border-brand-accent"
+          />
+        </div>
       )}
 
-      {/* Table of Batches */}
-      <div className="overflow-x-auto rounded-2xl border border-white/10 glass-panel font-mono text-xs">
-        <table className="w-full text-left">
-          <thead className="bg-slate-900 text-slate-400 uppercase text-[10px]">
-            <tr>
-              <th className="p-4">Lot Code</th>
-              <th className="p-4">Product</th>
-              <th className="p-4">Issued By</th>
-              <th className="p-4">Purity</th>
-              <th className="p-4">Test Date</th>
-              <th className="p-4">Method</th>
-              <th className="p-4 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-white/5 bg-slate-950/60">
-            {Object.values(batches).map(b => (
-              <tr key={b.lotNumber} className="text-slate-300">
-                <td className="p-4 font-bold text-brand-paper">{b.lotNumber}</td>
-                <td className="p-4 font-bold text-white">{b.productName}</td>
-                <td className="p-4 text-slate-400">{b.issuedBy}</td>
-                <td className="p-4 text-emerald-400 font-bold">
-                  {b.purity !== undefined ? `${b.purity.toFixed(2)}%` : '—'}
-                </td>
-                <td className="p-4 text-slate-400">{b.testingDate || '—'}</td>
-                <td className="p-4 text-slate-400">{b.analyticalMethod || '—'}</td>
-                <td className="p-4 text-right space-x-2">
-                  <button
-                    onClick={() => {
-                      const copy = { ...batches };
-                      delete copy[b.lotNumber];
-                      setBatches(copy);
-                    }}
-                    className="p-1.5 rounded bg-slate-900 border border-white/10 hover:border-rose-400 text-rose-400"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </td>
+      {/* Records Table or Honest Empty State */}
+      {batchList.length === 0 ? (
+        <div className="p-12 rounded-2xl border border-white/10 glass-panel text-center space-y-3 font-mono">
+          <div className="w-12 h-12 rounded-full bg-slate-900 border border-white/10 flex items-center justify-center mx-auto text-slate-500">
+            <FileCheck className="w-6 h-6" />
+          </div>
+          <div className="text-sm font-bold text-white">0 Authentic Batch Records Configured</div>
+          <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+            No synthetic COAs are permitted. When authentic laboratory certificates are received and verified by the owner, their verified records will be committed to the batch registry.
+          </p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto rounded-2xl border border-white/10 glass-panel font-mono text-xs">
+          <table className="w-full text-left">
+            <thead className="bg-slate-900 text-slate-400 uppercase text-[10px]">
+              <tr>
+                <th className="p-4">Lot Number</th>
+                <th className="p-4">Assigned Product</th>
+                <th className="p-4">Issuing Laboratory</th>
+                <th className="p-4">Reported Purity</th>
+                <th className="p-4">Testing Date</th>
+                <th className="p-4">Analytical Method</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
+            </thead>
+            <tbody className="divide-y divide-white/5 bg-slate-950/60">
+              {filteredBatches.map(b => (
+                <tr key={b.lotNumber} className="text-slate-300 hover:bg-white/5">
+                  <td className="p-4 font-bold text-brand-paper">{b.lotNumber}</td>
+                  <td className="p-4 font-bold text-white">{b.productName}</td>
+                  <td className="p-4 text-slate-400">{b.issuedBy}</td>
+                  <td className="p-4 text-emerald-400 font-bold">
+                    {b.purity !== undefined ? `${b.purity.toFixed(2)}%` : '—'}
+                  </td>
+                  <td className="p-4 text-slate-400">{b.testingDate || '—'}</td>
+                  <td className="p-4 text-slate-400">{b.analyticalMethod || '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

@@ -95,10 +95,10 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
             <SpecRow label="Molecular Weight" value={product.molecularWeight} />
             <SpecRow label="Amino Acid Sequence" value={product.sequence} />
             <SpecRow label="Presentation" value={product.size} />
-            <SpecRow label="Physical Appearance (Supplier Spec)" value={product.appearance} />
-            <SpecRow label="Solubility (Reference Spec)" value={product.solubility} />
-            <SpecRow label="Storage (Manufacturer Guideline)" value={product.storageConditions} />
-            <SpecRow label="Supplier Packaging Lot" value={product.lotNumber} />
+            <SpecRow label="Physical Appearance" value={product.appearance} />
+            <SpecRow label="Solubility Reference" value={product.solubility} />
+            <SpecRow label="Storage Information" value={product.storageConditions} />
+            <SpecRow label="Lot Reference" value={product.lotNumber} />
             <SpecRow label="Category" value={product.category} />
           </div>
         )}

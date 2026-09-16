@@ -62,7 +62,7 @@ Confirm that each lot number configured in `src/data/products.ts` matches the cu
 - **`VF-SKU-1020` (Acetonitrile)**: Configured lot is `LOT-VF-3560`. Status: **OWNER CONFIRMATION REQUIRED**.
 
 ### B. Packaging Photography & Container Accuracy
-- **`VF-SKU-1010` (Bacteriostatic Water 30 mL)**: Withheld from public catalog. Current image depicts a 10 mL vial. Requires authentic 30 mL multi-dose container photography before publishing.
+- **`VF-SKU-1000` (Bacteriostatic Water 30 mL)**: Withheld from public catalog. Current image depicts a 10 mL vial. Requires authentic 30 mL multi-dose container photography before publishing.
 - **`VF-SKU-1020` (Acetonitrile HPLC Grade 1 L)**: Withheld from public catalog. Current image depicts a 10 mL vial. Requires authentic 1 L amber glass bottle photography before publishing.
 
 ### C. Chemical Identity Constants (Reference Standards)
