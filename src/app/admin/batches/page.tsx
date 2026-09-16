@@ -43,18 +43,28 @@ export default function AdminBatchesPage() {
         </Link>
       </div>
 
-      {/* Authority Disclaimer */}
-      <div className="p-4 rounded-xl bg-slate-900/80 border border-brand-accent/20 flex items-start space-x-3 text-xs font-mono text-slate-300">
-        <ShieldAlert className="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <span className="font-bold text-white">Analytical Integrity Policy:</span>
-          <p className="text-slate-400 leading-relaxed">
-            Analytical batch records and Certificates of Analysis are strictly managed via verified files in{' '}
-            <code className="text-brand-paper bg-white/5 px-1 py-0.5 rounded">src/data/verified-batch-records.ts</code>.
-            Vial Foundry never publishes synthetic purity numbers or unverified batch records. Currently{' '}
-            <strong className="text-white">{batchList.length} authentic batch records</strong> are published.
-            Any product without an authentic certificate displays &ldquo;Documentation: Pending Supplier File&rdquo; on the storefront.
+      {/* Authority Disclaimer & Operations Notice */}
+      <div className="p-5 rounded-xl bg-slate-900/90 border border-amber-500/30 space-y-3 text-xs font-mono">
+        <div className="flex items-center space-x-2 text-amber-400 font-bold">
+          <ShieldAlert className="w-4 h-4 flex-shrink-0" />
+          <span>Internal Operations Notice: Batch Registry Publishing Workflow</span>
+        </div>
+        <div className="text-slate-300 space-y-2 leading-relaxed">
+          <p>
+            <strong className="text-white">Admin Upload UI Status:</strong> Direct file upload via this admin page is intentionally <strong className="text-amber-300">not enabled</strong>. Operators cannot upload certificate PDFs or edit batch records through this browser interface.
           </p>
+          <p>
+            <strong className="text-white">Authentic Records Count:</strong> <span className="text-brand-paper font-semibold">{batchList.length} authentic records configured</span>. In accordance with our analytical integrity policy, zero synthetic COAs are permitted. Products without an authentic certificate display &ldquo;Documentation: Pending Supplier File&rdquo; on the storefront.
+          </p>
+          <p>
+            <strong className="text-white">Standard Publishing Procedure:</strong> Follow the code-authoritative publishing process documented in <code className="text-brand-accent bg-white/5 px-1 py-0.5 rounded">docs/COA_PUBLISHING_PROCESS.md</code>:
+          </p>
+          <ol className="list-decimal list-inside pl-2 space-y-1 text-slate-400">
+            <li>Verify authentic supplier/laboratory Certificate of Analysis.</li>
+            <li>Place authentic PDF in <code className="text-slate-300">public/documents/coa/[lotNumber].pdf</code>.</li>
+            <li>Register metadata entry in <code className="text-slate-300">src/data/verified-batch-records.ts</code>.</li>
+            <li>Run <code className="text-slate-300">npm run check:prod</code> to validate PDF existence and hash integrity before deploying to production.</li>
+          </ol>
         </div>
       </div>
 
@@ -80,7 +90,7 @@ export default function AdminBatchesPage() {
           </div>
           <div className="text-sm font-bold text-white">0 Authentic Batch Records Configured</div>
           <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
-            No synthetic COAs are permitted. When authentic laboratory certificates are received and verified by the owner, their verified records will be committed to the batch registry.
+            No synthetic COAs are permitted. Operators cannot upload certificates through this web interface. When authentic laboratory certificates are received and verified by the owner, publish them according to <code className="text-slate-300">docs/COA_PUBLISHING_PROCESS.md</code>.
           </p>
         </div>
       ) : (

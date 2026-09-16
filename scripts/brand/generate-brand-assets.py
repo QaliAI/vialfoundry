@@ -34,7 +34,7 @@ CLOUD = "#F4F7F9"
 WHITE = "#FFFFFF"
 
 WORDMARK = "VIAL FOUNDRY"
-DESCRIPTOR = "RESEARCH PEPTIDES"
+DESCRIPTOR = "RESEARCH MATERIALS"
 
 # ---------------------------------------------------------------- monogram
 # Authored in a 1000 x 841 box (the approved mark's 157:132 aspect ratio).
@@ -99,7 +99,7 @@ def svg(width, height, body, bg=None):
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width:.2f} {height:.2f}" '
         f'width="{width:.2f}" height="{height:.2f}" role="img" '
-        f'aria-label="Vial Foundry - Research Peptides">'
+        f'aria-label="Vial Foundry - Research Materials">'
         f"{rect}{body}</svg>\n"
     )
 
@@ -113,7 +113,7 @@ def write(name, content):
 
 # ---------------------------------------------------------------- lockups
 def horizontal(ink, sub_ink, rule_ink, filename, bg=None, pad=0.0):
-    """Primary lockup: mark | rule | VIAL FOUNDRY / RESEARCH PEPTIDES.
+    """Primary lockup: mark | rule | VIAL FOUNDRY / RESEARCH MATERIALS.
 
     Proportions are taken from panel 01 of the approved board, normalised so
     the monogram is 100 units tall.

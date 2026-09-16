@@ -56,7 +56,7 @@ const LOCKUPS: Record<
   },
 };
 
-const ALT = 'Vial Foundry — Research Peptides';
+const ALT = 'Vial Foundry — Research Materials';
 
 /** The monogram on its own, inheriting the current text colour. */
 export const BrandMark: React.FC<{ className?: string; title?: string }> = ({

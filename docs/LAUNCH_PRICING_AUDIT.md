@@ -27,26 +27,26 @@ All comparisons evaluate identical compound identity, physical presentation (lyo
 
 | SKU | Compound | Size | VF Old Price | VF Launch Price | Core Peptides | Biotech Peptides | Oath Research | Competitor Median | Market Positioning Analysis |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| `VF-SKU-991` | **BPC-157** | 5 mg | $64.00 | **$54.99** | $52.00 | $52.00 | ~$55.00 | $52.00 | Repriced to $54.99. Competes within $3 of median while delivering premium laboratory packaging and verification. |
-| `VF-SKU-992` | **TB-500** | 10 mg | $88.00 | **$88.00** | $90.00 – $100.00 | $124.00 | ~$90.00 | $95.00 | VF is already well positioned below competitor median ($88 vs $95-$124). Retained at $88.00. |
-| `VF-SKU-993` | **Semaglutide** | 5 mg | $112.00 | **$112.00\*** | $45.00 – $70.00 | ~$55.00 – $65.00 | ~$50.00 | $58.00 | \*Awaiting owner cost confirmation. Market median is $58.00. Target recommendation: $79.99–$89.99 pending landed cost validation. |
-| `VF-SKU-994` | **Tirzepatide** | 10 mg | $145.00 | **$145.00\*** | $90.00 – $100.00 | $70.00 – $95.00 | ~$75.00 | $85.00 | \*Awaiting owner cost confirmation. Market median is $85.00. Target recommendation: $99.99–$119.99 pending landed cost validation. |
-| `VF-SKU-995` | **Retatrutide** | 10 mg | $168.00 | **$168.00\*** | $99.00 – $119.00 | $130.00 – $160.00 | ~$120.00 | $119.00 | \*Awaiting owner cost confirmation. Market median is $119.00. Target recommendation: $119.99–$139.99 pending landed cost validation. |
-| `VF-SKU-996` | **CJC-1295 (No DAC)** | 5 mg | $52.00 | **$49.99** | $35.00 – $45.00 | $46.00 | ~$45.00 | $45.00 | Repriced to $49.99. Strong positioning within $4 of premium tier. |
-| `VF-SKU-997` | **Ipamorelin** | 5 mg | $48.00 | **$48.00** | $45.00 – $52.00 | $45.00 | ~$48.00 | $46.50 | Highly competitive at $48.00. Retained. |
-| `VF-SKU-998` | **NAD+** | 1 g | $75.00 | **$75.00** | $74.99 | ~$99.00 (500mg equivalent) | ~$80.00 | $75.00 | Exact match with Core Peptides ($74.99). Retained at $75.00. |
-| `VF-SKU-999` | **GHK-Cu** | 50 mg | $58.00 | **$58.00** | $50.00 – $60.00 | $55.00 | ~$55.00 | $55.00 | Well aligned with market ($58.00 vs $55.00 median). Retained. |
-| `VF-SKU-1000` | **Bacteriostatic Water** | 30 mL | $14.00 | **$14.00** | $12.00 – $15.00 | $15.00 | ~$14.00 | $14.00 | Market aligned ($14.00). Withheld from catalog pending 30 mL container photography. |
-| `VF-SKU-1011` | **Sermorelin** | 5 mg | $54.00 | **$54.00** | $48.00 | $43.00 | ~$45.00 | $45.00 | Fairly positioned for premium grade ($54.00). Retained pending owner cost confirmation. |
-| `VF-SKU-1012` | **Tesamorelin** | 5 mg | $132.00 | **$59.99** | $40.00 – $43.00 | $38.00 – $48.00 | ~$45.00 | $43.00 | **Critical defect resolved.** $132 was over 200% above market. $59.99 provides viable launch competitiveness. |
-| `VF-SKU-1013` | **PT-141** | 10 mg | $62.00 | **$54.99** | $45.00 – $55.00 | $45.00 | ~$50.00 | $48.00 | Repriced to $54.99, reducing friction on a popular research compound. |
-| `VF-SKU-1014` | **Selank** | 10 mg | $46.00 | **$46.00** | $42.00 – $48.00 | $45.00 | ~$46.00 | $45.50 | Fully competitive at $46.00. Retained. |
-| `VF-SKU-1015` | **Semax** | 10 mg | $49.00 | **$49.00** | $45.00 – $52.00 | $48.00 | ~$49.00 | $48.50 | Fully competitive at $49.00. Retained. |
-| `VF-SKU-1016` | **Epithalon** | 10 mg | $42.00 | **$42.00** | $38.00 – $45.00 | $40.00 | ~$42.00 | $41.00 | Excellent price-point at $42.00. Retained. |
-| `VF-SKU-1017` | **Thymosin Alpha-1** | 10 mg | $96.00 | **$96.00** | $90.00 – $110.00 | $98.00 | ~$95.00 | $96.00 | Perfectly centered on market median ($96.00). Retained. |
-| `VF-SKU-1018` | **MOTS-c** | 10 mg | $118.00 | **$118.00** | $70.00 – $90.00 | $75.00 | ~$80.00 | $78.00 | Out of stock. No reprice prior to actual supplier restocking and batch procurement. |
-| `VF-SKU-1019` | **AOD-9604** | 5 mg | $68.00 | **$59.99** | $41.00 | $44.00 | ~$48.00 | $44.00 | Repriced from $68.00 to $59.99, bringing price into line with research standards. |
-| `VF-SKU-1020` | **Acetonitrile** | 1 L | $38.00 | **$38.00** | $35.00 – $45.00 | N/A | N/A | $38.00 | Market competitive ($38.00). Withheld from catalog pending amber bottle photography. |
+| `VF-SKU-991` | **BPC-157** | 5 mg | $64.00 | **$54.99** | $52.00 | $52.00 | $55.00 | $52.00 | Repriced to $54.99. Competes within $3 of median while delivering premium laboratory packaging and verification. |
+| `VF-SKU-992` | **TB-500** | 10 mg | $88.00 | **$88.00** | $90.00 – $100.00 | $124.00 | $90.00 | $94.00 | VF is already well positioned below competitor median ($88 vs $94-$124). Retained at $88.00. |
+| `VF-SKU-993` | **Semaglutide** | 5 mg | $112.00 | **$112.00\*** | $55.00 – $70.00 | $55.00 – $65.00 | $55.00 | $58.00 | \*Awaiting owner cost confirmation. Market median is $58.00. Target recommendation: $79.99–$89.99 pending landed cost validation. |
+| `VF-SKU-994` | **Tirzepatide** | 10 mg | $145.00 | **$145.00\*** | $90.00 – $100.00 | $70.00 – $95.00 | $80.00 | $85.00 | \*Awaiting owner cost confirmation. Market median is $85.00. Target recommendation: $99.99–$119.99 pending landed cost validation. |
+| `VF-SKU-995` | **Retatrutide** | 10 mg | $168.00 | **$168.00\*** | $119.00 | $130.00 – $160.00 | $120.00 | $120.00 | \*Awaiting owner cost confirmation. Market median is $120.00. Target recommendation: $119.99–$139.99 pending landed cost validation. |
+| `VF-SKU-996` | **CJC-1295 (No DAC)** | 5 mg | $52.00 | **$49.99** | $42.00 | $46.00 | $45.00 | $45.00 | Repriced to $49.99. Strong positioning within $4 of premium tier. |
+| `VF-SKU-997` | **Ipamorelin** | 5 mg | $48.00 | **$48.00** | $45.00 – $52.00 | $45.00 | $48.00 | $48.00 | Highly competitive at $48.00. Retained. |
+| `VF-SKU-998` | **NAD+** | 1000 mg (1 g) | $75.00 | **$75.00** | $74.99 | *NO LIKE-FOR-LIKE PRICE VERIFIED* | *NO LIKE-FOR-LIKE PRICE VERIFIED* | $74.99 | Exact match with Core Peptides 1000mg ($74.99). Competitors only offer 500mg vials (not compared). Retained at $75.00. |
+| `VF-SKU-999` | **GHK-Cu** | 50 mg | $58.00 | **$58.00** | $50.00 – $60.00 | $55.00 | $55.00 | $55.00 | Well aligned with market ($58.00 vs $55.00 median). Retained. |
+| `VF-SKU-1000` | **Bacteriostatic Water** | 30 mL | $14.00 | **$14.00** | $14.00 | $15.00 | $14.00 | $14.00 | Market aligned ($14.00). Withheld from catalog pending 30 mL container photography. |
+| `VF-SKU-1011` | **Sermorelin** | 5 mg | $54.00 | **$54.00** | $48.00 | $43.00 | $45.00 | $45.00 | Fairly positioned for premium grade ($54.00). Retained pending owner cost confirmation. |
+| `VF-SKU-1012` | **Tesamorelin** | 5 mg | $132.00 | **$59.99** | $42.00 | $45.00 | $45.00 | $45.00 | **Critical defect resolved.** $132 was over 200% above market. $59.99 provides viable launch competitiveness. |
+| `VF-SKU-1013` | **PT-141** | 10 mg | $62.00 | **$54.99** | $45.00 – $50.00 | $45.00 | $50.00 | $48.00 | Repriced to $54.99, reducing friction on a popular research compound. |
+| `VF-SKU-1014` | **Selank** | 10 mg | $46.00 | **$46.00** | *NO LIKE-FOR-LIKE PRICE VERIFIED* | *NO LIKE-FOR-LIKE PRICE VERIFIED* | *NO LIKE-FOR-LIKE PRICE VERIFIED* | *NO LIKE-FOR-LIKE PRICE VERIFIED* | Competitors audited only package 5mg vials ($42-$46). VF provides 10mg for $46.00 without extrapolation. |
+| `VF-SKU-1015` | **Semax** | 10 mg | $49.00 | **$49.00** | *NO LIKE-FOR-LIKE PRICE VERIFIED* | *NO LIKE-FOR-LIKE PRICE VERIFIED* | *NO LIKE-FOR-LIKE PRICE VERIFIED* | *NO LIKE-FOR-LIKE PRICE VERIFIED* | Competitors audited only package 5mg vials ($45-$49). VF provides 10mg for $49.00 without extrapolation. |
+| `VF-SKU-1016` | **Epithalon** | 10 mg | $42.00 | **$42.00** | $42.00 | $40.00 | $42.00 | $42.00 | Excellent price-point at $42.00 matching Core & Oath exactly. Retained. |
+| `VF-SKU-1017` | **Thymosin Alpha-1** | 10 mg | $96.00 | **$96.00** | *NO LIKE-FOR-LIKE PRICE VERIFIED* | *NO LIKE-FOR-LIKE PRICE VERIFIED* | *NO LIKE-FOR-LIKE PRICE VERIFIED* | *NO LIKE-FOR-LIKE PRICE VERIFIED* | Competitors audited only package 5mg vials ($90-$98). VF provides 10mg for $96.00 without extrapolation. |
+| `VF-SKU-1018` | **MOTS-c** | 10 mg | $118.00 | **$118.00** | $80.00 | $75.00 | $80.00 | $80.00 | Out of stock. No reprice prior to actual supplier restocking and batch procurement. |
+| `VF-SKU-1019` | **AOD-9604** | 5 mg | $68.00 | **$59.99** | $44.00 | $44.00 | $48.00 | $44.00 | Repriced from $68.00 to $59.99, bringing price into line with research standards. |
+| `VF-SKU-1020` | **Acetonitrile** | 1 L | $38.00 | **$38.00** | *NO LIKE-FOR-LIKE PRICE VERIFIED* | *NO LIKE-FOR-LIKE PRICE VERIFIED* | *NO LIKE-FOR-LIKE PRICE VERIFIED* | *NO LIKE-FOR-LIKE PRICE VERIFIED* | Laboratory solvent supply. Direct chemical distributors baseline ($35.00-$45.00). Withheld. |
 
 ---
 

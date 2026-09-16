@@ -114,7 +114,7 @@ export function renderEmailShell(params: {
             <td style="background-color: ${EMAIL_COLORS.midnight}; padding: 28px 32px;">
               <a href="${url}" style="text-decoration: none;">
                 <img src="${url}/brand/logo-email.png" width="220" height="33"
-                     alt="${escapeHtml(brand.name)} — Research Peptides"
+                     alt="${escapeHtml(brand.name)} — Research Materials"
                      style="display: block; border: 0; width: 220px; height: auto;" />
               </a>
               <div style="margin-top: 14px; font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: ${EMAIL_COLORS.teal};">

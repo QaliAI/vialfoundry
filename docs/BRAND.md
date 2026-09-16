@@ -8,13 +8,11 @@ monogram, or invent another palette.
 
 ## Descriptor
 
-The supplied board carries the descriptor **RESEARCH MATERIALS**. That wording is
-**not approved for customer-facing use**. Everywhere the descriptor appears as a
-brand element it reads **RESEARCH PEPTIDES**.
+The approved brand logo descriptor is **RESEARCH MATERIALS**. Everywhere the descriptor appears as a
+brand element (logo mark, lockups, vector SVGs) it reads **RESEARCH MATERIALS**.
 
-Lowercase "research materials" inside legal and explanatory prose
-(`src/data/legal.ts`, `src/data/articles.ts`) is technically correct language and
-has deliberately been left alone. It is never presented as the brand tagline.
+Ordinary textual phrases like "research peptides" when they refer to the actual product category
+remain intact in descriptive catalog and educational copy.
 
 ---
 

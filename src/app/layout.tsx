@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     description: 'Shop research peptides with clear product details, batch numbers and documents when available. For research use only.',
     url: `${SITE_URL}/`,
     siteName: 'Vial Foundry',
-    images: [{ url: '/brand/og-image.png', width: 1200, height: 630, alt: 'Vial Foundry — Research Peptides' }],
+    images: [{ url: '/brand/og-image.png', width: 1200, height: 630, alt: 'Vial Foundry — Research Materials' }],
     type: 'website',
   },
   twitter: {

@@ -65,22 +65,15 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
               <ul className="space-y-2 text-xs font-sans text-brand-steel">
                 <li className="flex items-start space-x-2">
                   <CheckCircle2 className="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
-                  <span>{product.size}, lot {product.lotNumber}</span>
+                  <span>1 × {product.displayName || product.name}</span>
                 </li>
                 <li className="flex items-start space-x-2">
                   <CheckCircle2 className="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
-                  <span>{product.appearance}</span>
+                  <span>{product.size}</span>
                 </li>
-                {product.materialNotes.map((note, i) => (
-                  <li key={i} className="flex items-start space-x-2">
-                    <CheckCircle2 className="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
-                    <span>{note}</span>
-                  </li>
-                ))}
               </ul>
               <p className="text-xs text-brand-steel font-sans leading-relaxed pt-1">
-                Test results are not listed here. See the Batch Documents tab for what we hold
-                on this lot.
+                Current lot information and batch documents are provided when available.
               </p>
             </div>
           </div>
@@ -95,11 +88,15 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
             <SpecRow label="Molecular Weight" value={product.molecularWeight} />
             <SpecRow label="Amino Acid Sequence" value={product.sequence} />
             <SpecRow label="Presentation" value={product.size} />
-            <SpecRow label="Physical Appearance" value={product.appearance} />
-            <SpecRow label="Solubility Reference" value={product.solubility} />
-            <SpecRow label="Storage Information" value={product.storageConditions} />
-            <SpecRow label="Lot Reference" value={product.lotNumber} />
             <SpecRow label="Category" value={product.category} />
+            <SpecRow
+              label="Lot Reference"
+              value={batchRecord ? batchRecord.lotNumber : 'Documentation pending'}
+            />
+            <SpecRow
+              label="Storage Guideline"
+              value={batchRecord ? product.storageConditions : 'Store sealed at -20°C in a dry environment. Protect from light.'}
+            />
           </div>
         )}
 
@@ -173,7 +170,11 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
           <div className="space-y-4 text-sm text-brand-steel font-normal leading-relaxed">
             <div className="p-4 rounded-xl bg-brand-canvas border border-brand-border">
               <span className="text-[11px] font-sans font-semibold text-brand-graphite uppercase block mb-1">Storage Guidelines</span>
-              <span className="text-brand-ink font-medium text-sm">{product.storageConditions}</span>
+              <span className="text-brand-ink font-medium text-sm">
+                {batchRecord
+                  ? product.storageConditions
+                  : 'Store sealed in original container at -20°C in a dry environment. Protect from light. RUO only.'}
+              </span>
             </div>
             {product.category === 'Lab Supplies' || product.appearance.toLowerCase().includes('liquid') ? (
               <ul className="space-y-2 text-xs font-sans text-brand-steel">

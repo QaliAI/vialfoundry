@@ -133,9 +133,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-md bg-brand-canvas border border-brand-border text-brand-graphite font-sans text-xs font-medium">
               <span>{categoryLabel(product.category)}</span>
             </span>
-            <span className="text-[11px] font-mono text-brand-steel bg-brand-paper border border-brand-border px-2.5 py-1 rounded">
-              LOT: {product.lotNumber}
-            </span>
+            {batchRecord && (
+              <span className="text-[11px] font-mono text-brand-steel bg-brand-paper border border-brand-border px-2.5 py-1 rounded">
+                LOT: {batchRecord.lotNumber}
+              </span>
+            )}
             <DocumentationStatusBadge status={docStatus} size="md" className="bg-brand-paper" />
           </div>
 
@@ -276,19 +278,19 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
           {/* Technical Specs Checklist */}
           <div className="space-y-2 border-t border-brand-border pt-5">
-            <h4 className="text-xs font-sans font-semibold text-brand-graphite uppercase tracking-wider">Physical Characteristics</h4>
+            <h4 className="text-xs font-sans font-semibold text-brand-graphite uppercase tracking-wider">Product Specifications</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[13px] leading-relaxed">
               <div className="p-3 rounded-lg bg-brand-paper border border-brand-border">
-                <span className="text-brand-steel block text-[10px] uppercase font-sans font-medium">APPEARANCE</span>
-                <span className="text-brand-ink font-medium">{product.appearance}</span>
+                <span className="text-brand-steel block text-[10px] uppercase font-sans font-medium">PRESENTATION</span>
+                <span className="text-brand-ink font-medium">{product.size}</span>
               </div>
               <div className="p-3 rounded-lg bg-brand-paper border border-brand-border">
-                <span className="text-brand-steel block text-[10px] uppercase font-sans font-medium">SOLUBILITY</span>
-                <span className="text-brand-ink font-medium">{product.solubility}</span>
+                <span className="text-brand-steel block text-[10px] uppercase font-sans font-medium">CAS REGISTRY</span>
+                <span className="text-brand-ink font-medium">{product.casNumber}</span>
               </div>
               <div className="p-3 rounded-lg bg-brand-paper border border-brand-border sm:col-span-2">
-                <span className="text-brand-steel block text-[10px] uppercase font-sans font-medium">STORAGE CONDITIONS</span>
-                <span className="text-brand-ink font-medium">{product.storageConditions}</span>
+                <span className="text-brand-steel block text-[10px] uppercase font-sans font-medium">STORAGE GUIDELINE</span>
+                <span className="text-brand-ink font-medium">Store sealed in original container at -20°C in a dry environment. Protect from light. RUO only.</span>
               </div>
             </div>
           </div>
