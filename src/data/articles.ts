@@ -36,7 +36,7 @@ export const RESEARCH_ARTICLES: ResearchArticle[] = [
       '### Liquid Chromatography-Mass Spectrometry (LC-MS)',
       'LC-MS couples chromatographic separation directly to an ion trap or Time-of-Flight (Q-TOF) mass spectrometer. As peaks elute, molecules are ionized and accelerated through an electromagnetic field, measuring their precise mass-to-charge ratio.',
       '### The Dual Standard',
-      'Relying on HPLC alone leaves room for sequence ambiguity. Relying on mass spec alone cannot detect non-ionizing or co-eluting impurities. Vial Foundry mandates combined HPLC-UV and ESI-MS for every production lot.'
+      'Relying on HPLC alone leaves room for sequence ambiguity. Relying on mass spec alone cannot detect non-ionizing or co-eluting impurities. When third-party laboratory verification is performed, pairing HPLC-UV with mass spectrometry provides complementary confirmation of chromatographic purity and molecular weight. When a third-party certificate is available for a lot, Vial Foundry publishes the source documentation.'
     ]
   },
   {
@@ -52,32 +52,31 @@ export const RESEARCH_ARTICLES: ResearchArticle[] = [
       'In chemical manufacturing, no two synthesis runs are 100% identical. Reagent grade variations, humidity, purification column wear, and lyophilization cycle parameters create subtle lot-to-lot differences.',
       '### The Problem with Template COAs',
       'Some suppliers reuse static COA graphics across multiple batches or years. This eliminates visibility into lot variance and creates significant risk for quantitative analytical experiments.',
-      '### The Vial Foundry Standard',
-      'Every batch produced at Vial Foundry receives its own distinct lot number (e.g., LOT-VF-8842). Testing is conducted on samples drawn directly from the final packaged lot, ensuring that the documentation reflects the exact physical contents of the vial in your laboratory.'
+      '### Lot-Specific Traceability',
+      'Each catalog item references a distinct lot number. When a third-party certificate of analysis is available for a lot, Vial Foundry links the source documentation directly to that specific lot number, ensuring transparency regarding verified data versus pending documentation.'
     ]
   },
   {
     slug: 'reconstitution-of-lyophilized-peptides',
-    title: 'Reconstitution of Lyophilized Research Peptides',
-    category: 'Laboratory Technique',
-    readTime: '6 min read',
+    title: 'Solubility and Laboratory Handling of Lyophilized Peptides',
+    category: 'Material Integrity',
+    readTime: '5 min read',
     date: 'August 2026',
     author: 'Vial Foundry Technical Applications',
-    excerpt: 'A step-by-step guide to mixing a freeze-dried peptide correctly.',
-    tags: ['Reconstitution', 'Handling', 'Solubility', 'Best Practices'],
+    excerpt: 'High-level laboratory considerations for handling lyophilized reference materials in in vitro research.',
+    tags: ['Solubility', 'Handling', 'Material Integrity', 'RUO'],
     content: [
-      'Lyophilized (freeze-dried) peptides arrive as a stable powder or cake. Correct reconstitution is essential to preserve the compound and to keep your experimental concentrations accurate. The following describes general laboratory technique for research handling only.',
-      '### 1. Equilibrate Before Opening',
-      'Allow the sealed vial to reach room temperature before breaking the seal. Opening a cold vial exposes the hygroscopic powder to condensation, which can introduce water and degrade sensitive sequences.',
-      '### 2. Select an Appropriate Solvent',
-      'Most peptides reconstitute in sterile water or bacteriostatic water for research applications. Highly hydrophobic sequences may require a small volume of a co-solvent (such as dilute acetic acid) before dilution. Always consult the solubility notes on the product page.',
-      '### 3. Add Solvent Slowly',
-      'Direct the solvent stream against the glass wall of the vial rather than onto the powder directly. Let the peptide dissolve passively. Avoid vigorous shaking, which can shear peptide bonds and cause foaming; gentle swirling is sufficient.',
-      '### 4. Calculate Concentration',
-      'Divide the net peptide mass by the total solvent volume to determine your working concentration. Account for net peptide content when high accuracy is required for quantitative work.',
-      '### 5. Aliquot and Store',
-      'Once reconstituted, divide the solution into single-use aliquots to avoid repeated freeze-thaw cycles, which are a leading cause of peptide degradation. Label each aliquot with the lot number and date.',
-      'These are general research-laboratory guidelines. Vial Foundry materials are supplied for research use only and are not for human or veterinary use.'
+      'Lyophilized (freeze-dried) peptides arrive as stable amorphous powders or porous cakes. In analytical research settings, preserving material integrity requires careful handling to maintain molecular conformation and ensure assay repeatability.',
+      '### Temperature Equilibration in the Laboratory',
+      'Lyophilized peptide matrices are highly hygroscopic. Before opening a sealed container stored under frozen conditions, laboratories typically allow the vial to equilibrate to ambient temperature in a desiccated environment. This minimizes moisture condensation from atmospheric humidity, which can accelerate hydrolytic degradation of sensitive peptide bonds.',
+      '### Sequence-Dependent Solubility Profiles',
+      'Solubility characteristics vary substantially based on net molecular charge, hydrophobicity, and secondary structure. Certain sequences dissolve readily in aqueous buffers, while hydrophobic or neutral peptides may require specialized organic or dilute acid co-solvents determined by the specific experimental protocol. There is no universal solvent suitable for all peptide classes; investigators should consult established analytical literature and compound-specific technical notes before preparation.',
+      '### Shear Sensitivity & Solution Stability',
+      'Peptide secondary and tertiary structures are susceptible to physical shear stresses. In research handling, passive dissolution and gentle rotational agitation are generally preferred over vigorous vortexing or mechanical shaking to prevent foam formation and surface-induced denaturation. In solution, peptides exhibit significantly reduced stability compared to desiccated powder and are prone to progressive hydrolysis, deamidation, and oxidation.',
+      '### Preservation of Experimental Working Solutions',
+      'To prevent the repeated freeze-thaw cycles that contribute to peptide aggregation and loss of quantitative accuracy, laboratories commonly subdivide reconstituted solutions into single-use aliquots labeled with lot number and preparation date for immediate deep-freezing.',
+      '### Research Use Only Notice',
+      'All materials and information supplied by Vial Foundry are intended exclusively for in vitro laboratory research and analytical assays. They are not intended, labeled, or approved for human administration, veterinary administration, diagnostic procedures, or therapeutic applications.'
     ]
   },
   {
@@ -99,7 +98,7 @@ export const RESEARCH_ARTICLES: ResearchArticle[] = [
       'Certain sequences and chelated complexes (for example, copper peptides) are photosensitive. Store these in amber vials or a dark environment to prevent photodegradation.',
       '### Freeze-Thaw Cycles',
       'Each freeze-thaw cycle stresses the molecule. Aliquoting reconstituted material into single-use volumes is the single most effective way to preserve potency and analytical consistency over time.',
-      'Following these practices keeps your material matched to its Certificate of Analysis for the full documented shelf life.'
+      'Observing proper laboratory storage practices helps maintain compound stability and minimize degradation over the course of planned research studies.'
     ]
   },
   {
@@ -112,7 +111,7 @@ export const RESEARCH_ARTICLES: ResearchArticle[] = [
     excerpt: 'Plain-English definitions of the terms you will see on peptide documents.',
     tags: ['Glossary', 'Definitions', 'HPLC', 'Mass Spec'],
     content: [
-      'A shared vocabulary makes analytical documentation easier to interpret. The following terms appear throughout Vial Foundry product pages and certificates.',
+      'A shared vocabulary makes analytical documentation easier to interpret. The following terms appear throughout analytical literature and reference materials.',
       '### Certificate of Analysis (COA)',
       'A lot-specific document reporting the empirical test results — purity, identity, and physical properties — for a defined batch of material.',
       '### RP-HPLC',

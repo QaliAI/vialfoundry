@@ -66,6 +66,30 @@ export interface BrandConfig {
   promotions: BrandPromoConfig[];
 }
 
+/**
+ * Resolves internal order notification recipients by reading both
+ * ADMIN_NOTIFICATION_EMAIL and NOTIFICATION_EMAIL_TO, splitting comma-separated
+ * values from both, trimming whitespace, lowercasing, deduplicating, and removing blanks.
+ */
+export function resolveOrderNotificationEmails(
+  adminVar: string | undefined = process.env.ADMIN_NOTIFICATION_EMAIL,
+  notifyVar: string | undefined = process.env.NOTIFICATION_EMAIL_TO,
+): string[] {
+  const combined = `${adminVar || ''},${notifyVar || ''}`;
+  const seen = new Set<string>();
+  const recipients: string[] = [];
+
+  for (const part of combined.split(',')) {
+    const clean = part.trim().toLowerCase();
+    if (clean && !seen.has(clean)) {
+      seen.add(clean);
+      recipients.push(clean);
+    }
+  }
+
+  return recipients;
+}
+
 export const vialFoundryBrandConfig: BrandConfig = {
   brandId: process.env.NEXT_PUBLIC_BRAND_ID || "vial-foundry",
   name: process.env.NEXT_PUBLIC_BRAND_NAME || "Vial Foundry",
@@ -77,10 +101,7 @@ export const vialFoundryBrandConfig: BrandConfig = {
   supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@vialfoundry.com",
   helloEmail: process.env.NEXT_PUBLIC_HELLO_EMAIL || "hello@vialfoundry.com",
   infoEmail: process.env.NEXT_PUBLIC_INFO_EMAIL || "info@vialfoundry.com",
-  orderNotificationEmails: (process.env.ADMIN_NOTIFICATION_EMAIL || process.env.NOTIFICATION_EMAIL_TO || "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean),
+  orderNotificationEmails: resolveOrderNotificationEmails(),
   logoUrl: "/brand/logo-horizontal.svg",
   faviconUrl: "/favicon.ico",
   primaryColor: "#0F2740", // Midnight (approved)
@@ -155,5 +176,8 @@ export const vialFoundryBrandConfig: BrandConfig = {
 };
 
 export function getBrandConfig(): BrandConfig {
-  return vialFoundryBrandConfig;
+  return {
+    ...vialFoundryBrandConfig,
+    orderNotificationEmails: resolveOrderNotificationEmails(),
+  };
 }

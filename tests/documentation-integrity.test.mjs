@@ -66,6 +66,11 @@ test('no public copy asserts universal third-party testing', () => {
     'Third-Party Tested',
     'every batch record is archived',
     'Every lot is backed by a Certificate of Analysis',
+    'mandates combined HPLC-UV',
+    'Every batch produced at Vial Foundry',
+    'Testing is conducted on samples drawn directly from the final packaged lot',
+    'High-purity lyophilized',
+    'High-purity reference materials',
   ];
   const offenders = [];
   const walk = (dir) => {

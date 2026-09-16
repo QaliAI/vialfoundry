@@ -357,3 +357,69 @@ test('quantity pricing applies correct math when explicitly enabled', () => {
   assert.equal(r12.discountRateBps, 1500);
   assert.equal(r12.discountCents, 9000);
 });
+
+// -----------------------------------------------------------------------------
+// 8. Admin resend email error handling & event logging
+// -----------------------------------------------------------------------------
+test('admin resend email route verifies sendEmailSafely result and logs order events', () => {
+  const resendSrc = read('src/app/api/admin/orders/resend-email/route.ts');
+  assert.ok(
+    resendSrc.includes('if (!sentResult.success)'),
+    'admin resend route must check sentResult.success'
+  );
+  assert.ok(
+    resendSrc.includes("status: 502"),
+    'admin resend route must return error status on email failure, never false success'
+  );
+  assert.ok(
+    resendSrc.includes("type: 'email_failed'"),
+    'admin resend route must record email_failed event on failure'
+  );
+  assert.ok(
+    resendSrc.includes("type: 'email_sent'"),
+    'admin resend route must record email_sent event on success'
+  );
+});
+
+// -----------------------------------------------------------------------------
+// 9. Paid email flow records internal admin notifications
+// -----------------------------------------------------------------------------
+test('stripe webhook records internal admin order notifications in order_events', () => {
+  const webhookSrc = read('src/app/api/webhooks/stripe/route.ts');
+  assert.ok(
+    webhookSrc.includes('const sentInternal = await sendEmailSafely'),
+    'webhook must capture internal email dispatch result'
+  );
+  assert.ok(
+    webhookSrc.includes("type: sentInternal.success ? 'email_sent' : 'email_failed'"),
+    'webhook must record internal notification success/failure event'
+  );
+  assert.ok(
+    webhookSrc.includes('paid_email_sent_at'),
+    'webhook preserves atomic paid_email_sent_at idempotency'
+  );
+});
+
+// -----------------------------------------------------------------------------
+// 10. Research articles content integrity
+// -----------------------------------------------------------------------------
+test('research articles contain no unsupported universal claims or procedural recipes', () => {
+  const articlesSrc = read('src/data/articles.ts');
+  assert.ok(
+    !articlesSrc.includes('Vial Foundry mandates combined HPLC-UV'),
+    'articles.ts must not assert universal testing mandates'
+  );
+  assert.ok(
+    !articlesSrc.includes('Every batch produced at Vial Foundry'),
+    'articles.ts must not claim manufacturing or universal testing'
+  );
+  assert.ok(
+    articlesSrc.includes('Solubility and Laboratory Handling of Lyophilized Peptides'),
+    'reconstitution article must be framed as high-level laboratory handling'
+  );
+  assert.ok(
+    articlesSrc.includes('Research Use Only Notice'),
+    'reconstitution article must reiterate strict RUO status'
+  );
+});
+

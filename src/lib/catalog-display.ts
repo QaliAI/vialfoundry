@@ -26,7 +26,7 @@ const CATEGORY_LABELS: Record<ProductCategory, string> = {
 
 /** Short factual description shown under each category tile. */
 const CATEGORY_BLURBS: Record<string, string> = {
-  'Research Peptides': 'High-purity lyophilized single research peptides.',
+  'Research Peptides': 'Lyophilized research peptides for laboratory research.',
   'Specialty Products': 'Specialty research peptides and specialized sequences.',
   'Research Supplies': 'Laboratory reconstitution reagents and consumables.',
 };

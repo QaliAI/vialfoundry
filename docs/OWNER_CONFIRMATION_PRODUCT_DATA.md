@@ -1,37 +1,66 @@
 # Owner Confirmation: Product Technical Data & Operational Claims Audit
 
 ## Purpose
-This document audits all public product fields in `src/data/products.ts` per Phase 14 specifications.
-Technical data has been classified into:
-- **Category A**: Supported by supplier/batch documentation (when physical COA is held)
-- **Category B**: Stable reference identity data (CAS, MW, Formula, Sequence, RUO Description)
-- **Category C**: Operational or physical characteristics requiring owner confirmation against manufacturer specification sheets.
+This document audits all public product fields in `src/data/products.ts`.
+Technical data is classified strictly into:
+- **REFERENCE IDENTITY DATA**: Chemical identity constants (CAS numbers, molecular formulas, molecular weights, sequences, and standard RUO product descriptions).
+- **SUPPLIER-CONFIRMED DATA**: Data confirmed against supplier specification sheets or laboratory certificates once physical documentation is held.
+- **OWNER CONFIRMATION REQUIRED**: Physical attributes, lot numbers, packaging sizes, and solubility characteristics requiring owner confirmation against physical inventory and supplier documentation.
 
 ---
 
-## 1. Stable Reference Identity Data (Category B — Verified Stable)
-The following fields across all 20 SKUs represent established chemical reference constants from PubChem, IUPAC, and standard peptide registries. They have been verified and retained without modification:
-- **CAS Numbers**: Standard Chemical Abstracts Service registry numbers (e.g., BPC-157: 137525-51-0; Semaglutide: 910463-68-2; Tirzepatide: 2023788-19-2).
-- **Molecular Weights & Chemical Formulas**: Stoichiometrically derived molecular weights and elemental formulas.
-- **Primary Amino Acid Sequences**: Standard FASTA/IUPAC 3-letter sequences for single compounds.
-- **Product Descriptions**: Factual, concise descriptions stating physical peptide fragment identity and RUO laboratory use. No therapeutic or clinical claims are made.
+## 1. REFERENCE IDENTITY DATA
+The following catalog fields represent standard chemical nomenclature and sequence specifications. No therapeutic or clinical claims are made:
+- **CAS Numbers**: Chemical Abstracts Service registry numbers assigned to catalog compounds (e.g., BPC-157: 137525-51-0; Semaglutide: 910463-68-2; Tirzepatide: 2023788-19-2).
+- **Molecular Weights & Chemical Formulas**: Stoichiometric molecular weights and elemental formulas.
+- **Primary Amino Acid Sequences**: Standard single-letter / three-letter peptide sequences.
+- **Product Descriptions**: Concise, factual descriptions indicating research chemical identity and laboratory research use only (RUO).
 
 ---
 
-## 2. Items Requiring Owner / Supplier Confirmation (Category C)
+## 2. SUPPLIER-CONFIRMED DATA
+The following fields reflect data that must be backed by supplier documentation or authentic analytical certificates:
+- **Purity Figures & Chromatographic Data**: Currently, 0 analytical certificates are loaded in `src/data/verified-batch-records.ts`. No purity percentages or peak integrations are published on the storefront.
+- **Issuing Laboratory Attribution**: When certificates are uploaded, the issuing third-party analytical laboratory must be explicitly named.
 
-The following operational values are commonly provided on manufacturer Certificates of Analysis or technical data sheets. The site owner should cross-reference these against supplier specifications upon receipt of physical batch lots:
+---
 
-### A. Specific Solubility Figures
-- **VF-SKU-991 (BPC-157)**: `Soluble in sterile ultra-pure water (18.2 MO·cm) up to 10 mg/mL` &rarr; Confirm if 10 mg/mL ceiling is standard across current manufacturing lots.
-- **VF-SKU-996 (CJC-1295 no DAC)**: `Water soluble (>5 mg/mL)` &rarr; Confirm reconstitution buffer recommendation.
-- **VF-SKU-998 (NAD+)**: `Soluble in water (50 mg/mL)` &rarr; Confirm solubility concentration limit for reagent handling.
-- **VF-SKU-1011 (Sermorelin)**: `Soluble in sterile water (>2 mg/mL)` &rarr; Confirm reconstitution concentration.
-- **VF-SKU-1012 (Tesamorelin)**: `Soluble in dilute acetic acid / water` &rarr; Confirm acid molarity guidance (e.g., 0.1% AcOH vs sterile water).
+## 3. OWNER CONFIRMATION REQUIRED
 
-### B. Storage Temperature Nuances
-- **VF-SKU-999 (GHK-Cu)**: `Store at 4°C in dark container` &rarr; Confirm if supplier specifies 4°C or standard peptide -20°C storage for lyophilized powder.
-- **VF-SKU-994 (Tirzepatide)**: `Store at -20°C in dark vacuum container` &rarr; Confirm packaging seal requirement.
+The following operational characteristics must be cross-referenced by the site owner against physical inventory and supplier specification sheets:
 
-### C. Appearance Notes
-- All peptides are currently described with variants of `White to off-white lyophilized cake / powder` or `Fluffy white lyophilized powder`, and GHK-Cu as `Deep blue powder`. These are physically standard for lyophilized salts but should be visually verified against physical vial stock.
+### A. Lot Numbers Across All 20 SKUs
+Confirm that the lot numbers listed in `src/data/products.ts` match the physical vial labels:
+- `vf-std-001` (BPC-157 5mg): `LOT-VF-8842`
+- `vf-std-002` (TB-500 10mg): `LOT-VF-9921`
+- `vf-std-003` (Semaglutide 5mg): `LOT-VF-7731`
+- `vf-std-004` (Tirzepatide 10mg): `LOT-VF-6619`
+- `vf-std-005` (CJC-1295 5mg): `LOT-VF-5544`
+- `vf-std-006` (Ipamorelin 5mg): `LOT-VF-4432`
+- `vf-std-007` (NAD+ 500mg): `LOT-VF-3321`
+- `vf-std-008` (Glutathione 600mg): `LOT-VF-2210`
+- `vf-std-009` (Bacteriostatic Water 10ml): `LOT-VF-1199`
+- `vf-std-010` (Bacteriostatic Water 30ml): `LOT-VF-1198` *(Withheld from public catalog)*
+- `vf-std-011` (GHK-Cu 50mg): `LOT-VF-8877`
+- `vf-std-012` (PT-141 10mg): `LOT-VF-7766`
+- `vf-std-013` (Melanotan II 10mg): `LOT-VF-6655`
+- `vf-std-014` (Epithalon 10mg): `LOT-VF-5545`
+- `vf-std-015` (Sermorelin 5mg): `LOT-VF-4433`
+- `vf-std-016` (MOTS-c 10mg): `LOT-VF-3322`
+- `vf-std-017` (BPC-157 / TB-500 Blend 10mg): `LOT-VF-2211`
+- `vf-std-018` (Retatrutide 10mg): `LOT-VF-1100`
+- `vf-std-019` (AOD-9604 5mg): `LOT-VF-9988`
+- `vf-std-020` (Acetonitrile 1L): `LOT-VF-3560` *(Withheld from public catalog)*
+
+### B. Packaging & Container-Accurate Photography
+- **VF-SKU-1010 (Bacteriostatic Water 30ml)**: Withheld from public storefront because current image asset depicts a 10 mL vial. Requires authentic 30 mL multi-dose container photography.
+- **VF-SKU-1020 (Acetonitrile HPLC Grade 1L)**: Withheld from public storefront because current image asset depicts a 10 mL vial. Requires authentic 1 L amber glass bottle photography.
+
+### C. Specific Solubility & Storage Notes
+Confirm the following item-specific technical notes against supplier specification sheets:
+- **VF-SKU-991 (BPC-157)**: Reconstitution in sterile ultra-pure water (up to 10 mg/mL).
+- **VF-SKU-996 (CJC-1295 no DAC)**: Reconstitution guidance (>5 mg/mL).
+- **VF-SKU-998 (NAD+)**: Solubility limit (50 mg/mL).
+- **VF-SKU-999 (GHK-Cu)**: Storage temperature guidance (4Â°C vs -20Â°C for lyophilized powder).
+- **VF-SKU-1011 (Sermorelin)**: Solubility guidance (>2 mg/mL).
+- **VF-SKU-1012 (Tesamorelin)**: Solubility buffer requirement (dilute aqueous acetic acid vs sterile water).

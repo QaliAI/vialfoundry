@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmailSafely } from "@/lib/email/resend";
 import { renderOrderConfirmationEmail } from "@/lib/email/templates/order";
 import { renderTrackingUpdateEmail } from "@/lib/email/templates/tracking";
+import { recordOrderEvent } from "@/lib/admin/order-events";
 
 export async function POST(req: Request) {
   const isAuth = await verifyAdminSession();
@@ -26,6 +27,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "Order not found" }, { status: 404 });
     }
 
+    let sentResult: { success: boolean; error?: string };
+    const emailLabel = emailType === "tracking" ? "tracking update" : "order confirmation";
+
     if (emailType === "tracking" && order.tracking_number) {
       const email = renderTrackingUpdateEmail({
         orderNumber: order.order_number,
@@ -33,7 +37,7 @@ export async function POST(req: Request) {
         trackingNumber: order.tracking_number,
       });
 
-      await sendEmailSafely({
+      sentResult = await sendEmailSafely({
         to: order.customer_email,
         subject: `[Vial Foundry] Shipment Tracking Update for Order #${order.order_number}`,
         html: email.html,
@@ -57,12 +61,32 @@ export async function POST(req: Request) {
         shippingAddress: order.shipping_address_snapshot || {},
       });
 
-      await sendEmailSafely({
+      sentResult = await sendEmailSafely({
         to: order.customer_email,
         subject: `[Vial Foundry] Order Verification #${order.order_number}`,
         html: email.html,
       });
     }
+
+    if (!sentResult.success) {
+      await recordOrderEvent({
+        orderId: order.id,
+        type: 'email_failed',
+        actor: 'admin-resend',
+        message: `Admin resend of ${emailLabel} FAILED to ${order.customer_email}: ${sentResult.error}`,
+      });
+      return NextResponse.json(
+        { success: false, error: sentResult.error || 'Failed to send email via Resend' },
+        { status: 502 }
+      );
+    }
+
+    await recordOrderEvent({
+      orderId: order.id,
+      type: 'email_sent',
+      actor: 'admin-resend',
+      message: `Admin resent ${emailLabel} email to ${order.customer_email}`,
+    });
 
     return NextResponse.json({ success: true });
   } catch (err: any) {

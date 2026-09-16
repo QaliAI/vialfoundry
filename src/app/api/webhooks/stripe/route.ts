@@ -542,10 +542,18 @@ async function sendPaidEmails(
       isTest: Boolean(order.is_test) || order.stripe_livemode === false,
       adminOrderUrl: adminOrderUrl(order.order_number),
     });
-    await sendEmailSafely({
+    const sentInternal = await sendEmailSafely({
       to: admins,
       subject: `${order.is_test || order.stripe_livemode === false ? '[TEST] ' : ''}[PAID] ${order.order_number} — ${order.customer_name} ($${((order.total_amount || 0) / 100).toFixed(2)})`,
       html: internal.html,
+    });
+    await recordOrderEvent({
+      orderId: order.id,
+      type: sentInternal.success ? 'email_sent' : 'email_failed',
+      actor: 'stripe-webhook',
+      message: sentInternal.success
+        ? `Paid order alert sent to ${admins.join(', ')}`
+        : `Paid order alert FAILED to ${admins.join(', ')}: ${sentInternal.error}`,
     });
   }
 }

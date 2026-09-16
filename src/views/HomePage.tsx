@@ -62,7 +62,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
               Featured Research Peptides
             </h2>
             <p className="text-sm text-brand-steel font-normal">
-              High-purity reference materials for laboratory research.
+              Reference materials for laboratory research.
             </p>
           </div>
           <button
