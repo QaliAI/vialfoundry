@@ -41,6 +41,7 @@ export const OrderDetailDrawer: React.FC<Props> = ({ orderKey, onClose, onChange
   const [tracking, setTracking] = useState('');
   const [carrier, setCarrier] = useState('');
   const [refundAmount, setRefundAmount] = useState('');
+  const [refundReason, setRefundReason] = useState('');
   const [refundConfirm, setRefundConfirm] = useState(false);
 
   const load = useCallback(async () => {
@@ -88,11 +89,11 @@ export const OrderDetailDrawer: React.FC<Props> = ({ orderKey, onClose, onChange
       const res = await fetch('/api/admin/orders/refund', {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId: o.id, amountCents: cents, confirm: true }),
+        body: JSON.stringify({ orderId: o.id, amountCents: cents, confirm: true, reason: refundReason.trim() || undefined }),
       });
       const j = await res.json();
       setMsg(j.success ? j.note || 'Refund submitted.' : j.error || 'Refund failed.');
-      if (j.success) { setRefundConfirm(false); setRefundAmount(''); await load(); onChanged?.(); }
+      if (j.success) { setRefundConfirm(false); setRefundAmount(''); setRefundReason(''); await load(); onChanged?.(); }
     } finally { setBusy(false); }
   };
 
@@ -236,6 +237,9 @@ export const OrderDetailDrawer: React.FC<Props> = ({ orderKey, onClose, onChange
             {o.payment_provider === 'stripe' && ['paid', 'partially_refunded'].includes(o.payment_status) && (
               <Section title="Refund" icon={RotateCcw}>
                 <p className="text-[11px] text-slate-400">Refundable: {money(refundable)}</p>
+                <input value={refundReason} onChange={(e) => setRefundReason(e.target.value)}
+                  placeholder="Reason (optional)"
+                  className="w-full bg-brand-graphite/40 border border-brand-graphite rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500" />
                 <div className="flex gap-2 pt-2">
                   <input value={refundAmount} onChange={(e) => { setRefundAmount(e.target.value); setRefundConfirm(false); }}
                     placeholder={(refundable / 100).toFixed(2)} inputMode="decimal"

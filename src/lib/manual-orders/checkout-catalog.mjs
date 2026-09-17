@@ -35,7 +35,10 @@ export function resolveCatalogProduct(item, products) {
 
 export function isPubliclyPurchasable(product) {
   if (!product) return false;
-  if (product.hiddenFromCatalogReason) return false;
+  if (product.catalogStatus !== "public") return false;
+  if (product.purchasable !== true) return false;
+  if (product.active === false) return false;
+  if (product.inStock !== true) return false;
   return true;
 }
 

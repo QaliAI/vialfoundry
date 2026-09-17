@@ -70,6 +70,11 @@ export function resolveRefund(order, amountRefunded) {
   }
 
   const fully = refunded >= (order.total_amount || 0);
+  const originalCommission = order.affiliate_commission_rate_bps && order.subtotal_amount
+    ? Math.round(Number(order.subtotal_amount) * (Number(order.affiliate_commission_rate_bps) / 10000))
+    : Number(order.affiliate_commission_amount) || 0;
+  const remainingRatio = Math.max(0, ((order.total_amount || 0) - refunded) / (order.total_amount || 1));
+  const adjustedCommission = fully ? 0 : Math.round(originalCommission * remainingRatio);
   return {
     apply: true,
     fullyRefunded: fully,
@@ -77,8 +82,12 @@ export function resolveRefund(order, amountRefunded) {
       amount_refunded: refunded,
       payment_status: fully ? 'refunded' : 'partially_refunded',
       ...(fully ? { status: 'refunded' } : {}),
-      // A fully refunded order must stop paying commission.
-      ...(order.affiliate_id && fully ? { affiliate_status: 'reversed' } : {}),
+      ...(order.affiliate_id
+        ? {
+            affiliate_commission_amount: adjustedCommission,
+            affiliate_status: fully ? 'reversed' : 'pending_payout',
+          }
+        : {}),
     },
   };
 }

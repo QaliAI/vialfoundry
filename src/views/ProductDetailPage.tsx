@@ -5,7 +5,7 @@ import { COAModal } from '../components/COAModal';
 import { useCart } from '../context/CartContext';
 import { FileCheck, FileClock, ShoppingBag, ArrowLeft, CheckCircle2, Copy } from 'lucide-react';
 import { PUBLIC_PRODUCTS } from '../data/products';
-import { categoryLabel, productTitle, productSize } from '../lib/catalog-display';
+import { categoryLabel, groupProductsByFamily, productTitle, productSize } from '../lib/catalog-display';
 import { ProductCard } from '../components/ProductCard';
 import { ProductTabs } from '../components/ProductTabs';
 import { RestockNotify } from '../components/RestockNotify';
@@ -16,15 +16,21 @@ import { trackEvent } from '../lib/analytics';
 
 interface ProductDetailPageProps {
   product: Product;
+  variants?: Product[];
   navigate: (path: string) => void;
   onSelectProduct: (product: Product) => void;
 }
 
 export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
-  product,
+  product: initialProduct,
+  variants,
   navigate,
   onSelectProduct
 }) => {
+  const availableVariants = (variants?.length ? variants : [initialProduct]).slice().sort((a, b) =>
+    productSize(a).localeCompare(productSize(b), undefined, { numeric: true })
+  );
+  const [product, setProduct] = useState(initialProduct);
   const { addToCart, getLiveStock } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [showCOAModal, setShowCOAModal] = useState(false);
@@ -32,11 +38,16 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   const [showMobileStickyBar, setShowMobileStickyBar] = useState(false);
   const buyPanelRef = useRef<HTMLDivElement>(null);
   const liveStock = getLiveStock ? getLiveStock(product) : { inStock: product.inStock, stockCount: product.stockCount };
-  const isAvailable = liveStock.inStock && liveStock.stockCount > 0;
+  const isAvailable = product.purchasable && liveStock.inStock && liveStock.stockCount > 0;
   const maxQuantity = isAvailable ? liveStock.stockCount : 0;
 
   const batchRecord = getBatchRecord(product.lotNumber) ?? undefined;
   const docStatus = getDocumentationStatus(product);
+
+  useEffect(() => {
+    setProduct(initialProduct);
+    setQuantity(1);
+  }, [initialProduct]);
 
   useEffect(() => {
     trackEvent('product_viewed', {
@@ -76,9 +87,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   };
 
   // Regression safety: only public catalog products may appear as recommendations
-  const relatedProducts = PUBLIC_PRODUCTS.filter((p) => p.id !== product.id && p.category === product.category).slice(0, 3);
+  const relatedFamilies = groupProductsByFamily(
+    PUBLIC_PRODUCTS.filter((p) => p.familyId !== product.familyId && p.category === product.category)
+  ).slice(0, 3);
 
-  const canonicalUrl = `https://www.vialfoundry.com/product/${product.id}`;
+  const canonicalUrl = `https://www.vialfoundry.com/product/${product.familyId}`;
   const absoluteImageUrl = `https://www.vialfoundry.com${product.image}`;
 
   const productJsonLd = {
@@ -161,9 +174,39 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             </div>
             <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-brand-ink tracking-tight">{productTitle(product)}</h1>
             <p className="text-xs font-mono text-brand-steel">
-              {productSize(product)} &nbsp;·&nbsp; CAS {product.casNumber} &nbsp;·&nbsp; MW {product.molecularWeight}
+              {[productSize(product), product.casNumber ? `CAS ${product.casNumber}` : null, product.molecularWeight ? `MW ${product.molecularWeight}` : null]
+                .filter(Boolean)
+                .join(' · ')}
             </p>
           </div>
+
+          {availableVariants.length > 1 && (
+            <fieldset className="space-y-2" aria-label={`Select ${productTitle(product)} size`}>
+              <legend className="text-[11px] font-sans font-semibold text-brand-graphite uppercase tracking-wider">
+                Select size
+              </legend>
+              <div className="flex flex-wrap gap-2">
+                {availableVariants.map((variant) => (
+                  <button
+                    key={variant.id}
+                    type="button"
+                    onClick={() => {
+                      setProduct(variant);
+                      setQuantity(1);
+                    }}
+                    className={`px-4 py-2.5 rounded-xl border text-xs font-display font-bold transition-all ${
+                      variant.id === product.id
+                        ? 'bg-brand-primary text-white border-brand-primary shadow-2xs'
+                        : 'bg-brand-paper text-brand-ink border-brand-border hover:border-brand-border-strong'
+                    }`}
+                    aria-pressed={variant.id === product.id}
+                  >
+                    {productSize(variant)}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+          )}
 
           <p className="text-sm text-brand-steel font-normal leading-relaxed">
             {product.description}
@@ -257,7 +300,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                     onClick={() => {
                       trackEvent('documentation_requested', {
                         productId: product.id,
-                        lot: product.lotNumber,
+                        lot: product.lotNumber || 'unassigned',
                         source: 'product_detail',
                       });
                       navigate('/contact');
@@ -284,14 +327,18 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 <span className="text-brand-steel block text-[10px] uppercase font-sans font-medium">PRESENTATION</span>
                 <span className="text-brand-ink font-medium">{product.size}</span>
               </div>
-              <div className="p-3 rounded-lg bg-brand-paper border border-brand-border">
-                <span className="text-brand-steel block text-[10px] uppercase font-sans font-medium">CAS REGISTRY</span>
-                <span className="text-brand-ink font-medium">{product.casNumber}</span>
-              </div>
-              <div className="p-3 rounded-lg bg-brand-paper border border-brand-border sm:col-span-2">
-                <span className="text-brand-steel block text-[10px] uppercase font-sans font-medium">STORAGE GUIDELINE</span>
-                <span className="text-brand-ink font-medium">Store sealed in original container at -20°C in a dry environment. Protect from light. RUO only.</span>
-              </div>
+              {product.casNumber && (
+                <div className="p-3 rounded-lg bg-brand-paper border border-brand-border">
+                  <span className="text-brand-steel block text-[10px] uppercase font-sans font-medium">CAS REGISTRY</span>
+                  <span className="text-brand-ink font-medium">{product.casNumber}</span>
+                </div>
+              )}
+              {product.storageConditions && (
+                <div className="p-3 rounded-lg bg-brand-paper border border-brand-border sm:col-span-2">
+                  <span className="text-brand-steel block text-[10px] uppercase font-sans font-medium">STORAGE GUIDELINE</span>
+                  <span className="text-brand-ink font-medium">{product.storageConditions}</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -311,12 +358,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
       <ReviewList productSlug={productSlug(product.name)} />
 
       {/* Related Products */}
-      {relatedProducts.length > 0 && (
+      {relatedFamilies.length > 0 && (
         <div className="space-y-6 border-t border-brand-border pt-12">
           <h3 className="font-display text-2xl font-bold text-brand-ink">More Research Peptides</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {relatedProducts.map((p) => (
-              <ProductCard key={p.id} product={p} onViewProduct={onSelectProduct} />
+            {relatedFamilies.map((family) => (
+              <ProductCard key={family.id} product={family.product} variants={family.variants} onViewProduct={onSelectProduct} />
             ))}
           </div>
         </div>

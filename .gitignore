@@ -9,6 +9,11 @@
 # next.js
 /.next/
 /out/
+/output/
+/.tmp/
+/.pnpm-store/
+/pnpm-lock.yaml
+/pnpm-workspace.yaml
 
 # production
 /build

@@ -9,7 +9,7 @@ composition onto its blank label panel.
 Label hierarchy (approved board + brand brief):
     VF mark
     VIAL FOUNDRY
-    RESEARCH PEPTIDES
+    RESEARCH MATERIALS
     ----------------
     PRODUCT NAME
     XX MG
@@ -81,6 +81,24 @@ PRODUCTS = [
     ("mots-c", "MOTS-c", "10 mg Lyophilized Vial", "1627580-64-6", "VF-SKU-1018"),
     ("aod-9604", "AOD-9604", "5 mg Lyophilized Vial", "221231-10-3", "VF-SKU-1019"),
     ("acetonitrile", "ACETONITRILE", "1 L HPLC Gradient Grade", "75-05-8", "VF-SKU-1020"),
+    ("semaglutide-10mg", "SEMAGLUTIDE", "10 mg Lyophilized Vial", "", "VF-SKU-1021"),
+    ("tirzepatide-30mg", "TIRZEPATIDE", "30 mg Lyophilized Vial", "", "VF-SKU-1022"),
+    ("tirzepatide-60mg", "TIRZEPATIDE", "60 mg Lyophilized Vial", "", "VF-SKU-1023"),
+    ("retatrutide-20mg", "RETATRUTIDE", "20 mg Lyophilized Vial", "", "VF-SKU-1024"),
+    ("retatrutide-30mg", "RETATRUTIDE", "30 mg Lyophilized Vial", "", "VF-SKU-1025"),
+    ("tesamorelin-10mg", "TESAMORELIN", "10 mg Lyophilized Vial", "", "VF-SKU-1026"),
+    ("cjc-1295-ipamorelin-10mg", "CJC-1295 NO DAC + IPAMORELIN", "10 mg Lyophilized Blend", "", "VF-SKU-1027", ["5 MG + 5 MG"]),
+    ("wolverine-20mg", "BPC-157 + TB-500", "20 mg Lyophilized Blend", "", "VF-SKU-1028", ["WOLVERINE", "10 MG + 10 MG"]),
+    ("mt-2-10mg", "MT-2", "10 mg Lyophilized Vial", "", "VF-SKU-1029"),
+    ("kisspeptin-10mg", "KISSPEPTIN", "10 mg Lyophilized Vial", "", "VF-SKU-1030"),
+    ("nad-plus-500mg", "NAD+", "500 mg Vial", "", "VF-SKU-1031"),
+    ("mots-c-40mg", "MOTS-C", "40 mg Lyophilized Vial", "", "VF-SKU-1032"),
+    ("ss-31-50mg", "SS-31", "50 mg Lyophilized Vial", "", "VF-SKU-1033"),
+    ("glow-70mg", "GLOW", "70 mg Lyophilized Blend", "", "VF-SKU-1034", ["BPC-157 10 MG", "TB-500 10 MG", "GHK-CU 50 MG"]),
+    ("klow-80mg", "KLOW", "80 mg Lyophilized Blend", "", "VF-SKU-1035", ["BPC-157 10 MG", "TB-500 10 MG", "GHK-CU 50 MG", "KPV 10 MG"]),
+    ("kpv-10mg", "KPV", "10 mg Lyophilized Vial", "", "VF-SKU-1036"),
+    ("bacteriostatic-water-10ml", "BACTERIOSTATIC WATER", "10 mL Sealed Vial", "", "VF-SKU-1037"),
+    ("bacteriostatic-water-3ml", "BACTERIOSTATIC WATER", "3 mL Sealed Vial", "", "VF-SKU-1038"),
 ]
 
 
@@ -138,7 +156,7 @@ def split_size(size_text):
     return f"{m.group(1)} {m.group(2).upper()}", m.group(3).strip().upper()
 
 
-def label_svg(title, size_text, cas, sku):
+def label_svg(title, size_text, cas, sku, details=None):
     W, H = float(LABEL_W), float(LABEL_H)
     inner = W - 56.0          # keep content off the cylinder's curved edges
     ox = 28.0
@@ -153,7 +171,7 @@ def label_svg(title, size_text, cas, sku):
     ]
     d, _ = centred(SERIF, 700, "VIAL FOUNDRY", 19.0, 88.0, W, 0.10, SERIF_CAP)
     parts.append(f'<path d="{d}" fill="{MIDNIGHT}"/>')
-    d, _ = centred(SANS, 500, "RESEARCH PEPTIDES", 7.0, 108.0, W, 0.30)
+    d, _ = centred(SANS, 500, "RESEARCH MATERIALS", 7.0, 108.0, W, 0.30)
     parts.append(f'<path d="{d}" fill="{SLATE}"/>')
     parts.append(f'<rect x="{ox}" y="126" width="{inner}" height="1" fill="{MIST}"/>')
 
@@ -166,6 +184,10 @@ def label_svg(title, size_text, cas, sku):
     if form:
         d = fit_centred(SANS, 500, form, 9.0, 264.0, W, inner - 8, 0.22)
         parts.append(f'<path d="{d}" fill="{SLATE}"/>')
+
+    for index, detail in enumerate(details or []):
+        d = fit_centred(SANS, 600, detail, 7.0, 280.0 + index * 11.0, W, inner - 8, 0.08)
+        parts.append(f'<path d="{d}" fill="{MIDNIGHT}"/>')
 
     parts.append(f'<rect x="{W / 2 - 26:.2f}" y="288" width="52" height="2" fill="{TEAL}"/>')
 
@@ -214,8 +236,10 @@ def main():
     tmp = tempfile.mkdtemp()
     composed = {}
 
-    for slug, title, size_text, cas, sku in PRODUCTS:
-        art = render_label(label_svg(title, size_text, cas, sku), tmp)
+    for product in PRODUCTS:
+        slug, title, size_text, cas, sku, *extra = product
+        details = extra[0] if extra else []
+        art = render_label(label_svg(title, size_text, cas, sku, details), tmp)
         vial = base.copy()
         vial.alpha_composite(art, (LABEL_X, LABEL_Y))
         composed[slug] = vial
@@ -224,10 +248,10 @@ def main():
         canvas = Image.new("RGB", (1600, 1600), "#F4F7F9")
         scaled = vial.resize((1330, 1330), Image.LANCZOS)
         canvas.paste(scaled, (135, 135), scaled)
-        save_retry(canvas.resize((1000, 1000), Image.LANCZOS),
+        save_retry(canvas.resize((800, 800), Image.LANCZOS),
                    os.path.join(OUT, f"{slug}.webp"), quality=82, method=6)
 
-        save_retry(vial.resize((1000, 1000), Image.LANCZOS),
+        save_retry(vial.resize((800, 800), Image.LANCZOS),
                    os.path.join(OUT, f"{slug}-transparent.webp"), quality=85, method=6)
         print(f"  {slug}.webp + {slug}-transparent.webp")
 

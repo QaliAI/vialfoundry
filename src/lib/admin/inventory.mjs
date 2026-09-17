@@ -17,8 +17,8 @@
  *   4. A paid order is always honoured even if the row would go through zero
  *      (oversell is logged). Checkout still rejects insufficient stock at
  *      session creation.
- *   5. A full refund restocks once (inventory_restocked_at). Partial refunds
- *      do not restock.
+ *   5. Financial refunds never restock automatically. Physical inventory can
+ *      only be returned by a separate, explicit admin inventory adjustment.
  *
  * Admin inventory adjustments write the same column, so checkout sees them
  * immediately without a redeploy.
@@ -33,8 +33,9 @@ export function shouldDecrementInventory(order) {
   return { apply: true };
 }
 
-export function shouldRestockInventory(order, fullyRefunded) {
+export function shouldRestockInventory(order, fullyRefunded, explicitlyRequested = false) {
   if (!order) return { apply: false, reason: "order_not_found" };
+  if (!explicitlyRequested) return { apply: false, reason: "restock_not_requested" };
   if (!fullyRefunded) return { apply: false, reason: "partial_refund" };
   if (!order.inventory_decremented_at) return { apply: false, reason: "never_decremented" };
   if (order.inventory_restocked_at) return { apply: false, reason: "already_restocked" };

@@ -95,7 +95,7 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
             />
             <SpecRow
               label="Storage Guideline"
-              value={batchRecord ? product.storageConditions : 'Store sealed at -20°C in a dry environment. Protect from light.'}
+              value={product.storageConditions}
             />
           </div>
         )}
@@ -153,7 +153,7 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
                   onClick={() => {
                     trackEvent('documentation_requested', {
                       productId: product.id,
-                      lot: product.lotNumber,
+                      lot: product.lotNumber || 'unassigned',
                     });
                     navigate('/contact');
                   }}
@@ -171,12 +171,10 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product, batchRecord, 
             <div className="p-4 rounded-xl bg-brand-canvas border border-brand-border">
               <span className="text-[11px] font-sans font-semibold text-brand-graphite uppercase block mb-1">Storage Guidelines</span>
               <span className="text-brand-ink font-medium text-sm">
-                {batchRecord
-                  ? product.storageConditions
-                  : 'Store sealed in original container at -20°C in a dry environment. Protect from light. RUO only.'}
+                {product.storageConditions || 'Storage instructions are not published for this configuration.'}
               </span>
             </div>
-            {product.category === 'Lab Supplies' || product.appearance.toLowerCase().includes('liquid') ? (
+            {product.category === 'Lab Supplies' || product.appearance?.toLowerCase().includes('liquid') ? (
               <ul className="space-y-2 text-xs font-sans text-brand-steel">
                 <li className="flex items-start space-x-2">
                   <CheckCircle2 className="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />

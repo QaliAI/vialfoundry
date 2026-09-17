@@ -7,7 +7,7 @@ import { vialFoundryBrandConfig } from '../../config/brand';
 import { calculateShipping } from '../../lib/manual-orders/shipping.mjs';
 import { calculateConfiguredPromoDiscount } from '../../lib/promotions/promotions.mjs';
 import { getClientAffiliateCode } from '../../lib/affiliates/client-storage.mjs';
-import { productTitle } from '../../lib/catalog-display';
+import { productSize, productTitle } from '../../lib/catalog-display';
 import { PAYMENT_METHODS, CONFIGURED_PAYMENT_METHODS, PaymentMethodId, getPaymentMethod } from '../../data/payment';
 import { ShieldCheck, Lock, CheckCircle2, ShoppingBag, Truck } from 'lucide-react';
 import { trackEvent } from '../../lib/analytics';
@@ -226,7 +226,7 @@ function CheckoutPageInner() {
           productId: i.product.id || null,
           variantId: null,
           productName: i.product.name,
-          configurationLabel: `${i.product.category} Standard`,
+          configurationLabel: i.product.displaySize || i.product.size,
           quantity: i.quantity,
           unitPriceAmount: Math.round(i.product.price * 100),
           priceStatus: 'fixed',
@@ -605,7 +605,9 @@ function CheckoutPageInner() {
                 <div key={product.id} className="flex items-center justify-between text-xs font-sans">
                   <div>
                     <span className="text-brand-ink font-bold">{productTitle(product)}</span>
-                    <span className="text-brand-steel block text-[10px] font-mono">Qty: {quantity} | LOT: {product.lotNumber}</span>
+                    <span className="text-brand-steel block text-[10px] font-mono">
+                      {productSize(product)} | {product.sku} | Qty: {quantity}
+                    </span>
                   </div>
                   <span className="text-brand-ink font-mono font-bold">${(product.price * quantity).toFixed(2)}</span>
                 </div>

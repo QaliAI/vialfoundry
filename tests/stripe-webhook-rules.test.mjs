@@ -5,7 +5,13 @@ import {
 } from "../src/lib/adapters/stripe-webhook-rules.mjs";
 
 const unpaid = { id: "o1", payment_status: "unpaid", total_amount: 7900, amount_refunded: 0, affiliate_id: null };
-const withAffiliate = { ...unpaid, affiliate_id: "aff-1" };
+const withAffiliate = {
+  ...unpaid,
+  affiliate_id: "aff-1",
+  affiliate_commission_rate_bps: 1000,
+  affiliate_commission_amount: 790,
+  subtotal_amount: 7900,
+};
 const paid = { ...unpaid, payment_status: "paid" };
 
 test("handles the required Stripe events including checkout expiry", () => {
@@ -68,15 +74,17 @@ test("full refund reverses the order and the affiliate commission", () => {
   assert.equal(r.updates.payment_status, "refunded");
   assert.equal(r.updates.status, "refunded");
   assert.equal(r.updates.affiliate_status, "reversed");
+  assert.equal(r.updates.affiliate_commission_amount, 0);
 });
 
-test("partial refund does not close the order or reverse commission", () => {
+test("partial refund keeps the order open and adjusts commission proportionally", () => {
   const r = resolveRefund({ ...withAffiliate, payment_status: "paid" }, 2000);
   assert.equal(r.apply, true);
   assert.equal(r.fullyRefunded, false);
   assert.equal(r.updates.payment_status, "partially_refunded");
   assert.equal(r.updates.status, undefined);
-  assert.equal(r.updates.affiliate_status, undefined);
+  assert.equal(r.updates.affiliate_status, "pending_payout");
+  assert.equal(r.updates.affiliate_commission_amount, 590);
 });
 
 test("replayed refund never regresses a larger refund", () => {

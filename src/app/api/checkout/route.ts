@@ -126,8 +126,8 @@ export async function POST(req: Request) {
       validatedItems.push({
         productId: catalogProduct.id,
         variantId: item.variantId || null,
-        productName: catalogProduct.name,
-        configurationLabel: item.configurationLabel || `${catalogProduct.category} Standard`,
+        productName: catalogProduct.displayName || catalogProduct.name,
+        configurationLabel: catalogProduct.displaySize || catalogProduct.size,
         quantity: resolved.quantity,
         unit_price_amount: resolved.unit_price_amount,
         line_total_amount: resolved.line_total_amount,
@@ -328,7 +328,7 @@ export async function POST(req: Request) {
           customerEmail: data.customerEmail,
           currency: brand.currency,
           items: validatedItems.map((i) => ({
-            productName: i.productName,
+            productName: `${i.productName} — ${i.configurationLabel}`,
             sku: i.sku,
             quantity: i.quantity,
             unit_price_amount: i.unit_price_amount,
@@ -406,7 +406,7 @@ export async function POST(req: Request) {
         orderNumber,
         customerName: data.customerName,
         items: validatedItems.map((i) => ({
-          name: i.productName,
+          name: `${i.productName} — ${i.configurationLabel}`,
           quantity: i.quantity,
           unitPriceCents: i.unit_price_amount || 0,
           lineTotalCents: i.line_total_amount || 0,
@@ -441,7 +441,7 @@ export async function POST(req: Request) {
           customerEmail: data.customerEmail,
           customerPhone: data.customerPhone,
           items: validatedItems.map((i) => ({
-            name: i.productName,
+            name: `${i.productName} — ${i.configurationLabel}`,
             quantity: i.quantity,
             lineTotalCents: i.line_total_amount || 0,
             sku: i.sku,

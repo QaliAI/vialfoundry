@@ -17,11 +17,12 @@ export async function GET() {
 
   // Initialize with fallback static catalog values
   for (const product of PRODUCTS) {
-    const isAvailable = product.inStock && product.stockCount > 0;
+    const isActive = product.active !== false && product.catalogStatus === 'public' && product.purchasable;
+    const isAvailable = isActive && product.inStock && product.stockCount > 0;
     const item: InventoryItemAvailability = {
       inStock: isAvailable,
       stockCount: product.stockCount,
-      active: true,
+      active: isActive,
     };
     inventory[product.id] = item;
     inventory[product.sku] = item;
@@ -36,8 +37,14 @@ export async function GET() {
 
       if (!error && Array.isArray(data) && data.length > 0) {
         for (const row of data) {
+          const catalogProduct = PRODUCTS.find(
+            (product) => product.id === row.id || product.sku === row.sku
+          );
           const qty = typeof row.inventory_quantity === 'number' ? row.inventory_quantity : 0;
-          const isActive = row.active !== false;
+          const isActive =
+            row.active !== false &&
+            catalogProduct?.catalogStatus === 'public' &&
+            catalogProduct?.purchasable === true;
           const inStock = isActive && qty > 0;
           const availability: InventoryItemAvailability = {
             inStock,

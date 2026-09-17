@@ -3,6 +3,7 @@ import { Search, X, ArrowRight, Package } from 'lucide-react';
 import { PUBLIC_PRODUCTS } from '../data/products';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
+import { categoryLabel, groupProductsByFamily, matchesProductSearch, productSize, productTitle } from '../lib/catalog-display';
 
 interface SearchModalProps {
   navigate: (path: string) => void;
@@ -29,16 +30,9 @@ export const SearchModal: React.FC<SearchModalProps> = ({ onSelectProduct }) => 
 
   if (!isSearchOpen) return null;
 
-  const filteredProducts = PUBLIC_PRODUCTS.filter((p) => {
-    const q = query.toLowerCase();
-    return (
-      p.name.toLowerCase().includes(q) ||
-      p.casNumber.toLowerCase().includes(q) ||
-      p.lotNumber.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q) ||
-      (p.sequence && p.sequence.toLowerCase().includes(q))
-    );
-  });
+  const filteredFamilies = groupProductsByFamily(PUBLIC_PRODUCTS).filter((family) =>
+    family.variants.some((product) => matchesProductSearch(product, query))
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 p-4 bg-brand-ink/60 backdrop-blur-xs animate-in fade-in duration-150">
@@ -66,17 +60,17 @@ export const SearchModal: React.FC<SearchModalProps> = ({ onSelectProduct }) => 
 
         {/* Results List */}
         <div className="max-h-96 overflow-y-auto space-y-2 pr-1">
-          {filteredProducts.length === 0 ? (
+          {filteredFamilies.length === 0 ? (
             <div className="text-center py-10 text-brand-steel font-sans text-xs">
               No matching compounds or lot records found for &quot;{query}&quot;.
             </div>
           ) : (
-            filteredProducts.map((product) => (
+            filteredFamilies.map((family) => (
               <div
-                key={product.id}
+                key={family.id}
                 onClick={() => {
                   setIsSearchOpen(false);
-                  onSelectProduct(product);
+                  onSelectProduct(family.product);
                 }}
                 className="p-3.5 rounded-xl bg-brand-canvas border border-brand-border/80 hover:border-brand-border-strong hover:bg-brand-surface-muted/50 transition-all flex items-center justify-between cursor-pointer group"
               >
@@ -86,14 +80,12 @@ export const SearchModal: React.FC<SearchModalProps> = ({ onSelectProduct }) => 
                   </div>
                   <div>
                     <h4 className="font-display text-sm font-bold text-brand-ink group-hover:text-brand-graphite transition-colors">
-                      {product.name}
+                      {productTitle(family.product)}
                     </h4>
                     <div className="text-[11px] font-sans text-brand-steel space-x-2">
-                      <span>{product.size}</span>
+                      <span>{family.variants.map(productSize).join(' | ')}</span>
                       <span>•</span>
-                      <span className="font-mono">CAS: {product.casNumber}</span>
-                      <span>•</span>
-                      <span>{product.category}</span>
+                      <span>{categoryLabel(family.product.category)}</span>
                     </div>
                   </div>
                 </div>

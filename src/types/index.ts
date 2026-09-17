@@ -2,18 +2,27 @@ export type ProductCategory =
   | 'Analytical Standards'
   | 'Single Compounds'
   | 'Reference Materials'
+  | 'Research Blends'
   | 'Specialty Materials'
   | 'Lab Supplies';
+
+export type CatalogStatus = 'public' | 'hidden' | 'retired';
 
 export interface Product {
   id: string;
   slug?: string;
+  /** Stable customer-facing family key used to group exact sellable SKUs. */
+  familyId: string;
   sku: string;
   name: string;
-  casNumber: string;
+  /** Explicit storefront lifecycle. Hidden and retired records are never orderable. */
+  catalogStatus: CatalogStatus;
+  purchasable: boolean;
+  active?: boolean;
+  casNumber?: string;
   sequence?: string;
-  chemicalFormula: string;
-  molecularWeight: string;
+  chemicalFormula?: string;
+  molecularWeight?: string;
   category: ProductCategory;
   /**
    * Short, plain name shown to customers ("BPC-157"). `name` stays the full
@@ -24,7 +33,7 @@ export interface Product {
   size: string;
   /** Plain presentation for listings ("5 mg vial"). `size` stays the record value. */
   displaySize?: string;
-  lotNumber: string;
+  lotNumber?: string;
   price: number;
   inStock: boolean;
   stockCount: number;
@@ -35,10 +44,12 @@ export interface Product {
    * confirmations and assay values are lot-specific and belong on a certificate,
    * surfaced through the documentation status instead.
    */
-  materialNotes: string[];
-  storageConditions: string;
-  appearance: string;
-  solubility: string;
+  materialNotes?: string[];
+  storageConditions?: string;
+  appearance?: string;
+  solubility?: string;
+  /** Common customer search terms; never rendered as the product title. */
+  searchTerms?: string[];
   image: string;
   transparentImage: string;
   /**

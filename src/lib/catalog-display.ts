@@ -20,6 +20,7 @@ const CATEGORY_LABELS: Record<ProductCategory, string> = {
   'Reference Materials': 'Research Peptides',
   'Analytical Standards': 'Research Peptides',
   'Single Compounds': 'Research Peptides',
+  'Research Blends': 'Research Blends',
   'Specialty Materials': 'Specialty Products',
   'Lab Supplies': 'Research Supplies',
 };
@@ -27,8 +28,9 @@ const CATEGORY_LABELS: Record<ProductCategory, string> = {
 /** Short factual description shown under each category tile. */
 const CATEGORY_BLURBS: Record<string, string> = {
   'Research Peptides': 'Lyophilized research peptides for laboratory research.',
+  'Research Blends': 'Multi-component research materials with exact vial compositions.',
   'Specialty Products': 'Specialty research peptides and specialized sequences.',
-  'Research Supplies': 'Laboratory reconstitution reagents and consumables.',
+  'Research Supplies': 'Laboratory supplies and research consumables.',
 };
 
 export function categoryLabel(category: ProductCategory): string {
@@ -68,4 +70,49 @@ export function matchesCustomerCategory(productCategory: ProductCategory, select
     return true;
   }
   return false;
+}
+
+export interface ProductFamily {
+  id: string;
+  product: Product;
+  variants: Product[];
+  sizes: string[];
+  minPrice: number;
+}
+
+export function groupProductsByFamily(products: Product[]): ProductFamily[] {
+  const groups = new Map<string, Product[]>();
+  for (const product of products) {
+    const variants = groups.get(product.familyId) || [];
+    variants.push(product);
+    groups.set(product.familyId, variants);
+  }
+
+  return Array.from(groups.entries()).map(([id, variants]) => {
+    const sorted = [...variants].sort((a, b) => a.price - b.price);
+    return {
+      id,
+      product: sorted[0],
+      variants: sorted,
+      sizes: sorted.map(productSize),
+      minPrice: Math.min(...sorted.map((p) => p.price)),
+    };
+  });
+}
+
+export function matchesProductSearch(product: Product, query: string): boolean {
+  const q = query.toLowerCase().trim();
+  if (!q) return true;
+  return [
+    product.name,
+    product.displayName,
+    product.sku,
+    product.casNumber,
+    product.lotNumber,
+    product.category,
+    product.size,
+    product.displaySize,
+    product.sequence,
+    ...(product.searchTerms || []),
+  ].some((value) => value?.toLowerCase().includes(q));
 }

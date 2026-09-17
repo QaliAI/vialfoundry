@@ -58,6 +58,14 @@ test("hidden catalog SKUs cannot be purchased on the public checkout", () => {
   assert.equal(r.error, UNKNOWN_PRODUCT_ERROR);
 });
 
+test("retired, inactive, and explicitly non-purchasable SKUs are rejected", () => {
+  const publicProduct = PRODUCTS.find((p) => p.catalogStatus === "public" && p.purchasable);
+  const retired = PRODUCTS.find((p) => p.catalogStatus === "retired");
+  assert.equal(validateCheckoutItem({ productId: retired.id, quantity: 1 }, PRODUCTS).ok, false);
+  assert.equal(validateCheckoutItem({ productId: publicProduct.id, quantity: 1 }, [{ ...publicProduct, active: false }]).ok, false);
+  assert.equal(validateCheckoutItem({ productId: publicProduct.id, quantity: 1 }, [{ ...publicProduct, purchasable: false }]).ok, false);
+});
+
 test("live on-hand stock, not build-time stockCount, gates checkout", () => {
   assert.equal(assertSufficientStock(10, 11, "BPC-157").ok, false);
   assert.equal(assertSufficientStock(10, 10, "BPC-157").ok, true);

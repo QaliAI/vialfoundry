@@ -19,9 +19,8 @@ test('withheld products are absent from PUBLIC_PRODUCTS and related products rec
   assert.equal(WITHHELD_FROM_PUBLIC_CATALOG_PRODUCT_IDS.has('vf-std-010'), true);
   assert.equal(WITHHELD_FROM_PUBLIC_CATALOG_PRODUCT_IDS.has('vf-std-020'), true);
 
-  // Exactly 18 public products out of 20 total
-  assert.equal(PUBLIC_PRODUCTS.length, 18);
-  assert.equal(PRODUCTS.length, 20);
+  assert.equal(PUBLIC_PRODUCTS.length, PRODUCTS.length - WITHHELD_FROM_PUBLIC_CATALOG_PRODUCT_IDS.size);
+  assert.equal(PRODUCTS.length, 38);
 
   for (const withheldId of WITHHELD_FROM_PUBLIC_CATALOG_PRODUCT_IDS) {
     const inPublic = PUBLIC_PRODUCTS.some((p) => p.id === withheldId);
@@ -64,7 +63,7 @@ test('PDP page server component defines generateMetadata, generateStaticParams, 
 
   // Verify generateStaticParams generates only PUBLIC_PRODUCTS
   assert.ok(pdpPageSrc.includes('function generateStaticParams()'));
-  assert.ok(pdpPageSrc.includes('PUBLIC_PRODUCTS.map((p) => ({ id: p.id }))'));
+  assert.ok(pdpPageSrc.includes('PUBLIC_PRODUCTS.flatMap((p) => [p.id, p.slug, p.familyId])'));
 
   // Verify canonical URL is constructed with https://www.vialfoundry.com
   assert.ok(pdpPageSrc.includes('https://www.vialfoundry.com'));
@@ -79,11 +78,11 @@ test('PDP page server component defines generateMetadata, generateStaticParams, 
   assert.ok(pdpPageSrc.includes('imageUrl = `https://www.vialfoundry.com${product.image}`'));
   assert.ok(pdpPageSrc.includes("card: 'summary_large_image'"));
 
-  // Verify canonical URL construction for all 18 public products
+  // Verify canonical URL construction for all public product families.
   const siteUrl = 'https://www.vialfoundry.com';
   for (const product of PUBLIC_PRODUCTS) {
-    const canonical = `${siteUrl}/product/${product.id}`;
-    assert.equal(canonical.startsWith('https://www.vialfoundry.com/product/vf-'), true);
+    const canonical = `${siteUrl}/product/${product.familyId}`;
+    assert.equal(canonical.startsWith('https://www.vialfoundry.com/product/'), true);
     assert.equal(product.image.startsWith('/assets/vials/products/'), true);
   }
 });

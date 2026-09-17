@@ -23,7 +23,7 @@ export default function AdminProductsPage() {
         !term ||
         p.name.toLowerCase().includes(term) ||
         p.sku.toLowerCase().includes(term) ||
-        p.casNumber.toLowerCase().includes(term) ||
+        (p.casNumber || '').toLowerCase().includes(term) ||
         (p.lotNumber && p.lotNumber.toLowerCase().includes(term));
       return matchesCategory && matchesSearch;
     });

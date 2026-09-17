@@ -2,7 +2,13 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { PUBLIC_PRODUCTS } from '../data/products';
-import { categoryLabel, matchesCustomerCategory } from '../lib/catalog-display';
+import {
+  categoryLabel,
+  groupProductsByFamily,
+  matchesCustomerCategory,
+  matchesProductSearch,
+  productTitle,
+} from '../lib/catalog-display';
 import { Product, ProductCategory } from '../types';
 import { ProductCard } from '../components/ProductCard';
 import { getBatchRecord, getDocumentationStatus } from '../data/batches';
@@ -21,6 +27,8 @@ const STORE_CATEGORIES: string[] = [
   'All Products',
   ...Array.from(new Set(PUBLIC_PRODUCTS.map((p) => categoryLabel(p.category)))),
 ];
+
+const PUBLIC_FAMILIES = groupProductsByFamily(PUBLIC_PRODUCTS);
 
 type DocFilter = 'any' | 'verified' | 'pending';
 
@@ -50,22 +58,20 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct, initi
     []
   );
 
-  const filteredProducts = useMemo(() => {
-    return PUBLIC_PRODUCTS.filter((product) => {
-      const matchesCategory = matchesCustomerCategory(product.category, selectedCategory);
-      const q = searchQuery.toLowerCase().trim();
-      const matchesSearch =
-        !q ||
-        product.name.toLowerCase().includes(q) ||
-        product.casNumber.toLowerCase().includes(q) ||
-        product.lotNumber.toLowerCase().includes(q) ||
-        (product.sequence && product.sequence.toLowerCase().includes(q));
-      const matchesDocs = docFilter === 'any' || getDocumentationStatus(product) === docFilter;
+  const filteredFamilies = useMemo(() => {
+    return PUBLIC_FAMILIES.filter((family) => {
+      const matchesCategory = family.variants.some((product) =>
+        matchesCustomerCategory(product.category, selectedCategory)
+      );
+      const matchesSearch = family.variants.some((product) => matchesProductSearch(product, searchQuery));
+      const matchesDocs =
+        docFilter === 'any' ||
+        family.variants.some((product) => getDocumentationStatus(product) === docFilter);
       return matchesCategory && matchesSearch && matchesDocs;
     }).sort((a, b) => {
-      if (sortBy === 'name') return a.name.localeCompare(b.name);
-      if (sortBy === 'price-asc') return a.price - b.price;
-      if (sortBy === 'price-desc') return b.price - a.price;
+      if (sortBy === 'name') return productTitle(a.product).localeCompare(productTitle(b.product));
+      if (sortBy === 'price-asc') return a.minPrice - b.minPrice;
+      if (sortBy === 'price-desc') return b.minPrice - a.minPrice;
       return 0;
     });
   }, [selectedCategory, searchQuery, sortBy, docFilter]);
@@ -87,8 +93,8 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct, initi
           Shop Research Peptides
         </h1>
         <p className="text-brand-steel text-sm sm:text-base font-normal max-w-2xl leading-relaxed">
-          {PUBLIC_PRODUCTS.length} research peptides. Every vial has a batch number, and you can
-          see which documents we hold before you order.
+          {PUBLIC_FAMILIES.length} product families across {PUBLIC_PRODUCTS.length} exact configurations.
+          See available sizes and documentation status before you order.
         </p>
       </div>
 
@@ -179,14 +185,14 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct, initi
       )}
 
       {/* Catalog Grid */}
-      {filteredProducts.length === 0 ? (
+      {filteredFamilies.length === 0 ? (
         <div className="text-center py-20 bg-brand-paper rounded-2xl border border-brand-border space-y-3 shadow-2xs">
           <p className="text-brand-steel font-sans text-sm">
             No materials match your current filters.
           </p>
           <button
             onClick={() => {
-              setSelectedCategory('All');
+              setSelectedCategory('All Products');
               setSearchQuery('');
               setDocFilter('any');
             }}
@@ -197,10 +203,11 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ onSelectProduct, initi
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProducts.map((product) => (
+          {filteredFamilies.map((family) => (
             <ProductCard
-              key={product.id}
-              product={product}
+              key={family.id}
+              product={family.product}
+              variants={family.variants}
               onViewProduct={onSelectProduct}
               onViewCOA={(lot) => setActiveCOALot(lot)}
             />

@@ -58,22 +58,12 @@ console.log("1. Catalog & Batch Verification Engine");
 
 let products = [];
 try {
-  const pContent = fs.readFileSync(path.resolve("src/data/products.ts"), "utf8");
-  const pJs =
-    pContent
-      .replace(/import\s+type\s+[^;]+;/g, "")
-      .replace(/export\s+const\s+PRODUCTS(\s*:\s*Product\[\])?\s*=/, "const PRODUCTS =")
-      // Neutralize any other exports (e.g. the derived PUBLIC_PRODUCTS list)
-      // so the module body can be evaluated in a bare Function scope.
-      .replace(/export\s+const\s+/g, "const ")
-      .replace(/:\s*Product\[\]\s*=/g, " =") +
-    "\nreturn PRODUCTS;";
-  products = new Function(pJs)();
+  ({ PRODUCTS: products } = await import("../src/data/products.ts"));
 } catch (err) {
   logFail("Catalog Parsing", err.message);
 }
 
-const publicCount = products.filter((p) => !p.hiddenFromCatalogReason).length;
+const publicCount = products.filter((p) => p.catalogStatus === "public").length;
 if (products && products.length >= 18) {
   logPass("Catalog Product Volume", `${products.length} SKUs in catalogue, ${publicCount} public`);
 } else {
@@ -96,7 +86,7 @@ for (const p of products) {
 }
 
 if (catalogValid) {
-  logPass("Product Schema Integrity", "All products have valid SKU, price, CAS, and RUO data");
+  logPass("Product Schema Integrity", "All products have valid identifiers, SKU, and price data");
 }
 
 // -------------------------------------------------------------

@@ -3,6 +3,7 @@
 import fs from 'fs';
 import path from 'path';
 import pg from 'pg';
+import ts from 'typescript';
 const { Client } = pg;
 
 // Parse .env.local safely
@@ -35,6 +36,7 @@ const CATEGORIES = [
   { id: 'c3333333-3333-3333-3333-333333333333', slug: 'single-compounds', name: 'Single Compounds', desc: 'Purified single molecule research compounds', order: 3 },
   { id: 'c4444444-4444-4444-4444-444444444444', slug: 'specialty-materials', name: 'Specialty Materials', desc: 'Specialized biochemical research compounds', order: 4 },
   { id: 'c5555555-5555-5555-5555-555555555555', slug: 'lab-supplies', name: 'Lab Supplies', desc: 'Ultra-pure solvents and laboratory reconstitution media', order: 5 },
+  { id: 'c6666666-6666-6666-6666-666666666666', slug: 'research-blends', name: 'Research Blends', desc: 'Multi-component research materials with exact configurations', order: 4 },
 ];
 
 function categoryNameToId(name) {
@@ -43,6 +45,7 @@ function categoryNameToId(name) {
   if (norm.includes('single')) return 'c3333333-3333-3333-3333-333333333333';
   if (norm.includes('specialty')) return 'c4444444-4444-4444-4444-444444444444';
   if (norm.includes('lab') || norm.includes('supplies')) return 'c5555555-5555-5555-5555-555555555555';
+  if (norm.includes('blend')) return 'c6666666-6666-6666-6666-666666666666';
   return 'c1111111-1111-1111-1111-111111111111'; // Reference Materials default
 }
 
@@ -67,7 +70,7 @@ async function run() {
     console.log('Connected to database successfully.\n');
 
     // 1. Run migrations in order
-    const migrationFiles = [
+    const allMigrationFiles = [
       'supabase/migrations/01_schema.sql',
       'supabase/migrations/02_rls.sql',
       'supabase/migrations/03_reviews.sql',
@@ -76,7 +79,14 @@ async function run() {
       'supabase/migrations/06_stripe_commerce.sql',
       'supabase/migrations/07_stripe_lifecycle.sql',
       'supabase/migrations/08_admin_users_inventory.sql',
+      'supabase/migrations/09_catalog_parity_lifecycle.sql',
     ];
+    // Production updates default to the newest idempotent migration. Historical
+    // migrations contain legacy CREATE POLICY statements and are only intended
+    // for an explicit fresh-database bootstrap.
+    const migrationFiles = process.argv.includes('--all')
+      ? allMigrationFiles
+      : ['supabase/migrations/09_catalog_parity_lifecycle.sql'];
 
     for (const file of migrationFiles) {
       console.log(`Running migration: ${file}...`);
@@ -102,11 +112,12 @@ async function run() {
     // 3. Load authoritative products from src/data/products.ts
     console.log('Seeding authoritative catalog from src/data/products.ts...');
     const pContent = fs.readFileSync(path.resolve('src/data/products.ts'), 'utf8');
-    const pJs = pContent
-      .replace(/import\s+type\s+[^;]+;/g, '')
-      .replace(/export\s+const\s+PRODUCTS(\s*:\s*Product\[\])?\s*=/, 'const PRODUCTS =') +
-      '\nreturn PRODUCTS;';
-    const products = new Function(pJs)();
+    const pJs = ts.transpileModule(pContent, {
+      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+    }).outputText;
+    const catalogModule = { exports: {} };
+    new Function('exports', 'module', pJs)(catalogModule.exports, catalogModule);
+    const products = catalogModule.exports.PRODUCTS;
 
     let seededProducts = 0;
     for (const p of products) {
@@ -117,11 +128,13 @@ async function run() {
         INSERT INTO public.products (
           id, slug, sku, name, short_description, technical_description, category_id,
           active, featured, base_price, inventory_quantity, image_url, transparent_image_url,
-          cas_number, sequence, chemical_formula, molecular_weight, storage_conditions, appearance, solubility
+          cas_number, sequence, chemical_formula, molecular_weight, storage_conditions, appearance, solubility,
+          family_id, display_name, display_size, catalog_status, purchasable
         ) VALUES (
           $1, $2, $3, $4, $5, $6, $7,
           $8, $9, $10, $11, $12, $13,
-          $14, $15, $16, $17, $18, $19, $20
+          $14, $15, $16, $17, $18, $19, $20,
+          $21, $22, $23, $24, $25
         )
         ON CONFLICT (id) DO UPDATE SET
           slug = EXCLUDED.slug,
@@ -132,7 +145,8 @@ async function run() {
           category_id = EXCLUDED.category_id,
           active = EXCLUDED.active,
           base_price = EXCLUDED.base_price,
-          inventory_quantity = EXCLUDED.inventory_quantity,
+          -- Preserve live inventory for existing SKUs. The source stock count is
+          -- only used when a newly introduced catalog row is inserted.
           image_url = EXCLUDED.image_url,
           transparent_image_url = EXCLUDED.transparent_image_url,
           cas_number = EXCLUDED.cas_number,
@@ -141,7 +155,12 @@ async function run() {
           molecular_weight = EXCLUDED.molecular_weight,
           storage_conditions = EXCLUDED.storage_conditions,
           appearance = EXCLUDED.appearance,
-          solubility = EXCLUDED.solubility;
+          solubility = EXCLUDED.solubility,
+          family_id = EXCLUDED.family_id,
+          display_name = EXCLUDED.display_name,
+          display_size = EXCLUDED.display_size,
+          catalog_status = EXCLUDED.catalog_status,
+          purchasable = EXCLUDED.purchasable;
       `, [
         p.id,
         slug,
@@ -150,7 +169,7 @@ async function run() {
         p.description || null,
         p.materialNotes ? p.materialNotes.join('; ') : null,
         catId,
-        true, // active
+        p.catalogStatus === 'public' && p.purchasable === true,
         p.id === 'vf-std-001' || p.id === 'vf-std-003', // featured
         p.price,
         p.stockCount,
@@ -163,6 +182,11 @@ async function run() {
         p.storageConditions || null,
         p.appearance || null,
         p.solubility || null,
+        p.familyId,
+        p.displayName || p.name,
+        p.displaySize || p.size,
+        p.catalogStatus,
+        p.purchasable,
       ]);
       seededProducts++;
     }

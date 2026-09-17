@@ -7,9 +7,10 @@ import { Product } from '../../../types';
 
 interface ProductClientWrapperProps {
   product: Product;
+  variants: Product[];
 }
 
-export default function ProductClientWrapper({ product }: ProductClientWrapperProps) {
+export default function ProductClientWrapper({ product, variants }: ProductClientWrapperProps) {
   const router = useRouter();
 
   const navigate = (path: string) => {
@@ -23,6 +24,7 @@ export default function ProductClientWrapper({ product }: ProductClientWrapperPr
   return (
     <ProductDetailPage
       product={product}
+      variants={variants}
       navigate={navigate}
       onSelectProduct={handleSelectProduct}
     />

@@ -14,7 +14,6 @@ import {
 } from '../../../../lib/adapters/stripe-webhook-rules.mjs';
 import {
   shouldDecrementInventory,
-  shouldRestockInventory,
   isOversell,
 } from '../../../../lib/admin/inventory.mjs';
 import { createAdminClient } from '../../../../lib/supabase/admin';
@@ -69,7 +68,7 @@ async function findOrder(
     { orderId?: string | null; sessionId?: string | null; paymentIntentId?: string | null },
 ) {
   const cols =
-    'id, order_number, status, payment_status, total_amount, amount_refunded, currency, customer_email, customer_name, customer_phone, shipping_address_snapshot, promo_code, affiliate_code, affiliate_id, subtotal_amount, shipping_amount, discount_amount, is_test, stripe_livemode, inventory_decremented_at, inventory_restocked_at, paid_email_sent_at';
+    'id, order_number, status, payment_status, total_amount, amount_refunded, currency, customer_email, customer_name, customer_phone, shipping_address_snapshot, promo_code, affiliate_code, affiliate_id, affiliate_commission_rate_bps, affiliate_commission_amount, subtotal_amount, shipping_amount, discount_amount, is_test, stripe_livemode, inventory_decremented_at, inventory_restocked_at, paid_email_sent_at';
 
   for (const [column, value] of [
     ['id', orderId],
@@ -317,8 +316,14 @@ export async function POST(req: Request) {
         })
         .eq('id', order.id);
 
-      if (order.affiliate_id && fullyRefunded) {
-        await supabase.from('referral_revenue').update({ status: 'reversed' }).eq('manual_order_id', order.id);
+      if (order.affiliate_id) {
+        await supabase
+          .from('referral_revenue')
+          .update({
+            status: fullyRefunded ? 'reversed' : 'pending',
+            commission_amount_cents: decision.updates?.affiliate_commission_amount || 0,
+          })
+          .eq('manual_order_id', order.id);
       }
 
       await recordOrderEvent({
@@ -329,18 +334,40 @@ export async function POST(req: Request) {
         metadata: { eventId: event.id, amountRefunded: refunded, fullyRefunded },
       });
 
-      if (fullyRefunded) {
-        await restockInventoryForOrder(supabase, { ...order, payment_status: 'refunded' });
-        const refundMail = renderRefundConfirmationEmail({
-          orderNumber: order.order_number,
-          customerName: order.customer_name,
-          refundedCents: refunded,
-          fullyRefunded: true,
-        });
-        await sendEmailSafely({
-          to: order.customer_email,
-          subject: `[Vial Foundry] Refund issued — order ${order.order_number}`,
+      const refundMail = renderRefundConfirmationEmail({
+        orderNumber: order.order_number,
+        customerName: order.customer_name,
+        refundedCents: refunded,
+        fullyRefunded,
+      });
+      const customerRefundEmail = await sendEmailSafely({
+        to: order.customer_email,
+        subject: `[Vial Foundry] ${fullyRefunded ? 'Refund issued' : 'Partial refund issued'} — order ${order.order_number}`,
+        html: refundMail.html,
+      });
+      await recordOrderEvent({
+        orderId: order.id,
+        type: customerRefundEmail.success ? 'email_sent' : 'email_failed',
+        actor: 'stripe-webhook',
+        message: customerRefundEmail.success
+          ? `Refund confirmation sent to ${order.customer_email}`
+          : `Refund confirmation FAILED to ${order.customer_email}: ${customerRefundEmail.error}`,
+      });
+
+      const admins = getBrandConfig().orderNotificationEmails;
+      if (admins.length > 0) {
+        const internalRefundEmail = await sendEmailSafely({
+          to: admins,
+          subject: `[${fullyRefunded ? 'REFUNDED' : 'PARTIAL REFUND'}] ${order.order_number} — $${(refunded / 100).toFixed(2)}`,
           html: refundMail.html,
+        });
+        await recordOrderEvent({
+          orderId: order.id,
+          type: internalRefundEmail.success ? 'email_sent' : 'email_failed',
+          actor: 'stripe-webhook',
+          message: internalRefundEmail.success
+            ? `Refund alert sent to ${admins.join(', ')}`
+            : `Refund alert FAILED to ${admins.join(', ')}: ${internalRefundEmail.error}`,
         });
       }
     }
@@ -412,61 +439,6 @@ async function decrementInventoryForOrder(
         ? `Inventory oversell: ${line.product_name} requested ${qty}, on hand ${previous}`
         : `Inventory −${qty} ${line.product_name} (${previous} → ${next})`,
       metadata: { productId: product.id, quantity: qty, previous, next, oversell },
-    });
-  }
-}
-
-async function restockInventoryForOrder(
-  supabase: NonNullable<ReturnType<typeof createAdminClient>>,
-  order: any,
-) {
-  const decision = shouldRestockInventory(order, true);
-  if (!decision.apply) return;
-
-  const { data: claimed } = await supabase
-    .from('manual_orders')
-    .update({ inventory_restocked_at: new Date().toISOString() })
-    .eq('id', order.id)
-    .is('inventory_restocked_at', null)
-    .not('inventory_decremented_at', 'is', null)
-    .select('id')
-    .maybeSingle();
-  if (!claimed) return;
-
-  const { data: lines } = await supabase
-    .from('manual_order_items')
-    .select('product_id, product_name, quantity')
-    .eq('manual_order_id', order.id);
-
-  for (const line of lines || []) {
-    if (!line.product_id) continue;
-    const qty = Number(line.quantity) || 0;
-    if (qty <= 0) continue;
-    const { data: applied } = await supabase.rpc('apply_inventory_delta', {
-      p_id: line.product_id,
-      p_delta: qty,
-    });
-    const row = Array.isArray(applied) ? applied[0] : applied;
-    if (!row) continue;
-    const previous = Number(row.previous_quantity) || 0;
-    const next = Number(row.new_quantity);
-    const product = { id: line.product_id };
-    await supabase.from('inventory_transactions').insert({
-      product_id: product.id,
-      transaction_type: 'refund',
-      quantity_change: qty,
-      previous_quantity: previous,
-      new_quantity: next,
-      reason: `Refund ${order.order_number}`,
-      reference_id: order.id,
-      created_by: 'stripe-webhook',
-    });
-    await recordOrderEvent({
-      orderId: order.id,
-      type: 'inventory_adjusted',
-      actor: 'stripe-webhook',
-      message: `Inventory +${qty} ${line.product_name} (${previous} → ${next}) after refund`,
-      metadata: { productId: product.id, quantity: qty, previous, next, restock: true },
     });
   }
 }

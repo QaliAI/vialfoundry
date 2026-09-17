@@ -1,0 +1,33 @@
+{
+  "expectedFamilies": 21,
+  "expectedConfigurations": 26,
+  "sourceCommit": "3618e2e",
+  "configurations": [
+    { "family": "semaglutide", "configuration": "5 mg vial", "sourceSku": "GMP-SEMAGLUTIDE-5MG", "vialSku": "VF-SKU-993", "sourceInventory": 50 },
+    { "family": "semaglutide", "configuration": "10 mg vial", "sourceSku": "GMP-SEMAGLUTIDE-10MG", "vialSku": "VF-SKU-1021", "sourceInventory": 40 },
+    { "family": "tirzepatide", "configuration": "30 mg vial", "sourceSku": "GMP-TIRZEPATIDE-30MG", "vialSku": "VF-SKU-1022", "sourceInventory": 63 },
+    { "family": "tirzepatide", "configuration": "60 mg vial", "sourceSku": "GMP-TIRZEPATIDE-60MG", "vialSku": "VF-SKU-1023", "sourceInventory": 10 },
+    { "family": "retatrutide", "configuration": "10 mg vial", "sourceSku": "GMP-RETATRUTIDE-10MG", "vialSku": "VF-SKU-995", "sourceInventory": 156 },
+    { "family": "retatrutide", "configuration": "20 mg vial", "sourceSku": "GMP-RETATRUTIDE-20MG", "vialSku": "VF-SKU-1024", "sourceInventory": 19 },
+    { "family": "retatrutide", "configuration": "30 mg vial", "sourceSku": "GMP-RETATRUTIDE-30MG", "vialSku": "VF-SKU-1025", "sourceInventory": 10 },
+    { "family": "tesamorelin", "configuration": "10 mg vial", "sourceSku": "GMP-TESAMORELIN-10MG", "vialSku": "VF-SKU-1026", "sourceInventory": 19 },
+    { "family": "cjc-1295-ipamorelin", "configuration": "10 mg total · 5 mg + 5 mg", "sourceSku": "GMP-CJC1295-IPAMORELIN-10MG", "vialSku": "VF-SKU-1027", "sourceInventory": 19 },
+    { "family": "wolverine", "configuration": "20 mg total · 10 mg + 10 mg", "sourceSku": "GMP-WOLVERINE-20MG", "vialSku": "VF-SKU-1028", "sourceInventory": 15 },
+    { "family": "thymosin-alpha-1", "configuration": "10 mg vial", "sourceSku": "GMP-TA1-10MG", "vialSku": "VF-SKU-1017", "sourceInventory": 20 },
+    { "family": "ghk-cu", "configuration": "50 mg vial", "sourceSku": "GMP-GHKCU-50MG", "vialSku": "VF-SKU-999", "sourceInventory": 18 },
+    { "family": "mt-2", "configuration": "10 mg vial", "sourceSku": "GMP-MT2-10MG", "vialSku": "VF-SKU-1029", "sourceInventory": 20 },
+    { "family": "selank", "configuration": "10 mg vial", "sourceSku": "GMP-SELANK-10MG", "vialSku": "VF-SKU-1014", "sourceInventory": 19 },
+    { "family": "semax", "configuration": "10 mg vial", "sourceSku": "GMP-SEMAX-10MG", "vialSku": "VF-SKU-1015", "sourceInventory": 19 },
+    { "family": "pt-141", "configuration": "10 mg vial", "sourceSku": "GMP-PT141-10MG", "vialSku": "VF-SKU-1013", "sourceInventory": 18 },
+    { "family": "kisspeptin", "configuration": "10 mg vial", "sourceSku": "GMP-KISSPEPTIN-10MG", "vialSku": "VF-SKU-1030", "sourceInventory": 12 },
+    { "family": "nad-plus", "configuration": "500 mg vial", "sourceSku": "GMP-NAD-500MG", "vialSku": "VF-SKU-1031", "sourceInventory": 20 },
+    { "family": "mots-c", "configuration": "40 mg vial", "sourceSku": "GMP-MOTSC-40MG", "vialSku": "VF-SKU-1032", "sourceInventory": 20 },
+    { "family": "ss-31", "configuration": "50 mg vial", "sourceSku": "GMP-SS31-50MG", "vialSku": "VF-SKU-1033", "sourceInventory": 20 },
+    { "family": "epithalon", "configuration": "10 mg vial", "sourceSku": "GMP-EPITHALON-10MG", "vialSku": "VF-SKU-1016", "sourceInventory": 20 },
+    { "family": "glow", "configuration": "70 mg total · 10 mg + 10 mg + 50 mg", "sourceSku": "GMP-GLOW-70MG", "vialSku": "VF-SKU-1034", "sourceInventory": 19 },
+    { "family": "klow", "configuration": "80 mg total · 10 mg + 10 mg + 50 mg + 10 mg", "sourceSku": "GMP-KLOW-80MG", "vialSku": "VF-SKU-1035", "sourceInventory": 19 },
+    { "family": "kpv", "configuration": "10 mg vial", "sourceSku": "GMP-KPV", "vialSku": "VF-SKU-1036", "sourceInventory": 20 },
+    { "family": "bacteriostatic-water", "configuration": "10 mL vial", "sourceSku": "GMP-BACWATER-10ML", "vialSku": "VF-SKU-1037", "sourceInventory": 10 },
+    { "family": "bacteriostatic-water", "configuration": "3 mL vial", "sourceSku": "GMP-BACWATER-3ML", "vialSku": "VF-SKU-1038", "sourceInventory": 20 }
+  ]
+}
