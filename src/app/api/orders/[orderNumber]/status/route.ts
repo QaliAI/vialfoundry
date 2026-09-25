@@ -36,7 +36,7 @@ export async function GET(
   let query = supabase
     .from('manual_orders')
     .select(
-      'order_number, status, payment_status, payment_provider, total_amount, subtotal_amount, shipping_amount, discount_amount, currency, customer_name, shipping_address_snapshot, paid_at, created_at, tracking_number, carrier',
+      'id, order_number, status, payment_status, payment_provider, total_amount, subtotal_amount, shipping_amount, discount_amount, currency, customer_name, shipping_address_snapshot, paid_at, created_at, tracking_number, carrier',
     )
     .eq('order_number', params.orderNumber);
 
@@ -56,12 +56,8 @@ export async function GET(
 
   const { data: items } = await supabase
     .from('manual_order_items')
-    .select('product_name, quantity, unit_price_amount, line_total_amount')
-    .eq('manual_order_id', (await supabase
-      .from('manual_orders')
-      .select('id')
-      .eq('order_number', params.orderNumber)
-      .maybeSingle()).data?.id ?? '');
+    .select('product_id, product_name, sku, configuration_label, quantity, unit_price_amount, line_total_amount')
+    .eq('manual_order_id', data.id);
 
   return NextResponse.json({
     orderNumber: data.order_number,

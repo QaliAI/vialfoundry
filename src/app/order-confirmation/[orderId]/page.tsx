@@ -2,11 +2,13 @@
 
 import React, { useEffect, useState, Suspense } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { CheckCircle2, ShieldCheck, ArrowRight } from 'lucide-react';
+import { CheckCircle2, ShieldCheck, ArrowRight, RotateCcw } from 'lucide-react';
 import { getPaymentMethod } from '../../../data/payment';
 import { PaymentInstructions } from '../../../components/PaymentInstructions';
 import { trackEvent } from '../../../lib/analytics';
 import { useCart } from '../../../context/CartContext';
+import { saveRecentOrder, resolveProductForReorder } from '../../../lib/commerce/repeat-purchase.mjs';
+import { PRODUCTS } from '../../../data/products';
 
 interface OrderStatus {
   paid: boolean;
@@ -18,14 +20,22 @@ interface OrderStatus {
   discountCents: number;
   customerName: string;
   shippingAddress: Record<string, string>;
-  items: Array<{ product_name: string; quantity: number; line_total_amount: number }>;
+  items: Array<{
+    product_id?: string;
+    product_name: string;
+    sku?: string;
+    configuration_label?: string;
+    quantity: number;
+    unit_price_amount?: number;
+    line_total_amount: number;
+  }>;
 }
 
 function Confirmation() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { clearCart } = useCart();
+  const { clearCart, addToCart } = useCart();
   const orderId = params?.orderId as string;
   const supportEmail = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@vialfoundry.com';
 
@@ -86,6 +96,46 @@ function Confirmation() {
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stripeSessionId, orderId]);
+
+  useEffect(() => {
+    if (!serverOrder || !serverOrder.items?.length) return;
+    saveRecentOrder({
+      orderNumber: orderId,
+      date: new Date().toISOString(),
+      items: serverOrder.items.map((i) => ({
+        productId: i.product_id,
+        productName: i.product_name,
+        sku: i.sku,
+        configurationLabel: i.configuration_label,
+        quantity: i.quantity,
+        unitPriceCents: i.unit_price_amount,
+      })),
+    });
+  }, [serverOrder, orderId]);
+
+  const handleReorder = () => {
+    if (!serverOrder?.items?.length) return;
+    let count = 0;
+    for (const item of serverOrder.items) {
+      const resolved = resolveProductForReorder(
+        {
+          productId: item.product_id,
+          sku: item.sku,
+          productName: item.product_name,
+          quantity: item.quantity,
+        },
+        PRODUCTS,
+      );
+      if (resolved) {
+        addToCart(resolved, item.quantity);
+        count += 1;
+      }
+    }
+    if (count > 0) {
+      router.push('/checkout');
+    }
+  };
+
   const total = storedOrder 
     ? storedOrder.totalCents / 100 
     : parseFloat(searchParams.get('total') || '0');
@@ -239,20 +289,29 @@ function Confirmation() {
             : 'A confirmation email is on its way to the address you provided. No credit card is charged on this site. All products are supplied strictly for laboratory research use only.'}
       </p>
 
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+        {serverOrder?.items && serverOrder.items.length > 0 && (
+          <button
+            onClick={handleReorder}
+            className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-bold text-xs shadow-xs flex items-center justify-center space-x-2 transition-all"
+          >
+            <RotateCcw className="w-4 h-4" />
+            <span>Reorder Items</span>
+          </button>
+        )}
         <button
           onClick={() => router.push('/catalog')}
-          className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-bold text-xs shadow-xs flex items-center justify-center space-x-2 transition-all"
+          className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-brand-paper border border-brand-border text-brand-ink font-display font-bold text-xs hover:bg-brand-surface-muted transition-all flex items-center justify-center space-x-2 shadow-2xs"
         >
           <span>Keep Shopping</span>
           <ArrowRight className="w-4 h-4" />
         </button>
         <button
           onClick={() => router.push('/quality')}
-          className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-brand-paper border border-brand-border text-brand-ink font-display font-bold text-xs hover:bg-brand-surface-muted transition-all flex items-center justify-center space-x-2 shadow-2xs"
+          className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-brand-paper border border-brand-border text-brand-ink font-display font-bold text-xs hover:bg-brand-surface-muted transition-all flex items-center justify-center space-x-2 shadow-2xs"
         >
           <ShieldCheck className="w-4 h-4 text-brand-accent" />
-          <span>How We Handle Quality</span>
+          <span>Quality Standards</span>
         </button>
       </div>
     </div>

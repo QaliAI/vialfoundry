@@ -113,7 +113,7 @@ export const COAModal: React.FC<COAModalProps> = ({ batch, onClose }) => {
       aria-modal="true"
       aria-label={`Certificate of analysis for lot ${batch.lotNumber}`}
     >
-      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-brand-paper border border-brand-border rounded-2xl shadow-2xl p-6 sm:p-8 space-y-6 text-brand-ink">
+      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-brand-paper border border-brand-border rounded-2xl shadow-2xl p-4 sm:p-8 space-y-6 text-brand-ink">
 
         <div className="flex items-start justify-between border-b border-brand-border/60 pb-5 gap-4">
           <div className="space-y-1">
