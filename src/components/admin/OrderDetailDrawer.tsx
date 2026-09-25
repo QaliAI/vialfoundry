@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { X, Truck, RotateCcw, Mail, Clock, CreditCard } from 'lucide-react';
+import { X, Truck, RotateCcw, Mail, Clock, CreditCard, AlertCircle } from 'lucide-react';
+import { classifyFulfillmentQueue } from '@/lib/admin/order-classification.mjs';
 
 /**
  * Everything about one order, in one place: what was bought, what was paid,
@@ -17,9 +18,11 @@ const NEXT_STATUSES: Record<string, string[]> = {
   new: ['pending_payment', 'paid', 'canceled'],
   invoice_sent: ['pending_payment', 'paid', 'canceled'],
   pending_payment: ['paid', 'canceled'],
-  paid: ['preparing', 'packed', 'shipped', 'canceled'],
-  preparing: ['packed', 'shipped'],
-  packed: ['shipped'],
+  paid: ['waiting_inventory', 'waiting_documentation', 'preparing', 'packed', 'shipped', 'canceled'],
+  waiting_inventory: ['paid', 'preparing', 'packed', 'shipped', 'canceled'],
+  waiting_documentation: ['paid', 'preparing', 'packed', 'shipped', 'canceled'],
+  preparing: ['waiting_inventory', 'waiting_documentation', 'packed', 'shipped'],
+  packed: ['shipped', 'fulfilled'],
   shipped: ['fulfilled'],
   fulfilled: [],
   canceled: [],
@@ -104,15 +107,32 @@ export const OrderDetailDrawer: React.FC<Props> = ({ orderKey, onClose, onChange
       const res = await fetch('/api/admin/orders/resend-email', {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId: o.id }),
+        body: JSON.stringify({ orderId: o.id, emailType: 'order' }),
       });
       const j = await res.json();
-      setMsg(j.success ? 'Order email resent.' : j.error || 'Could not resend.');
+      setMsg(j.success ? 'Customer order receipt resent.' : j.error || 'Could not resend receipt.');
+      if (j.success) { await load(); onChanged?.(); }
+    } finally { setBusy(false); }
+  };
+
+  const resendOwnerEmail = async () => {
+    if (!o) return;
+    setBusy(true); setMsg(null);
+    try {
+      const res = await fetch('/api/admin/orders/resend-email', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: o.id, emailType: 'owner_alert' }),
+      });
+      const j = await res.json();
+      setMsg(j.success ? 'Owner notification alert resent.' : j.error || 'Could not resend owner alert.');
+      if (j.success) { await load(); onChanged?.(); }
     } finally { setBusy(false); }
   };
 
   const addr = o?.shipping_address_snapshot || {};
   const refundable = (o?.total_amount || 0) - (o?.amount_refunded || 0);
+  const queue = o ? classifyFulfillmentQueue(o) : null;
 
   return (
     <div className="fixed inset-0 z-[300] flex justify-end bg-black/60" onClick={onClose}>
@@ -124,7 +144,20 @@ export const OrderDetailDrawer: React.FC<Props> = ({ orderKey, onClose, onChange
           <div>
             <div className="font-mono text-sm text-brand-teal">{o?.order_number || orderKey}</div>
             <h2 className="font-display text-xl font-bold text-white">{o?.customer_name || 'Order'}</h2>
-            <div className="flex flex-wrap gap-2 pt-1">
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              {queue && (
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded font-mono ${
+                  queue === 'PAID_NEEDS_FULFILLMENT' ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-800/40' :
+                  queue === 'WAITING_ON_INVENTORY' ? 'bg-amber-950/80 text-amber-300 border border-amber-800/40' :
+                  queue === 'WAITING_ON_DOCUMENTATION' ? 'bg-purple-950/80 text-purple-300 border border-purple-800/40' :
+                  queue === 'SHIPPED' ? 'bg-sky-950/80 text-sky-300 border border-sky-800/40' :
+                  queue === 'DELIVERED_COMPLETED' ? 'bg-slate-800 text-slate-300 border border-slate-700' :
+                  queue === 'REFUND_EXCEPTION' ? 'bg-rose-950/80 text-rose-300 border border-rose-800/40' :
+                  'bg-slate-900 text-slate-400 border border-white/10'
+                }`}>
+                  {queue.replace(/_/g, ' ')}
+                </span>
+              )}
               {o?.payment_provider === 'stripe' && (
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${o.stripe_livemode === true ? 'bg-emerald-900/60 text-emerald-300' : 'bg-amber-900/60 text-amber-300'}`}>
                   {o.stripe_livemode === true ? 'STRIPE LIVE' : 'STRIPE TEST'}
@@ -260,10 +293,14 @@ export const OrderDetailDrawer: React.FC<Props> = ({ orderKey, onClose, onChange
             )}
 
             {/* Actions */}
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button disabled={busy} onClick={resendEmail}
-                className="px-3 py-2 rounded-lg bg-brand-graphite/40 border border-brand-graphite text-white text-xs flex items-center gap-1.5 disabled:opacity-50">
-                <Mail className="w-3.5 h-3.5" /> Resend order email
+                className="px-3 py-2 rounded-lg bg-brand-graphite/40 border border-brand-graphite text-white text-xs flex items-center gap-1.5 disabled:opacity-50 hover:bg-brand-graphite/70">
+                <Mail className="w-3.5 h-3.5" /> Resend customer receipt
+              </button>
+              <button disabled={busy} onClick={resendOwnerEmail}
+                className="px-3 py-2 rounded-lg bg-brand-graphite/40 border border-brand-graphite text-white text-xs flex items-center gap-1.5 disabled:opacity-50 hover:bg-brand-graphite/70">
+                <Mail className="w-3.5 h-3.5" /> Resend owner alert
               </button>
             </div>
 

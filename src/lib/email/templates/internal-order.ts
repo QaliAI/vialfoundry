@@ -26,6 +26,7 @@ export function renderInternalOrderNotificationEmail(params: {
   paymentMethod: string;
   /** Real payment state. Manual-invoice orders are unpaid until reconciled. */
   paymentStatus: string;
+  fulfillmentNextStep?: string | null;
   shippingAddress: Record<string, string>;
   promoCode?: string | null;
   affiliateCode?: string | null;
@@ -71,6 +72,10 @@ export function renderInternalOrderNotificationEmail(params: {
     </tr>`;
 
   const unpaid = params.paymentStatus.toLowerCase() !== "paid";
+  const defaultNextStep = unpaid
+    ? "Awaiting payment receipt. Reconcile funds before releasing inventory for fulfillment."
+    : "Paid and verified. Pack items from inventory and issue carrier tracking.";
+  const nextStep = params.fulfillmentNextStep || defaultNextStep;
 
   const body = `
     ${
@@ -89,7 +94,7 @@ export function renderInternalOrderNotificationEmail(params: {
     </div>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-           style="background-color: ${unpaid ? "#FFF7ED" : "#F0FDF4"}; border: 1px solid ${unpaid ? "#FDBA74" : "#86EFAC"}; border-radius: 10px; margin-bottom: 22px;">
+           style="background-color: ${unpaid ? "#FFF7ED" : "#F0FDF4"}; border: 1px solid ${unpaid ? "#FDBA74" : "#86EFAC"}; border-radius: 10px; margin-bottom: 12px;">
       <tr>
         <td style="padding: 14px 18px;">
           <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: ${unpaid ? "#9A3412" : "#166534"};">
@@ -97,7 +102,21 @@ export function renderInternalOrderNotificationEmail(params: {
           </div>
           <div style="font-size: 16px; font-weight: 700; color: ${unpaid ? "#9A3412" : "#166534"}; margin-top: 4px;">
             ${escapeHtml(params.paymentStatus.toUpperCase())}
-            <span style="font-weight: 400; font-size: 14px;"> · intends to pay by ${escapeHtml(params.paymentMethod)}</span>
+            <span style="font-weight: 400; font-size: 14px;"> · ${escapeHtml(params.paymentMethod)}</span>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+           style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 10px; margin-bottom: 22px;">
+      <tr>
+        <td style="padding: 14px 18px;">
+          <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #475569;">
+            Fulfillment next step
+          </div>
+          <div style="font-size: 14px; font-weight: 600; color: #0F172A; margin-top: 4px; line-height: 1.5;">
+            ${escapeHtml(nextStep)}
           </div>
         </td>
       </tr>

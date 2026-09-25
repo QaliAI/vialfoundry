@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { OrderDetailDrawer } from '../../../components/admin/OrderDetailDrawer';
-import { ShoppingCart, Search, CheckCircle2, Truck, Mail, Archive, AlertCircle, RefreshCw } from 'lucide-react';
+import { ShoppingCart, Search, CheckCircle2, Truck, Mail, Archive, AlertCircle, RefreshCw, Bell } from 'lucide-react';
+import { classifyFulfillmentQueue, FULFILLMENT_QUEUES } from '@/lib/admin/order-classification.mjs';
 
 interface OrderItem {
   id: string;
@@ -42,11 +43,17 @@ interface TableColumn {
   className?: string;
 }
 
+const QUEUE_TABS = [
+  { id: 'ALL', label: 'ALL' },
+  ...FULFILLMENT_QUEUES,
+  { id: 'AWAITING_PAYMENT', label: 'AWAITING PAYMENT' },
+];
+
 function AdminOrdersPageInner() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [queueFilter, setQueueFilter] = useState('ALL');
   const [actionMessage, setActionMessage] = useState('');
   const [editingTrackingId, setEditingTrackingId] = useState<string | null>(null);
   const [trackingInput, setTrackingInput] = useState('');
@@ -135,7 +142,7 @@ function AdminOrdersPageInner() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderId, emailType: 'order' }),
       });
-      setActionMessage('Order verification email resent');
+      setActionMessage('Customer verification email resent');
     } catch (err) {
       console.error('[admin/orders/resend-email] error:', err);
       setActionMessage('Failed to resend email');
@@ -143,14 +150,53 @@ function AdminOrdersPageInner() {
     setTimeout(() => setActionMessage(''), 3000);
   };
 
-  const filteredOrders = orders.filter(o => {
-    const matchSearch =
-      o.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      o.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      o.customer_email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchStatus = statusFilter === 'ALL' || o.status.toLowerCase() === statusFilter.toLowerCase();
-    return matchSearch && matchStatus;
-  });
+  const handleResendOwnerEmail = async (orderId: string) => {
+    try {
+      const res = await fetch('/api/admin/orders/resend-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, emailType: 'owner_alert' }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setActionMessage('Owner notification alert resent');
+      } else {
+        setActionMessage(data.error || 'Failed to resend owner alert');
+      }
+    } catch (err) {
+      console.error('[admin/orders/resend-owner-email] error:', err);
+      setActionMessage('Failed to resend owner alert');
+    }
+    setTimeout(() => setActionMessage(''), 3000);
+  };
+
+  const queueCounts = useMemo(() => {
+    const counts: Record<string, number> = { ALL: orders.length };
+    for (const tab of QUEUE_TABS) {
+      counts[tab.id] = 0;
+    }
+    counts.ALL = orders.length;
+
+    for (const o of orders) {
+      const q = classifyFulfillmentQueue(o);
+      counts[q] = (counts[q] || 0) + 1;
+    }
+    return counts;
+  }, [orders]);
+
+  const filteredOrders = useMemo(() => {
+    return orders.filter(o => {
+      const matchSearch =
+        o.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        o.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        o.customer_email.toLowerCase().includes(searchQuery.toLowerCase());
+      if (!matchSearch) return false;
+
+      if (queueFilter === 'ALL') return true;
+      const q = classifyFulfillmentQueue(o);
+      return q === queueFilter;
+    });
+  }, [orders, searchQuery, queueFilter]);
 
   return (
     <div className="space-y-8">
@@ -158,7 +204,7 @@ function AdminOrdersPageInner() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/10 pb-4">
         <div>
           <h1 className="font-display text-2xl font-bold text-white">Orders & Fulfillment</h1>
-          <p className="text-xs font-mono text-slate-400">Inspect research procurement orders, update status lifecycles, and issue tracking notices</p>
+          <p className="text-xs font-mono text-slate-400">Inspect research procurement orders, update status lifecycles, and manage fulfillment queues</p>
         </div>
         <button
           onClick={loadOrders}
@@ -176,7 +222,33 @@ function AdminOrdersPageInner() {
         </div>
       )}
 
-      {/* Filter Bar */}
+      {/* Queue Tabs */}
+      <div className="flex items-center space-x-2 w-full overflow-x-auto pb-1 scrollbar-thin">
+        {QUEUE_TABS.map(tab => {
+          const count = queueCounts[tab.id] ?? 0;
+          const isActive = queueFilter === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setQueueFilter(tab.id)}
+              className={`px-3 py-1.5 rounded-lg uppercase text-[10px] font-bold whitespace-nowrap transition-all flex items-center space-x-1.5 ${
+                isActive
+                  ? 'bg-brand-primary text-brand-paper shadow-sm'
+                  : 'bg-slate-900 border border-white/10 text-slate-400 hover:text-white hover:border-white/20'
+              }`}
+            >
+              <span>{tab.label}</span>
+              <span className={`px-1.5 py-0.2 rounded-full text-[9px] ${
+                isActive ? 'bg-white/20 text-white font-mono' : 'bg-slate-800 text-slate-400 font-mono'
+              }`}>
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Filter / Search Bar */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-center text-xs font-mono">
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
@@ -187,22 +259,6 @@ function AdminOrdersPageInner() {
             placeholder="Search by order # or customer..."
             className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-brand-graphite"
           />
-        </div>
-
-        <div className="flex items-center space-x-2 w-full sm:w-auto overflow-x-auto">
-          {['ALL', 'new', 'pending_payment', 'paid', 'preparing', 'shipped', 'fulfilled', 'canceled', 'refunded'].map(st => (
-            <button
-              key={st}
-              onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-lg uppercase text-[10px] font-bold whitespace-nowrap transition-all ${
-                statusFilter === st
-                  ? 'bg-brand-primary text-brand-paper'
-                  : 'bg-slate-900 border border-white/10 text-slate-400 hover:text-white'
-              }`}
-            >
-              {st}
-            </button>
-          ))}
         </div>
       </div>
 
@@ -216,7 +272,7 @@ function AdminOrdersPageInner() {
               <th className="p-4">Line Items</th>
               <th className="p-4">Total Due</th>
               <th className="p-4">Payment</th>
-              <th className="p-4">Status</th>
+              <th className="p-4">Queue & Status</th>
               <th className="p-4">Tracking</th>
               <th className="p-4 text-right">Actions</th>
             </tr>
@@ -251,21 +307,43 @@ function AdminOrdersPageInner() {
                   )}
                 </td>
                 <td className="p-4">
-                  <select
-                    value={o.status}
-                    onChange={(e) => handleUpdateStatus(o.id, e.target.value)}
-                    className="bg-slate-900 border border-white/15 rounded px-2 py-1 text-[10px] font-bold text-white focus:outline-none focus:border-brand-graphite"
-                  >
-                    <option value="new">new</option>
-                    <option value="invoice_sent">invoice_sent</option>
-                    <option value="pending_payment">pending_payment</option>
-                    <option value="paid">paid</option>
-                    <option value="preparing">preparing</option>
-                    <option value="shipped">shipped</option>
-                    <option value="fulfilled">fulfilled</option>
-                    <option value="canceled">canceled</option>
-                    <option value="refunded">refunded</option>
-                  </select>
+                  {(() => {
+                    const q = classifyFulfillmentQueue(o);
+                    return (
+                      <div className="space-y-1.5">
+                        <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-bold font-mono tracking-wider ${
+                          q === 'PAID_NEEDS_FULFILLMENT' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/60' :
+                          q === 'WAITING_ON_INVENTORY' ? 'bg-amber-950 text-amber-300 border border-amber-800/60' :
+                          q === 'WAITING_ON_DOCUMENTATION' ? 'bg-purple-950 text-purple-300 border border-purple-800/60' :
+                          q === 'SHIPPED' ? 'bg-sky-950 text-sky-300 border border-sky-800/60' :
+                          q === 'DELIVERED_COMPLETED' ? 'bg-slate-800 text-slate-300 border border-slate-700' :
+                          q === 'REFUND_EXCEPTION' ? 'bg-rose-950 text-rose-300 border border-rose-800/60' :
+                          'bg-slate-900 text-slate-400 border border-white/10'
+                        }`}>
+                          {q.replace(/_/g, ' ')}
+                        </span>
+                        <div>
+                          <select
+                            value={o.status}
+                            onChange={(e) => handleUpdateStatus(o.id, e.target.value)}
+                            className="bg-slate-900 border border-white/15 rounded px-2 py-1 text-[10px] font-bold text-white focus:outline-none focus:border-brand-graphite"
+                          >
+                            <option value="new">new</option>
+                            <option value="invoice_sent">invoice_sent</option>
+                            <option value="pending_payment">pending_payment</option>
+                            <option value="paid">paid</option>
+                            <option value="waiting_inventory">waiting_inventory</option>
+                            <option value="waiting_documentation">waiting_documentation</option>
+                            <option value="preparing">preparing</option>
+                            <option value="shipped">shipped</option>
+                            <option value="fulfilled">fulfilled</option>
+                            <option value="canceled">canceled</option>
+                            <option value="refunded">refunded</option>
+                          </select>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </td>
                 <td className="p-4">
                   {editingTrackingId === o.id ? (
@@ -301,13 +379,20 @@ function AdminOrdersPageInner() {
                     </div>
                   )}
                 </td>
-                <td className="p-4 text-right space-x-2">
+                <td className="p-4 text-right space-x-1.5 whitespace-nowrap">
                   <button
                     onClick={() => handleResendOrderEmail(o.id)}
-                    title="Resend Verification Email"
+                    title="Resend Customer Verification Email"
                     className="p-1.5 rounded bg-slate-900 border border-white/10 hover:border-brand-graphite text-brand-paper"
                   >
                     <Mail className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleResendOwnerEmail(o.id)}
+                    title="Resend Owner Alert Email"
+                    className="p-1.5 rounded bg-slate-900 border border-white/10 hover:border-brand-graphite text-brand-paper"
+                  >
+                    <Bell className="w-3.5 h-3.5" />
                   </button>
                 </td>
               </tr>

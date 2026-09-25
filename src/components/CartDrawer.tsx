@@ -1,22 +1,35 @@
-import React, { useEffect } from 'react';
-import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, ShieldCheck, CheckCircle2, RotateCcw } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { productTitle, productSize } from '../lib/catalog-display';
 import { FREE_STANDARD_SHIPPING_THRESHOLD_CENTS } from '../lib/manual-orders/shipping.mjs';
 import { trackEvent } from '../lib/analytics';
+import { getRecentOrders, resolveProductForReorder } from '../lib/commerce/repeat-purchase.mjs';
+import { PRODUCTS } from '../data/products';
 
 interface CartDrawerProps {
   navigate: (path: string) => void;
 }
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
-  const { cart, isCartOpen, setIsCartOpen, removeFromCart, updateQuantity, subtotal, totalItems } = useCart();
+  const { cart, isCartOpen, setIsCartOpen, addToCart, removeFromCart, updateQuantity, subtotal, totalItems } = useCart();
+  const [recentOrders, setRecentOrders] = useState<any[]>([]);
 
   useEffect(() => {
     if (isCartOpen) {
       trackEvent('cart_viewed', { totalItems, subtotalCents: Math.round(subtotal * 100) });
+      setRecentOrders(getRecentOrders());
     }
   }, [isCartOpen, totalItems, subtotal]);
+
+  const handleReorderRecent = (recent: any) => {
+    for (const item of recent.items || []) {
+      const resolved = resolveProductForReorder(item, PRODUCTS);
+      if (resolved) {
+        addToCart(resolved, item.quantity);
+      }
+    }
+  };
 
   if (!isCartOpen) return null;
 
@@ -33,8 +46,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
         className="absolute inset-0 bg-brand-ink/60 backdrop-blur-xs animate-in fade-in duration-150"
       />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-brand-paper border-l border-brand-border shadow-2xl p-6 flex flex-col justify-between z-10 animate-in slide-in-from-right duration-200">
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
+        <div className="w-screen max-w-md bg-brand-paper border-l border-brand-border shadow-2xl p-4 sm:p-6 flex flex-col justify-between z-10 animate-in slide-in-from-right duration-200">
           
           {/* Header */}
           <div className="flex items-center justify-between border-b border-brand-border/60 pb-4">
@@ -87,7 +100,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
           {/* Item List */}
           <div className="flex-1 overflow-y-auto py-5 space-y-3">
             {cart.length === 0 ? (
-              <div className="text-center py-16 space-y-3">
+              <div className="text-center py-10 space-y-3">
                 <div className="w-12 h-12 rounded-full bg-brand-canvas flex items-center justify-center mx-auto text-brand-steel">
                   <ShoppingBag className="w-6 h-6" />
                 </div>
@@ -101,6 +114,33 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
                 >
                   Browse Catalog
                 </button>
+
+                {recentOrders.length > 0 && (
+                  <div className="mt-6 pt-4 border-t border-brand-border/60 text-left space-y-2.5">
+                    <div className="flex items-center justify-between text-[11px] font-sans text-brand-steel uppercase tracking-wider font-semibold">
+                      <span>Previous Order</span>
+                      <span className="font-mono text-[10px] text-brand-steel">{recentOrders[0].orderNumber}</span>
+                    </div>
+                    <div className="space-y-1.5 p-3 rounded-xl bg-brand-canvas border border-brand-border/60">
+                      {recentOrders[0].items.map((item: any, idx: number) => (
+                        <div key={idx} className="text-xs text-brand-ink flex justify-between items-center">
+                          <span className="truncate pr-2 font-medium">{item.productName}</span>
+                          <span className="font-mono text-brand-steel text-[11px]">×{item.quantity}</span>
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => handleReorderRecent(recentOrders[0])}
+                        className="w-full mt-2 py-2 rounded-lg bg-brand-paper hover:bg-brand-surface-muted border border-brand-border text-brand-ink text-xs font-semibold font-sans flex items-center justify-center space-x-1.5 transition-colors shadow-2xs"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5 text-brand-teal" />
+                        <span>Reorder Previous Materials</span>
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-brand-steel leading-relaxed">
+                      Reference standards supplied strictly for laboratory research use only. Reorders duplicate previous catalog items and quantities.
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               cart.map(({ product, quantity }) => (

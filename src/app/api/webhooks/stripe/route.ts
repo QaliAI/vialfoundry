@@ -230,7 +230,31 @@ export async function POST(req: Request) {
         .maybeSingle();
 
       if (!won) {
+        // Backfill missing session, payment intent, or customer IDs if this duplicate/subsequent event provides them
+        const backfill: Record<string, unknown> = {};
+        if (sessionId && !order.stripe_checkout_session_id) backfill.stripe_checkout_session_id = sessionId;
+        if (paymentIntentId && !order.stripe_payment_intent_id) backfill.stripe_payment_intent_id = paymentIntentId;
+        if (stripeCustomerId && !order.stripe_customer_id) backfill.stripe_customer_id = stripeCustomerId;
+        if (Object.keys(backfill).length > 0) {
+          await supabase.from('manual_orders').update(backfill).eq('id', order.id);
+        }
         return NextResponse.json({ received: true, alreadyPaid: true });
+      }
+
+      // Link customer_id if order was created without one
+      if (!order.customer_id && order.customer_email) {
+        try {
+          const { data: cust } = await supabase
+            .from('customers')
+            .select('id')
+            .eq('email', order.customer_email)
+            .maybeSingle();
+          if (cust?.id) {
+            await supabase.from('manual_orders').update({ customer_id: cust.id }).eq('id', order.id);
+          }
+        } catch (custErr) {
+          console.warn('[stripe-webhook] customer linking warning:', custErr);
+        }
       }
 
       if (order.affiliate_id) {
@@ -248,8 +272,8 @@ export async function POST(req: Request) {
         metadata: { eventId: event.id, paymentIntentId, sessionId },
       });
 
-      await decrementInventoryForOrder(supabase, { ...order, payment_status: 'paid' });
-      await sendPaidEmails(supabase, { ...order, payment_status: 'paid' }, brand);
+      const decResult = await decrementInventoryForOrder(supabase, { ...order, payment_status: 'paid' });
+      await sendPaidEmails(supabase, { ...order, payment_status: 'paid' }, brand, decResult);
     }
 
     if (event.type === 'payment_intent.payment_failed') {
@@ -384,9 +408,9 @@ export async function POST(req: Request) {
 async function decrementInventoryForOrder(
   supabase: NonNullable<ReturnType<typeof createAdminClient>>,
   order: any,
-) {
+): Promise<{ hasOversell: boolean; oversoldItems: string[] }> {
   const decision = shouldDecrementInventory(order);
-  if (!decision.apply) return;
+  if (!decision.apply) return { hasOversell: false, oversoldItems: [] };
 
   const { data: claimed } = await supabase
     .from('manual_orders')
@@ -395,12 +419,14 @@ async function decrementInventoryForOrder(
     .is('inventory_decremented_at', null)
     .select('id')
     .maybeSingle();
-  if (!claimed) return;
+  if (!claimed) return { hasOversell: false, oversoldItems: [] };
 
   const { data: lines } = await supabase
     .from('manual_order_items')
     .select('product_id, product_name, sku, quantity')
     .eq('manual_order_id', order.id);
+
+  const oversoldItems: string[] = [];
 
   for (const line of lines || []) {
     if (!line.product_id) continue;
@@ -417,6 +443,9 @@ async function decrementInventoryForOrder(
     const previous = Number(row.previous_quantity) || 0;
     const next = Number(row.new_quantity);
     const oversell = isOversell(previous, qty);
+    if (oversell) {
+      oversoldItems.push(line.product_name || line.sku || 'Item');
+    }
     const product = { id: line.product_id };
     await supabase.from('inventory_transactions').insert({
       product_id: product.id,
@@ -433,14 +462,31 @@ async function decrementInventoryForOrder(
 
     await recordOrderEvent({
       orderId: order.id,
-      type: 'inventory_adjusted',
+      type: oversell ? 'inventory_oversell' : 'inventory_adjusted',
       actor: 'stripe-webhook',
       message: oversell
-        ? `Inventory oversell: ${line.product_name} requested ${qty}, on hand ${previous}`
+        ? `Inventory oversell: ${line.product_name} requested ${qty}, on hand was ${previous}. Transitioning to waiting_inventory.`
         : `Inventory −${qty} ${line.product_name} (${previous} → ${next})`,
       metadata: { productId: product.id, quantity: qty, previous, next, oversell },
     });
   }
+
+  if (oversoldItems.length > 0) {
+    await supabase
+      .from('manual_orders')
+      .update({ status: 'waiting_inventory', updated_at: new Date().toISOString() })
+      .eq('id', order.id);
+
+    await recordOrderEvent({
+      orderId: order.id,
+      type: 'status_changed',
+      actor: 'stripe-webhook',
+      message: `Order status set to waiting_inventory due to oversold items: ${oversoldItems.join(', ')}`,
+      metadata: { oversoldItems },
+    });
+  }
+
+  return { hasOversell: oversoldItems.length > 0, oversoldItems };
 }
 
 /** Customer receipt + operations notification, sent once, after payment. */
@@ -448,6 +494,7 @@ async function sendPaidEmails(
   supabase: NonNullable<ReturnType<typeof createAdminClient>>,
   order: any,
   brand: ReturnType<typeof getBrandConfig>,
+  inventoryResult?: { hasOversell: boolean; oversoldItems: string[] },
 ) {
   const { data: claimed } = await supabase
     .from('manual_orders')
@@ -482,50 +529,87 @@ async function sendPaidEmails(
     shippingAddress: (order.shipping_address_snapshot || {}) as Record<string, string>,
   };
 
-  const customer = renderOrderConfirmationEmail({
-    ...shared,
-    paymentMethod: 'card',
-    paymentState: 'paid',
-  });
-  const sent = await sendEmailSafely({
-    to: order.customer_email,
-    subject: `[Vial Foundry] Payment received — order ${order.order_number}`,
-    html: customer.html,
-  });
-  await recordOrderEvent({
-    orderId: order.id,
-    type: sent.success ? 'email_sent' : 'email_failed',
-    actor: 'stripe-webhook',
-    message: sent.success
-      ? `Payment confirmation sent to ${order.customer_email}`
-      : `Payment confirmation FAILED to ${order.customer_email}: ${sent.error}`,
-  });
-
-  const admins = brand.orderNotificationEmails;
-  if (admins.length > 0) {
-    const internal = renderInternalOrderNotificationEmail({
+  // 1. Customer confirmation email (isolated try/catch so failure never throws)
+  try {
+    const customer = renderOrderConfirmationEmail({
       ...shared,
-      customerEmail: order.customer_email,
-      customerPhone: order.customer_phone,
-      paymentMethod: 'card (Stripe)',
-      paymentStatus: 'paid',
-      promoCode: order.promo_code,
-      affiliateCode: order.affiliate_code,
-      isTest: Boolean(order.is_test) || order.stripe_livemode === false,
-      adminOrderUrl: adminOrderUrl(order.order_number),
+      paymentMethod: 'card',
+      paymentState: 'paid',
     });
-    const sentInternal = await sendEmailSafely({
-      to: admins,
-      subject: `${order.is_test || order.stripe_livemode === false ? '[TEST] ' : ''}[PAID] ${order.order_number} — ${order.customer_name} ($${((order.total_amount || 0) / 100).toFixed(2)})`,
-      html: internal.html,
+    const sent = await sendEmailSafely({
+      to: order.customer_email,
+      subject: `[Vial Foundry] Payment received — order ${order.order_number}`,
+      html: customer.html,
     });
     await recordOrderEvent({
       orderId: order.id,
-      type: sentInternal.success ? 'email_sent' : 'email_failed',
+      type: sent.success ? 'email_sent' : 'email_failed',
       actor: 'stripe-webhook',
-      message: sentInternal.success
-        ? `Paid order alert sent to ${admins.join(', ')}`
-        : `Paid order alert FAILED to ${admins.join(', ')}: ${sentInternal.error}`,
+      message: sent.success
+        ? `Payment confirmation sent to ${order.customer_email}`
+        : `Payment confirmation FAILED to ${order.customer_email}: ${sent.error}`,
+      metadata: { error: sent.error, recipient: order.customer_email, template: 'customer_order_confirmation' },
+    });
+  } catch (custErr: any) {
+    console.error(`[stripe-webhook] customer email exception for ${order.order_number}:`, custErr);
+    await recordOrderEvent({
+      orderId: order.id,
+      type: 'email_failed',
+      actor: 'stripe-webhook',
+      message: `Customer email dispatch threw: ${custErr?.message || custErr}`,
+      metadata: { error: custErr?.message || String(custErr), recipient: order.customer_email },
     });
   }
+
+  // 2. Owner alert email (isolated try/catch so failure never throws)
+  const admins = brand.orderNotificationEmails;
+  if (admins.length > 0) {
+    try {
+      const fulfillmentNextStep = inventoryResult?.hasOversell
+        ? `WAITING ON INVENTORY: Insufficient stock for ${inventoryResult.oversoldItems.join(', ')}. Replenishment required before packing.`
+        : 'PAID — READY TO PICK AND PACK. Verify items and generate shipping label.';
+
+      const internal = renderInternalOrderNotificationEmail({
+        ...shared,
+        customerEmail: order.customer_email,
+        customerPhone: order.customer_phone,
+        paymentMethod: 'card (Stripe)',
+        paymentStatus: 'paid',
+        fulfillmentNextStep,
+        promoCode: order.promo_code,
+        affiliateCode: order.affiliate_code,
+        isTest: Boolean(order.is_test) || order.stripe_livemode === false,
+        adminOrderUrl: adminOrderUrl(order.order_number),
+      });
+      const sentInternal = await sendEmailSafely({
+        to: admins,
+        subject: `${order.is_test || order.stripe_livemode === false ? '[TEST] ' : ''}[PAID] ${order.order_number} — ${order.customer_name} ($${((order.total_amount || 0) / 100).toFixed(2)})`,
+        html: internal.html,
+      });
+      await recordOrderEvent({
+        orderId: order.id,
+        type: sentInternal.success ? 'email_sent' : 'email_failed',
+        actor: 'stripe-webhook',
+        message: sentInternal.success
+          ? `Paid order alert sent to ${admins.join(', ')}`
+          : `Paid order alert FAILED to ${admins.join(', ')}: ${sentInternal.error}`,
+        metadata: {
+          error: sentInternal.error,
+          recipients: admins,
+          template: 'internal_order_notification',
+          fulfillmentNextStep,
+        },
+      });
+    } catch (adminErr: any) {
+      console.error(`[stripe-webhook] admin email exception for ${order.order_number}:`, adminErr);
+      await recordOrderEvent({
+        orderId: order.id,
+        type: 'email_failed',
+        actor: 'stripe-webhook',
+        message: `Admin notification dispatch threw: ${adminErr?.message || adminErr}`,
+        metadata: { error: adminErr?.message || String(adminErr), recipients: admins },
+      });
+    }
+  }
 }
+

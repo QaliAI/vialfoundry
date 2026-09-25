@@ -19,10 +19,13 @@ export type OrderEventType =
   | "tracking_added"
   | "email_sent"
   | "email_failed"
+  | "admin_notification_sent"
+  | "admin_notification_failed"
   | "refund_initiated"
   | "refund_completed"
   | "note_added"
-  | "inventory_adjusted";
+  | "inventory_adjusted"
+  | "inventory_oversell";
 
 export interface OrderEventInput {
   orderId: string;
