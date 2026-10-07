@@ -8,10 +8,23 @@ import { CartDrawer } from './CartDrawer';
 import { SearchModal } from './SearchModal';
 import { AgeGate } from './AgeGate';
 import { Product } from '../types';
+import { captureFirstPartyAttribution } from '../lib/analytics/attribution';
+import { initializeGa, sendGaEvent } from '../lib/analytics/ga';
 
 export const AppNavigationWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname();
   const router = useRouter();
+
+  React.useEffect(() => {
+    captureFirstPartyAttribution();
+    initializeGa();
+    if (pathname && !pathname.startsWith('/admin')) {
+      sendGaEvent('page_view', {
+        page_path: pathname,
+        page_location: typeof window !== 'undefined' ? window.location.href : '',
+      });
+    }
+  }, [pathname]);
 
   const isAdminRoute = pathname?.startsWith('/admin');
 

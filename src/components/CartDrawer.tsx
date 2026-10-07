@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, ShieldCheck, CheckCircle2, RotateCcw } from 'lucide-react';
+import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, ShieldCheck, CheckCircle2, RotateCcw, Tag, AlertCircle } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { productTitle, productSize } from '../lib/catalog-display';
 import { FREE_STANDARD_SHIPPING_THRESHOLD_CENTS } from '../lib/manual-orders/shipping.mjs';
@@ -12,8 +12,25 @@ interface CartDrawerProps {
 }
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
-  const { cart, isCartOpen, setIsCartOpen, addToCart, removeFromCart, updateQuantity, subtotal, totalItems } = useCart();
+  const {
+    cart,
+    isCartOpen,
+    setIsCartOpen,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    subtotal,
+    totalItems,
+    appliedPromo,
+    applyPromoCode,
+    removePromoCode,
+    discountAmount,
+    estimatedTotal,
+  } = useCart();
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
+  const [promoInput, setPromoInput] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isCartOpen) {
@@ -208,11 +225,108 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
 
           {/* Footer Checkout Summary */}
           {cart.length > 0 && (
-            <div className="border-t border-brand-border pt-4 space-y-4">
-              <div className="space-y-1.5 text-xs font-sans">
+            <div className="border-t border-brand-border pt-4 space-y-3.5">
+              {/* Promo Code Entry & Status */}
+              <div className="space-y-2">
+                {appliedPromo ? (
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs">
+                    <div className="flex items-center space-x-2 truncate">
+                      <Tag className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                      <div>
+                        <div className="font-mono font-bold text-emerald-800 flex items-center space-x-1.5">
+                          <span>{appliedPromo.code}</span>
+                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-sans font-medium">Applied</span>
+                        </div>
+                        <div className="text-[11px] text-emerald-700 truncate">
+                          {appliedPromo.name || `${((appliedPromo.discountRateBps || 0) / 100).toFixed(0)}% Discount`}
+                          {appliedPromo.firstOrderOnly && ' · First Order'}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2 flex-shrink-0">
+                      <span className="font-mono font-bold text-emerald-700">
+                        -${discountAmount.toFixed(2)}
+                      </span>
+                      <button
+                        onClick={removePromoCode}
+                        className="text-slate-400 hover:text-red-600 text-[11px] font-sans underline ml-1"
+                        aria-label="Remove promo code"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      setPromoLoading(true);
+                      setPromoError(null);
+                      const res = await applyPromoCode(promoInput);
+                      if (res.success) {
+                        setPromoInput('');
+                      } else {
+                        setPromoError(res.error || 'Invalid code');
+                      }
+                      setPromoLoading(false);
+                    }}
+                    className="space-y-1.5"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <div className="relative flex-1">
+                        <Tag className="w-3.5 h-3.5 text-brand-steel absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          value={promoInput}
+                          onChange={(e) => {
+                            setPromoInput(e.target.value);
+                            if (promoError) setPromoError(null);
+                          }}
+                          placeholder="Promo or partner code"
+                          className="w-full pl-9 pr-3 py-2 text-xs font-mono uppercase bg-brand-canvas border border-brand-border rounded-lg text-brand-ink placeholder-brand-steel focus:outline-none focus:border-brand-teal"
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={promoLoading || !promoInput.trim()}
+                        className="px-3.5 py-2 text-xs font-medium rounded-lg bg-brand-paper hover:bg-brand-surface-muted border border-brand-border text-brand-ink transition-colors disabled:opacity-40"
+                      >
+                        {promoLoading ? 'Checking...' : 'Apply'}
+                      </button>
+                    </div>
+                    {promoError && (
+                      <div className="text-[11px] text-red-600 flex items-center space-x-1 pl-1">
+                        <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                        <span>{promoError}</span>
+                      </div>
+                    )}
+                  </form>
+                )}
+              </div>
+
+              {/* Cost Breakdown */}
+              <div className="space-y-1.5 text-xs font-sans pt-1">
                 <div className="flex justify-between text-brand-steel">
                   <span>Subtotal</span>
                   <span className="font-bold font-mono text-brand-ink">${subtotal.toFixed(2)}</span>
+                </div>
+                {appliedPromo && discountAmount > 0 && (
+                  <div className="flex justify-between text-emerald-700 font-medium">
+                    <span className="flex items-center space-x-1">
+                      <span>Promotion ({appliedPromo.code})</span>
+                    </span>
+                    <span className="font-bold font-mono">-${discountAmount.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-brand-steel">
+                  <span>Standard Shipping</span>
+                  <span className="font-medium text-brand-ink">
+                    {subtotalCents >= FREE_STANDARD_SHIPPING_THRESHOLD_CENTS ? (
+                      <span className="text-brand-mineral font-semibold">FREE</span>
+                    ) : (
+                      'Calculated at checkout'
+                    )}
+                  </span>
                 </div>
                 <div className="flex justify-between text-brand-steel">
                   <span>Packaging</span>
@@ -220,7 +334,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
                 </div>
                 <div className="flex justify-between text-brand-ink font-bold text-sm pt-2 border-t border-brand-border/60">
                   <span>Estimated Total</span>
-                  <span className="font-mono text-brand-ink">${subtotal.toFixed(2)}</span>
+                  <span className="font-mono text-brand-ink">${estimatedTotal.toFixed(2)}</span>
                 </div>
               </div>
 

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Package, Layers, FileCheck, ShoppingCart,
-  Users, Tag, Share2, Settings, LogOut, ArrowLeft, Inbox, DollarSign, Menu, X
+  Users, Tag, Share2, Settings, LogOut, ArrowLeft, Inbox, DollarSign, Menu, X, TrendingUp, Mail
 } from 'lucide-react';
 import { BrandLogo } from '../../components/BrandLogo';
 
@@ -38,6 +38,8 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
     { label: 'Enquiries', path: '/admin/inquiries', icon: Inbox },
     { label: 'Finance', path: '/admin/finance', icon: DollarSign },
     { label: 'Promotions', path: '/admin/discounts', icon: Tag },
+    { label: 'Marketing Ledger', path: '/admin/marketing', icon: TrendingUp },
+    { label: 'Email Marketing', path: '/admin/email', icon: Mail },
     { label: 'Settings', path: '/admin/settings', icon: Settings },
   ];
 

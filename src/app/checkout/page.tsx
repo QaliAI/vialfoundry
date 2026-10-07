@@ -11,6 +11,8 @@ import { productSize, productTitle } from '../../lib/catalog-display';
 import { PAYMENT_METHODS, CONFIGURED_PAYMENT_METHODS, PaymentMethodId, getPaymentMethod } from '../../data/payment';
 import { ShieldCheck, Lock, CheckCircle2, ShoppingBag, Truck } from 'lucide-react';
 import { trackEvent } from '../../lib/analytics';
+import { getOrderAttributionSnapshot } from '../../lib/analytics/attribution';
+import { trackBeginCheckout, trackAddShippingInfo } from '../../lib/analytics/ga';
 
 const US_STATES = [
   { code: 'AL', name: 'Alabama' },
@@ -70,7 +72,7 @@ function CheckoutPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const canceled = searchParams.get('canceled') === '1';
-  const { cart, subtotal, clearCart } = useCart();
+  const { cart, subtotal, clearCart, appliedPromo, applyPromoCode, removePromoCode } = useCart();
 
   // Only methods with real production configuration are ever offered. If none
   // are configured we show no selector at all and tell the customer we will
@@ -85,9 +87,29 @@ function CheckoutPageInner() {
     (publishableKey.startsWith('pk_test_') || publishableKey.startsWith('pk_live_'));
   const availablePaymentMethods = stripeLive ? [] : CONFIGURED_PAYMENT_METHODS;
   const hasPaymentMethods = availablePaymentMethods.length > 0;
+  const subtotalCents = Math.round(subtotal * 100);
+
   const [discountCode, setDiscountCode] = useState('');
   const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; discountCents: number; name?: string } | null>(null);
   const [discountError, setDiscountError] = useState('');
+  const [isCheckingPromo, setIsCheckingPromo] = useState(false);
+
+  // Sync promo from cart context (e.g. applied from AnnouncementBar or CartDrawer)
+  useEffect(() => {
+    if (appliedPromo && !appliedDiscount) {
+      setDiscountCode(appliedPromo.code);
+      setAppliedDiscount({
+        code: appliedPromo.code,
+        discountCents:
+          appliedPromo.discountCents ||
+          (appliedPromo.discountRateBps
+            ? Math.round(subtotalCents * (appliedPromo.discountRateBps / 10000))
+            : appliedPromo.fixedDiscountCents || 0),
+        name: appliedPromo.name,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appliedPromo, subtotalCents]);
   const [ruoAgreed, setRuoAgreed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -109,6 +131,7 @@ function CheckoutPageInner() {
   useEffect(() => {
     if (cartCount === 0) return;
     trackEvent('checkout_started', { items: cartCount, subtotal });
+    trackBeginCheckout(cart, subtotal);
     if (canceled) {
       trackEvent('payment_failed', { reason: 'stripe_checkout_canceled' });
     }
@@ -116,7 +139,6 @@ function CheckoutPageInner() {
   }, [cartCount > 0]);
 
   const selectedMethod = getPaymentMethod(paymentMethodId);
-  const subtotalCents = Math.round(subtotal * 100);
 
   const shippingInfo = calculateShipping(
     subtotalCents,
@@ -142,36 +164,84 @@ function CheckoutPageInner() {
     phone: '',
   });
 
-  const handleApplyDiscount = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleApplyDiscount = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     const code = discountCode.trim().toUpperCase();
     if (!code) {
       setAppliedDiscount(null);
       setDiscountError('');
+      removePromoCode();
       return;
     }
 
-    const promoResult = calculateConfiguredPromoDiscount(
-      subtotalCents,
-      code,
-      vialFoundryBrandConfig.promotions
-    );
+    setIsCheckingPromo(true);
+    setDiscountError('');
 
-    if (promoResult.valid && promoResult.discountCents > 0) {
-      setAppliedDiscount({
-        code: promoResult.code || code,
-        discountCents: promoResult.discountCents,
-        name: promoResult.name,
+    try {
+      const res = await fetch('/api/promotions/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code,
+          subtotalCents,
+          customerEmail: shippingAddress.email.trim() || undefined,
+        }),
       });
-      setDiscountError('');
-      trackEvent('promo_applied', {
-        code: promoResult.code || code,
-        discountCents: promoResult.discountCents,
-      });
-    } else {
-      setAppliedDiscount(null);
-      setDiscountError(promoResult.error || 'Invalid or inapplicable promotional code.');
+
+      const promoResult = await res.json();
+
+      if (promoResult.valid && (promoResult.discountCents > 0 || promoResult.discountRateBps > 0 || promoResult.fixedDiscountCents > 0)) {
+        const discountCents =
+          promoResult.discountCents ||
+          (promoResult.discountRateBps
+            ? Math.round(subtotalCents * (promoResult.discountRateBps / 10000))
+            : promoResult.fixedDiscountCents || 0);
+
+        setAppliedDiscount({
+          code: promoResult.code || code,
+          discountCents,
+          name: promoResult.name,
+        });
+        applyPromoCode(promoResult.code || code);
+        setDiscountError('');
+        trackEvent('promo_applied', {
+          code: promoResult.code || code,
+          discountCents,
+        });
+      } else {
+        setAppliedDiscount(null);
+        removePromoCode();
+        setDiscountError(promoResult.error || 'Invalid or inapplicable promotional code.');
+      }
+    } catch {
+      const fallbackResult = calculateConfiguredPromoDiscount(
+        subtotalCents,
+        code,
+        vialFoundryBrandConfig.promotions
+      );
+      if (fallbackResult.valid && fallbackResult.discountCents > 0) {
+        setAppliedDiscount({
+          code: fallbackResult.code || code,
+          discountCents: fallbackResult.discountCents,
+          name: fallbackResult.name,
+        });
+        applyPromoCode(fallbackResult.code || code);
+        setDiscountError('');
+      } else {
+        setAppliedDiscount(null);
+        removePromoCode();
+        setDiscountError(fallbackResult.error || 'Invalid or inapplicable promotional code.');
+      }
+    } finally {
+      setIsCheckingPromo(false);
     }
+  };
+
+  const handleRemoveDiscount = () => {
+    setAppliedDiscount(null);
+    setDiscountCode('');
+    setDiscountError('');
+    removePromoCode();
   };
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
@@ -222,6 +292,7 @@ function CheckoutPageInner() {
         promoCode: appliedDiscount ? appliedDiscount.code : null,
         affiliateCode: affiliateCode || null,
         ruoAgreed: true,
+        attribution: getOrderAttributionSnapshot(),
         items: cart.map((i) => ({
           productId: i.product.id || null,
           variantId: null,

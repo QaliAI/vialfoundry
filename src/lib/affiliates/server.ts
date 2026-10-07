@@ -8,6 +8,7 @@ export interface ResolvedAffiliate {
   name: string;
   email?: string;
   commissionRateBps: number;
+  customerDiscountBps: number;
   status: string;
 }
 
@@ -17,7 +18,8 @@ export async function lookupAffiliateByCode(rawCode?: string | null): Promise<Re
   const normalized = normalizeAffiliateCode(rawCode);
   const resolvedCode = resolveAliasCode(normalized);
   const brand = getBrandConfig();
-  const defaultRate = brand.affiliateSettings?.defaultCommissionRateBps || DEFAULT_AFFILIATE_COMMISSION_RATE_BPS;
+  const defaultCommissionRate = brand.affiliateSettings?.defaultCommissionRateBps || DEFAULT_AFFILIATE_COMMISSION_RATE_BPS;
+  const defaultCustomerDiscount = 1000; // 10%
 
   try {
     const supabase = createAdminClient();
@@ -27,7 +29,8 @@ export async function lookupAffiliateByCode(rawCode?: string | null): Promise<Re
         id: `mock-${resolvedCode.toLowerCase()}`,
         code: resolvedCode,
         name: resolvedCode,
-        commissionRateBps: defaultRate,
+        commissionRateBps: defaultCommissionRate,
+        customerDiscountBps: defaultCustomerDiscount,
         status: "active",
       };
     }
@@ -36,17 +39,19 @@ export async function lookupAffiliateByCode(rawCode?: string | null): Promise<Re
     const { data: affiliate } = await supabase
       .from("affiliates")
       .select("*")
-      .ilike("referral_code", resolvedCode)
-      .single();
+      .or(`referral_code.ilike.${resolvedCode}`)
+      .maybeSingle();
 
     if (affiliate) {
-      const rateBps = affiliate.commission_rate_bps || (affiliate.commission_rate ? Math.round(affiliate.commission_rate * 100) : defaultRate);
+      const rateBps = affiliate.commission_rate_bps || (affiliate.commission_rate ? Math.round(affiliate.commission_rate * 100) : defaultCommissionRate);
+      const customerDiscountBps = typeof affiliate.customer_discount_bps === "number" ? affiliate.customer_discount_bps : defaultCustomerDiscount;
       return {
         id: affiliate.id,
         code: affiliate.referral_code || resolvedCode,
         name: affiliate.name || resolvedCode,
         email: affiliate.email,
         commissionRateBps: rateBps,
+        customerDiscountBps,
         status: affiliate.status || (affiliate.active ? "active" : "paused"),
       };
     }
@@ -56,17 +61,19 @@ export async function lookupAffiliateByCode(rawCode?: string | null): Promise<Re
       .from("affiliate_aliases")
       .select("*, affiliates(*)")
       .ilike("alias_code", resolvedCode)
-      .single();
+      .maybeSingle();
 
     if (alias?.affiliates) {
       const parent = alias.affiliates;
-      const rateBps = parent.commission_rate_bps || (parent.commission_rate ? Math.round(parent.commission_rate * 100) : defaultRate);
+      const rateBps = parent.commission_rate_bps || (parent.commission_rate ? Math.round(parent.commission_rate * 100) : defaultCommissionRate);
+      const customerDiscountBps = typeof parent.customer_discount_bps === "number" ? parent.customer_discount_bps : defaultCustomerDiscount;
       return {
         id: parent.id,
         code: parent.referral_code || resolvedCode,
         name: parent.name || resolvedCode,
         email: parent.email,
         commissionRateBps: rateBps,
+        customerDiscountBps,
         status: parent.status || "active",
       };
     }

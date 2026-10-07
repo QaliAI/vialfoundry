@@ -80,13 +80,14 @@ async function run() {
       'supabase/migrations/07_stripe_lifecycle.sql',
       'supabase/migrations/08_admin_users_inventory.sql',
       'supabase/migrations/09_catalog_parity_lifecycle.sql',
+      'supabase/migrations/10_growth_promotions_affiliates_crm.sql',
     ];
     // Production updates default to the newest idempotent migration. Historical
     // migrations contain legacy CREATE POLICY statements and are only intended
     // for an explicit fresh-database bootstrap.
     const migrationFiles = process.argv.includes('--all')
       ? allMigrationFiles
-      : ['supabase/migrations/09_catalog_parity_lifecycle.sql'];
+      : ['supabase/migrations/10_growth_promotions_affiliates_crm.sql'];
 
     for (const file of migrationFiles) {
       console.log(`Running migration: ${file}...`);

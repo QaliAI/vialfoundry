@@ -5,6 +5,11 @@ import { ProductCard } from '../components/ProductCard';
 import { FoundryStandard } from '../components/FoundryStandard';
 import { BatchVerificationEngine } from '../components/BatchVerificationEngine';
 import { PUBLIC_PRODUCTS } from '../data/products';
+import {
+  getFeaturedProducts,
+  MERCHANDISING_SECTION_TITLE,
+  MERCHANDISING_SECTION_SUBTITLE,
+} from '../config/merchandising';
 import { categoryLabel, categoryBlurb } from '../lib/catalog-display';
 import { getBatchRecord } from '../data/batches';
 import { VERIFIED_BATCH_RECORDS } from '../data/verified-batch-records';
@@ -22,9 +27,8 @@ interface HomePageProps {
 export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, onSelectArticle }) => {
   const [activeCOALot, setActiveCOALot] = useState<string | null>(null);
 
-  // Featured, not "best selling": we have no sales data to support a
-  // popularity claim, so the wording stays neutral.
-  const bestSellers = PUBLIC_PRODUCTS.slice(0, 4);
+  // Explicit, strategically merchandised featured materials (4-6 items)
+  const featuredProducts = useMemo(() => getFeaturedProducts(PUBLIC_PRODUCTS, 6), []);
 
   // Category tiles. Derived by public customer-facing category name.
   const categories = useMemo(() => {
@@ -59,10 +63,10 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
               Shop
             </div>
             <h2 className="font-display text-2xl sm:text-3xl font-bold text-brand-ink tracking-tight">
-              Featured Research Peptides
+              {MERCHANDISING_SECTION_TITLE}
             </h2>
             <p className="text-sm text-brand-steel font-normal">
-              Reference materials for laboratory research.
+              {MERCHANDISING_SECTION_SUBTITLE}
             </p>
           </div>
           <button
@@ -74,9 +78,9 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onSelectProduct, o
           </button>
         </div>
 
-        {/* Product Cards Grid (4 across) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {bestSellers.map((product) => (
+        {/* Product Cards Grid (Responsive 2x3 or 3-across) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {featuredProducts.map((product) => (
             <ProductCard
               key={product.id}
               product={product}

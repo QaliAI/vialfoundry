@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ShoppingBag, ShieldCheck, Menu, X, ChevronRight } from 'lucide-react';
+import { Search, ShoppingBag, ShieldCheck, Menu, X, ChevronRight, User } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { BrandLogo } from './BrandLogo';
 import { FREE_STANDARD_SHIPPING_THRESHOLD_CENTS } from '../lib/manual-orders/shipping.mjs';
+import { AnnouncementBar } from './AnnouncementBar';
 
 interface NavbarProps {
   currentPath: string;
@@ -25,6 +26,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
   const navItems = [
     { label: 'Shop', path: '/catalog' },
     { label: 'Quality', path: '/quality' },
+    { label: 'Bulk Orders', path: '/bulk' },
     { label: 'About', path: '/about' },
     { label: 'Resources', path: '/resources' },
     { label: 'Contact', path: '/contact' },
@@ -39,11 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
             : 'bg-brand-canvas/90 backdrop-blur-xs'
         }`}
       >
-        {FREE_STANDARD_SHIPPING_THRESHOLD_CENTS > 0 && (
-          <div className="bg-brand-ink text-slate-300 text-[10px] sm:text-[11px] font-mono tracking-wider py-1.5 text-center border-b border-brand-graphite/40">
-            <span>FREE STANDARD SHIPPING ${FREE_STANDARD_SHIPPING_THRESHOLD_CENTS / 100}+</span>
-          </div>
-        )}
+        <AnnouncementBar />
         <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${isScrolled ? 'py-2.5' : 'py-3.5'} transition-all`}>
           <div className="flex items-center justify-between">
             {/* Brand Logo */}
@@ -91,6 +89,16 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
                 <kbd className="hidden lg:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-brand-canvas text-brand-steel rounded border border-brand-border">
                   ⌘K
                 </kbd>
+              </button>
+
+              {/* Account Button */}
+              <button
+                onClick={() => navigate('/account')}
+                className="p-2 rounded-lg bg-brand-paper hover:bg-brand-surface-muted border border-brand-border text-brand-steel hover:text-brand-ink transition-colors shadow-2xs focus-visible:ring-2 focus-visible:ring-brand-graphite"
+                aria-label="Account and orders"
+                title="Account & Orders"
+              >
+                <User className="w-4 h-4" />
               </button>
 
               {/* Cart Button */}

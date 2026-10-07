@@ -1,11 +1,24 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { Product, CartItem } from '../types';
 
 export interface LiveStockInfo {
   inStock: boolean;
   stockCount: number;
+}
+
+export interface AppliedPromoState {
+  code: string;
+  name?: string;
+  description?: string;
+  discountType?: string;
+  discountRateBps?: number;
+  fixedDiscountCents?: number;
+  discountCents: number;
+  firstOrderOnly?: boolean;
+  isAffiliate?: boolean;
+  affiliateCode?: string;
 }
 
 interface CartContextType {
@@ -20,6 +33,11 @@ interface CartContextType {
   setIsSearchOpen: (open: boolean) => void;
   totalItems: number;
   subtotal: number;
+  appliedPromo: AppliedPromoState | null;
+  applyPromoCode: (code: string, customerEmail?: string) => Promise<{ success: boolean; error?: string }>;
+  removePromoCode: () => void;
+  discountAmount: number;
+  estimatedTotal: number;
   liveInventory: Record<string, LiveStockInfo>;
   getLiveStock: (item: Product | string) => LiveStockInfo;
   refreshInventory: () => Promise<void>;
@@ -28,14 +46,13 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Start empty so the first client render matches the server's. Reading
-  // localStorage during render instead produced a hydration mismatch that threw on
-  // every page with the cart badge, including checkout.
+  // Start empty so the first client render matches the server's.
   const [cart, setCart] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [liveInventory, setLiveInventory] = useState<Record<string, LiveStockInfo>>({});
+  const [appliedPromo, setAppliedPromo] = useState<AppliedPromoState | null>(null);
 
   const refreshInventory = useCallback(async () => {
     try {
@@ -51,25 +68,114 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  const totalItems = useMemo(
+    () => cart.reduce((sum, item) => sum + item.quantity, 0),
+    [cart]
+  );
+
+  const subtotal = useMemo(
+    () => cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
+    [cart]
+  );
+
+  const subtotalCents = Math.round(subtotal * 100);
+
+  // Recompute discount whenever subtotal changes
+  const discountAmount = useMemo(() => {
+    if (!appliedPromo) return 0;
+    let cents = 0;
+    if (appliedPromo.discountRateBps && appliedPromo.discountRateBps > 0) {
+      cents += Math.round(subtotalCents * (appliedPromo.discountRateBps / 10000));
+    }
+    if (appliedPromo.fixedDiscountCents && appliedPromo.fixedDiscountCents > 0) {
+      cents += appliedPromo.fixedDiscountCents;
+    }
+    cents = Math.min(subtotalCents, Math.max(0, cents));
+    return cents / 100;
+  }, [appliedPromo, subtotalCents]);
+
+  const estimatedTotal = useMemo(
+    () => Math.max(0, subtotal - discountAmount),
+    [subtotal, discountAmount]
+  );
+
+  const applyPromoCode = useCallback(
+    async (code: string, customerEmail?: string): Promise<{ success: boolean; error?: string }> => {
+      const clean = String(code || '').trim().toUpperCase();
+      if (!clean) {
+        setAppliedPromo(null);
+        try { localStorage.removeItem('vf_pending_promo'); } catch {}
+        return { success: false, error: 'Please enter a code.' };
+      }
+
+      try {
+        const res = await fetch('/api/promotions/validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            code: clean,
+            subtotalCents,
+            customerEmail: customerEmail || undefined,
+          }),
+        });
+
+        const data = await res.json();
+        if (data.success && data.valid && data.code) {
+          const promoState: AppliedPromoState = {
+            code: data.code,
+            name: data.name,
+            description: data.description,
+            discountType: data.discountType,
+            discountRateBps: data.discountRateBps || 0,
+            fixedDiscountCents: data.fixedDiscountCents || 0,
+            discountCents: data.discountCents || 0,
+            firstOrderOnly: data.firstOrderOnly,
+            isAffiliate: data.isAffiliate,
+            affiliateCode: data.affiliateCode,
+          };
+          setAppliedPromo(promoState);
+          try { localStorage.setItem('vf_pending_promo', data.code); } catch {}
+          return { success: true };
+        }
+
+        return { success: false, error: data.error || 'Invalid promotion or partner code.' };
+      } catch (err: any) {
+        return { success: false, error: err.message || 'Error validating code.' };
+      }
+    },
+    [subtotalCents]
+  );
+
+  const removePromoCode = useCallback(() => {
+    setAppliedPromo(null);
+    try {
+      localStorage.removeItem('vf_pending_promo');
+    } catch {}
+  }, []);
+
+  // Hydrate cart and check pending promo
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('vf_cart');
-      if (saved) setCart(JSON.parse(saved));
+      const savedCart = localStorage.getItem('vf_cart');
+      if (savedCart) setCart(JSON.parse(savedCart));
+
+      const pending = localStorage.getItem('vf_pending_promo');
+      if (pending) {
+        // Silently validate and restore pending promo
+        applyPromoCode(pending);
+      }
     } catch {
-      /* corrupt or unavailable storage: start with an empty cart */
+      /* corrupt or unavailable storage */
     }
     setHydrated(true);
     refreshInventory();
-  }, [refreshInventory]);
+  }, [applyPromoCode, refreshInventory]);
 
   useEffect(() => {
-    // Don't persist the pre-hydration empty cart over a saved one.
     if (!hydrated) return;
     try {
       localStorage.setItem('vf_cart', JSON.stringify(cart));
-    } catch {
-      /* storage full or blocked: the cart still works for this session */
-    }
+    } catch {}
   }, [cart, hydrated]);
 
   const getLiveStock = useCallback(
@@ -95,14 +201,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const stock = getLiveStock(product);
     if (!stock.inStock || stock.stockCount <= 0) return;
     const maxStock = stock.stockCount;
-    setCart(prev => {
-      const existing = prev.find(item => item.product.id === product.id);
+    setCart((prev) => {
+      const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {
         const newQty = Math.min(maxStock, existing.quantity + quantity);
-        return prev.map(item =>
-          item.product.id === product.id
-            ? { ...item, quantity: newQty }
-            : item
+        return prev.map((item) =>
+          item.product.id === product.id ? { ...item, quantity: newQty } : item
         );
       }
       const initialQty = Math.min(maxStock, Math.max(1, quantity));
@@ -112,7 +216,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const removeFromCart = (productId: string) => {
-    setCart(prev => prev.filter(item => item.product.id !== productId));
+    setCart((prev) => prev.filter((item) => item.product.id !== productId));
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
@@ -120,8 +224,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       removeFromCart(productId);
       return;
     }
-    setCart(prev =>
-      prev.map(item => {
+    setCart((prev) =>
+      prev.map((item) => {
         if (item.product.id === productId) {
           const stock = getLiveStock(item.product);
           const maxStock = stock.stockCount || item.product.stockCount || Infinity;
@@ -133,9 +237,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const clearCart = () => setCart([]);
-
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
   return (
     <CartContext.Provider
@@ -151,6 +252,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsSearchOpen,
         totalItems,
         subtotal,
+        appliedPromo,
+        applyPromoCode,
+        removePromoCode,
+        discountAmount,
+        estimatedTotal,
         liveInventory,
         getLiveStock,
         refreshInventory,

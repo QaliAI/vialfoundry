@@ -39,6 +39,23 @@ export const checkoutSubmissionSchema = z.object({
   ruoAgreed: z.boolean().refine((val) => val === true, {
     message: "You must confirm that materials are for Research Use Only (RUO)",
   }),
+  attribution: z
+    .object({
+      firstTouchSource: z.string().optional().nullable(),
+      firstTouchMedium: z.string().optional().nullable(),
+      firstTouchCampaign: z.string().optional().nullable(),
+      firstTouchContent: z.string().optional().nullable(),
+      firstTouchTerm: z.string().optional().nullable(),
+      lastTouchSource: z.string().optional().nullable(),
+      lastTouchMedium: z.string().optional().nullable(),
+      lastTouchCampaign: z.string().optional().nullable(),
+      lastTouchContent: z.string().optional().nullable(),
+      lastTouchTerm: z.string().optional().nullable(),
+      landingPage: z.string().optional().nullable(),
+      referrerUrl: z.string().optional().nullable(),
+    })
+    .optional()
+    .nullable(),
   items: z.array(manualOrderItemSchema).min(1, "At least one item is required in the cart"),
   notes: z.string().optional().nullable(),
   isTest: z.boolean().optional().default(false),

@@ -17,7 +17,7 @@ export function resolveAffiliateRateBps(promoCode, affiliateRateBps = DEFAULT_AF
   if (code && promoOverrides && promoOverrides[code]) {
     return promoOverrides[code];
   }
-  if (code === "FOUNDRY10" || code === "SAVE10") {
+  if (code === "FOUNDRY20" || code === "FOUNDRY10" || code === "SAVE10") {
     return 800; // 8% commission on promo orders
   }
   return Math.max(0, Math.min(10000, Math.round(Number(affiliateRateBps ?? DEFAULT_AFFILIATE_COMMISSION_RATE_BPS))));

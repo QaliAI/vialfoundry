@@ -4,6 +4,8 @@ import { recalculateInvoice, recalculateAffiliateCommission } from "@/lib/admin/
 import { calculateShipping } from "@/lib/manual-orders/shipping.mjs";
 import { lookupAffiliateByCode } from "@/lib/affiliates/server";
 import { getBrandConfig } from "@/config/brand";
+import { getAllPromotions } from "@/lib/promotions/server";
+import { checkFirstOrderEligibility, resolvePromoCodeWithConfig } from "@/lib/promotions/promotions.mjs";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmailSafely } from "@/lib/email/resend";
 import { renderOrderConfirmationEmail } from "@/lib/email/templates/order";
@@ -149,35 +151,121 @@ export async function POST(req: Request) {
       brand.shippingOptions as any
     );
 
-    // 3. Authoritative server-side math
-    const paymentMethodDiscountBps = PAYMENT_METHOD_DISCOUNT_BPS[data.preferredPaymentMethod] || 0;
-    const invoice = recalculateInvoice(
-      {
-        items: validatedItems,
-        promoCode: data.promoCode,
-        shippingAmount: shippingInfo.amountCents,
-        taxAmount: 0,
-        paymentMethodDiscountRateBps: paymentMethodDiscountBps,
-      },
-      brand.promotions
-    );
-
-    // 4. Resolve Affiliate Attribution
+    // 3. Authoritative server-side promo and affiliate resolution
+    let appliedPromoCode: string | null = null;
+    let customerAffiliateDiscountCents = 0;
     let affiliateRecord: any = null;
     let commissionCalc: any = null;
 
     if (data.affiliateCode) {
       affiliateRecord = await lookupAffiliateByCode(data.affiliateCode);
-      if (affiliateRecord) {
-        commissionCalc = recalculateAffiliateCommission(
-          {
-            productSubtotalCents: invoice.subtotal_after_discount || 0,
-            promoCode: invoice.promo_code,
-            rateBps: affiliateRecord.commissionRateBps,
-          },
-          brand.affiliateSettings.promoCodeOverrideBps
+    }
+
+    const allPromos = await getAllPromotions(supabase);
+    const rawPromoCode = data.promoCode ? String(data.promoCode).trim().toUpperCase() : null;
+
+    if (rawPromoCode) {
+      const matchingPromo = allPromos.find((p) => p.code.toUpperCase() === rawPromoCode);
+
+      if (matchingPromo) {
+        if (matchingPromo.first_order_only) {
+          const eligibility = await checkFirstOrderEligibility(data.customerEmail, supabase);
+          if (!eligibility.eligible) {
+            return NextResponse.json(
+              {
+                success: false,
+                error: eligibility.reason || "This promo is valid for first-time orders only.",
+              },
+              { status: 400 }
+            );
+          }
+        }
+
+        const promoValidation = resolvePromoCodeWithConfig(
+          rawPromoCode,
+          allPromos,
+          preliminarySubtotalCents,
+          { isFirstOrder: true, now: new Date() }
         );
+
+        if (!promoValidation.valid) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: promoValidation.error || "The applied promo code is invalid or inapplicable.",
+            },
+            { status: 400 }
+          );
+        }
+
+        appliedPromoCode = promoValidation.code;
+      } else {
+        // Check if rawPromoCode is a partner/affiliate code
+        const affiliatePromo = await lookupAffiliateByCode(rawPromoCode);
+        if (affiliatePromo && affiliatePromo.status === "active") {
+          if (!affiliateRecord) {
+            affiliateRecord = affiliatePromo;
+          }
+          appliedPromoCode = affiliatePromo.code.toUpperCase();
+        } else {
+          return NextResponse.json(
+            { success: false, error: "The promotional code entered is invalid or expired." },
+            { status: 400 }
+          );
+        }
       }
+    }
+
+    const paymentMethodDiscountBps = PAYMENT_METHOD_DISCOUNT_BPS[data.preferredPaymentMethod] || 0;
+
+    let activePromoConfigList = allPromos;
+    if (
+      affiliateRecord &&
+      appliedPromoCode === affiliateRecord.code.toUpperCase() &&
+      !allPromos.some((p) => p.code.toUpperCase() === appliedPromoCode)
+    ) {
+      activePromoConfigList = [
+        ...allPromos,
+        {
+          code: affiliateRecord.code.toUpperCase(),
+          name: `${affiliateRecord.name} Partner Discount`,
+          discount_type: "percentage" as const,
+          discount_rate_bps: affiliateRecord.customerDiscountBps || 1000,
+          fixed_discount_cents: 0,
+          minimum_subtotal_cents: 0,
+          first_order_only: false,
+          enabled: true,
+          banner_enabled: false,
+          affiliate_stack_policy: "exclusive" as const,
+        },
+      ];
+    }
+
+    const invoice = recalculateInvoice(
+      {
+        items: validatedItems,
+        promoCode: appliedPromoCode,
+        shippingAmount: shippingInfo.amountCents,
+        taxAmount: 0,
+        paymentMethodDiscountRateBps: paymentMethodDiscountBps,
+      },
+      activePromoConfigList
+    );
+
+    if (affiliateRecord && appliedPromoCode === affiliateRecord.code.toUpperCase()) {
+      customerAffiliateDiscountCents = invoice.discount_amount || 0;
+    }
+
+    // 4. Resolve Affiliate Attribution & Commission
+    if (affiliateRecord && affiliateRecord.status === "active") {
+      commissionCalc = recalculateAffiliateCommission(
+        {
+          productSubtotalCents: invoice.subtotal_after_discount || 0,
+          promoCode: invoice.promo_code,
+          rateBps: affiliateRecord.commissionRateBps,
+        },
+        brand.affiliateSettings.promoCodeOverrideBps
+      );
     }
 
     // 5. Generate Order Number
@@ -258,6 +346,19 @@ export async function POST(req: Request) {
         affiliate_commission_rate_bps: commissionCalc?.affiliate_commission_rate_bps || null,
         affiliate_commission_amount: commissionCalc?.affiliate_commission_amount || 0,
         affiliate_status: affiliateRecord ? "pending_payment" : null,
+        first_touch_source: data.attribution?.firstTouchSource || null,
+        first_touch_medium: data.attribution?.firstTouchMedium || null,
+        first_touch_campaign: data.attribution?.firstTouchCampaign || null,
+        first_touch_content: data.attribution?.firstTouchContent || null,
+        first_touch_term: data.attribution?.firstTouchTerm || null,
+        last_touch_source: data.attribution?.lastTouchSource || null,
+        last_touch_medium: data.attribution?.lastTouchMedium || null,
+        last_touch_campaign: data.attribution?.lastTouchCampaign || null,
+        last_touch_content: data.attribution?.lastTouchContent || null,
+        last_touch_term: data.attribution?.lastTouchTerm || null,
+        landing_page: data.attribution?.landingPage || null,
+        referrer_url: data.attribution?.referrerUrl || null,
+        customer_affiliate_discount_amount: customerAffiliateDiscountCents,
         notes: data.notes || null,
         is_test: Boolean(data.isTest) || stripeLivemode === false,
         stripe_livemode: stripeLivemode,
@@ -299,6 +400,20 @@ export async function POST(req: Request) {
           },
         });
 
+        // Update promotion usage count
+        if (appliedPromoCode) {
+          const promoToUpdate = allPromos.find((p) => p.code.toUpperCase() === appliedPromoCode);
+          if (promoToUpdate) {
+            await supabase
+              .from("promotions")
+              .update({
+                times_used: (promoToUpdate.times_used || 0) + 1,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("code", appliedPromoCode);
+          }
+        }
+
         // Record affiliate referral revenue if attributed
         if (affiliateRecord?.id && commissionCalc?.affiliate_commission_amount) {
           await supabase.from("referral_revenue").insert({
@@ -311,6 +426,23 @@ export async function POST(req: Request) {
             commission_amount_cents: commissionCalc.affiliate_commission_amount,
             status: "pending_payment",
           });
+
+          const { data: affRow } = await supabase
+            .from("affiliates")
+            .select("total_orders_count, pending_commission_cents")
+            .eq("id", affiliateRecord.id)
+            .single();
+          if (affRow) {
+            await supabase
+              .from("affiliates")
+              .update({
+                total_orders_count: (affRow.total_orders_count || 0) + 1,
+                pending_commission_cents:
+                  (affRow.pending_commission_cents || 0) + commissionCalc.affiliate_commission_amount,
+                last_active_at: new Date().toISOString(),
+              })
+              .eq("id", affiliateRecord.id);
+          }
         }
       }
     }

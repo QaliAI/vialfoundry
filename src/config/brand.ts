@@ -35,11 +35,22 @@ export interface BrandShippingOption {
 export interface BrandPromoConfig {
   code: string;
   name?: string;
-  discountRateBps?: number; // e.g. 1000 for 10%
+  description?: string;
+  discountType?: 'percentage' | 'fixed_amount';
+  discountRateBps?: number; // e.g. 2000 for 20%
   fixedDiscountCents?: number;
   minSubtotalCents?: number;
-  affiliateCommissionRateBps?: number;
+  firstOrderOnly?: boolean;
+  startsAt?: string | null;
+  endsAt?: string | null;
   enabled?: boolean;
+  maxTotalUses?: number | null;
+  maxUsesPerCustomer?: number | null;
+  bannerEnabled?: boolean;
+  bannerMessage?: string | null;
+  bannerCta?: string | null;
+  affiliateStackPolicy?: 'exclusive' | 'allow_override';
+  affiliateCommissionRateBps?: number;
 }
 
 export interface BrandConfig {
@@ -130,6 +141,7 @@ export const vialFoundryBrandConfig: BrandConfig = {
   affiliateSettings: {
     defaultCommissionRateBps: 1000, // 10.00%
     promoCodeOverrideBps: {
+      FOUNDRY20: 800, // 8.00% on discounted orders
       FOUNDRY10: 800, // 8.00% on discounted orders
       SAVE10: 800,
     },
@@ -159,18 +171,42 @@ export const vialFoundryBrandConfig: BrandConfig = {
   ],
   promotions: [
     {
-      code: "FOUNDRY10",
-      name: "Vial Foundry 10% Off",
-      discountRateBps: 1000,
+      code: "FOUNDRY20",
+      name: "FOUNDRY20 — 20% First Order Discount",
+      description: "20% off your first order. Strictly for new customers with no prior paid orders.",
+      discountType: "percentage",
+      discountRateBps: 2000,
+      firstOrderOnly: true,
       affiliateCommissionRateBps: 800,
       enabled: true,
+      bannerEnabled: true,
+      bannerMessage: "20% OFF YOUR FIRST ORDER · CODE FOUNDRY20 · APPLY OFFER",
+      bannerCta: "APPLY OFFER",
+      affiliateStackPolicy: "exclusive",
+    },
+    {
+      code: "FOUNDRY10",
+      name: "Vial Foundry 10% Off",
+      description: "10% off institutional research orders.",
+      discountType: "percentage",
+      discountRateBps: 1000,
+      firstOrderOnly: false,
+      affiliateCommissionRateBps: 800,
+      enabled: true,
+      bannerEnabled: false,
+      affiliateStackPolicy: "exclusive",
     },
     {
       code: "RESEARCH25",
       name: "Research $25 off orders $200+",
+      description: "$25 off orders with subtotal of $200.00 or more.",
+      discountType: "fixed_amount",
       fixedDiscountCents: 2500,
       minSubtotalCents: 20000,
+      firstOrderOnly: false,
       enabled: false,
+      bannerEnabled: false,
+      affiliateStackPolicy: "exclusive",
     },
   ],
 };
