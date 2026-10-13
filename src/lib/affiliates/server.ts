@@ -24,15 +24,8 @@ export async function lookupAffiliateByCode(rawCode?: string | null): Promise<Re
   try {
     const supabase = createAdminClient();
     if (!supabase) {
-      // Fallback in-memory
-      return {
-        id: `mock-${resolvedCode.toLowerCase()}`,
-        code: resolvedCode,
-        name: resolvedCode,
-        commissionRateBps: defaultCommissionRate,
-        customerDiscountBps: defaultCustomerDiscount,
-        status: "active",
-      };
+      console.warn("[affiliates] Database client unavailable; failing closed");
+      return null;
     }
 
     // 1. Direct affiliate lookup
