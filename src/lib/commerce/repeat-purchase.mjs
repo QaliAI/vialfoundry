@@ -45,19 +45,19 @@ export function resolveProductForReorder(item, catalog = []) {
   if (!item || !Array.isArray(catalog)) return undefined;
 
   if (item.productId) {
-    const byId = catalog.find((p) => p.id === item.productId && p.purchasable !== false);
+    const byId = catalog.find((p) => p.id === item.productId && p.purchasable !== false && p.catalogStatus !== 'retired');
     if (byId) return byId;
   }
 
   if (item.sku) {
-    const bySku = catalog.find((p) => p.sku === item.sku && p.purchasable !== false);
+    const bySku = catalog.find((p) => p.sku === item.sku && p.purchasable !== false && p.catalogStatus !== 'retired');
     if (bySku) return bySku;
   }
 
   if (item.productName) {
     const norm = String(item.productName).trim().toLowerCase();
     const byName = catalog.find(
-      (p) => p.name && String(p.name).trim().toLowerCase() === norm && p.purchasable !== false,
+      (p) => p.name && String(p.name).trim().toLowerCase() === norm && p.purchasable !== false && p.catalogStatus !== 'retired',
     );
     if (byName) return byName;
   }

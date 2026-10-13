@@ -18,9 +18,13 @@ const read = (p) => fs.readFileSync(path.resolve(p), 'utf8');
 test('withheld products are absent from PUBLIC_PRODUCTS and related products recommendations', () => {
   assert.equal(WITHHELD_FROM_PUBLIC_CATALOG_PRODUCT_IDS.has('vf-std-010'), true);
   assert.equal(WITHHELD_FROM_PUBLIC_CATALOG_PRODUCT_IDS.has('vf-std-020'), true);
+  assert.equal(WITHHELD_FROM_PUBLIC_CATALOG_PRODUCT_IDS.has('vf-std-004'), true);
+  assert.equal(WITHHELD_FROM_PUBLIC_CATALOG_PRODUCT_IDS.has('vf-std-012'), true);
+  assert.equal(WITHHELD_FROM_PUBLIC_CATALOG_PRODUCT_IDS.has('vf-std-018'), true);
 
   assert.equal(PUBLIC_PRODUCTS.length, PRODUCTS.length - WITHHELD_FROM_PUBLIC_CATALOG_PRODUCT_IDS.size);
   assert.equal(PRODUCTS.length, 38);
+  assert.equal(PUBLIC_PRODUCTS.length, 33);
 
   for (const withheldId of WITHHELD_FROM_PUBLIC_CATALOG_PRODUCT_IDS) {
     const inPublic = PUBLIC_PRODUCTS.some((p) => p.id === withheldId);

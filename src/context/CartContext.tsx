@@ -157,7 +157,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     try {
       const savedCart = localStorage.getItem('vf_cart');
-      if (savedCart) setCart(JSON.parse(savedCart));
+      if (savedCart) {
+        const parsed = JSON.parse(savedCart);
+        const validItems = Array.isArray(parsed) ? parsed.filter((item: any) => item.product?.purchasable !== false && item.product?.catalogStatus === 'public') : [];
+        setCart(validItems);
+      }
 
       const pending = localStorage.getItem('vf_pending_promo');
       if (pending) {
@@ -198,6 +202,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 
   const addToCart = (product: Product, quantity = 1) => {
+    if (product.purchasable === false || product.catalogStatus !== 'public') return;
     const stock = getLiveStock(product);
     if (!stock.inStock || stock.stockCount <= 0) return;
     const maxStock = stock.stockCount;

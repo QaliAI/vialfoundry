@@ -39,7 +39,7 @@ export async function lookupAffiliateByCode(rawCode?: string | null): Promise<Re
     const { data: affiliate } = await supabase
       .from("affiliates")
       .select("*")
-      .or(`referral_code.ilike.${resolvedCode}`)
+      .ilike("referral_code", resolvedCode)
       .maybeSingle();
 
     if (affiliate) {

@@ -45,6 +45,13 @@ export async function GET(
     const response = NextResponse.redirect(redirectUrl);
 
     // Set 30-day affiliate cookie
+    response.cookies.set('vf_ref_partner', affiliate.code, {
+      path: '/',
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+    });
     response.cookies.set('vf_affiliate_code', affiliate.code, {
       path: '/',
       httpOnly: false,

@@ -37,3 +37,9 @@ test("calculateOrderAffiliateCommission excludes shipping and applies bps", () =
   assert.equal(comm.commissionCents, 2000);
   assert.equal(comm.shippingCentsExcluded, 1500);
 });
+
+test("formatReferralLink constructs Byron referral link accurately", () => {
+  assert.equal(formatReferralLink("BYRON"), "https://www.vialfoundry.com/r/BYRON");
+  assert.equal(formatReferralLink(normalizeAffiliateCode("byron")), "https://www.vialfoundry.com/r/BYRON");
+  assert.equal(formatReferralLink(normalizeAffiliateCode("  Byron  ")), "https://www.vialfoundry.com/r/BYRON");
+});

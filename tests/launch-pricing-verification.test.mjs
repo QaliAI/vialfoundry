@@ -46,10 +46,25 @@ test("authoritative product catalog contains exact launch prices", () => {
   assert.equal(pMap.get("VF-SKU-1000")?.price, 14.00); // Bac Water
   assert.equal(pMap.get("VF-SKU-1020")?.price, 38.00); // Acetonitrile
 
-  // GLP-1 SKUs awaiting owner cost confirmation
-  assert.equal(pMap.get("VF-SKU-993")?.price, 112.00); // Semaglutide
-  assert.equal(pMap.get("VF-SKU-994")?.price, 145.00); // Tirzepatide
-  assert.equal(pMap.get("VF-SKU-995")?.price, 168.00); // Retatrutide
+  // GLP-1 and retired SKUs per October 13 corrections
+  assert.equal(pMap.get("VF-SKU-993")?.price, 55.00); // Semaglutide 5mg (authoritative Goldmine handoff)
+  assert.equal(pMap.get("VF-SKU-995")?.price, 70.00); // Retatrutide 10mg (authoritative Goldmine handoff)
+
+  // Retired SKUs per October 13 corrections
+  const retiredTirz = pMap.get("VF-SKU-994");
+  assert.ok(retiredTirz);
+  assert.equal(retiredTirz.catalogStatus, "retired");
+  assert.equal(retiredTirz.purchasable, false);
+
+  const retiredTesa = pMap.get("VF-SKU-1012");
+  assert.ok(retiredTesa);
+  assert.equal(retiredTesa.catalogStatus, "retired");
+  assert.equal(retiredTesa.purchasable, false);
+
+  const retiredMots = pMap.get("VF-SKU-1018");
+  assert.ok(retiredMots);
+  assert.equal(retiredMots.catalogStatus, "retired");
+  assert.equal(retiredMots.purchasable, false);
 });
 
 test("brand shipping configuration specifies launch rates exactly", () => {

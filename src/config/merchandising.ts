@@ -20,7 +20,7 @@ export const FEATURED_PRODUCT_IDS: string[] = [
   'vf-std-001', // BPC-157 5 mg
   'vf-std-002', // TB-500 10 mg
   'vf-std-003', // Semaglutide 5 mg
-  'vf-std-004', // Tirzepatide 10 mg
+  'vf-std-022', // Tirzepatide 30 mg
   'vf-std-009', // GHK-Cu 50 mg
   'vf-std-028', // BPC-157 + TB-500 Wolverine 20 mg Blend
 ];

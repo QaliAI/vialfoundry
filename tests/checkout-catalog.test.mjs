@@ -64,6 +64,11 @@ test("retired, inactive, and explicitly non-purchasable SKUs are rejected", () =
   assert.equal(validateCheckoutItem({ productId: retired.id, quantity: 1 }, PRODUCTS).ok, false);
   assert.equal(validateCheckoutItem({ productId: publicProduct.id, quantity: 1 }, [{ ...publicProduct, active: false }]).ok, false);
   assert.equal(validateCheckoutItem({ productId: publicProduct.id, quantity: 1 }, [{ ...publicProduct, purchasable: false }]).ok, false);
+
+  // October 13 retired SKUs rejected server-side
+  assert.equal(validateCheckoutItem({ sku: "VF-SKU-994", quantity: 1 }, PRODUCTS).ok, false);
+  assert.equal(validateCheckoutItem({ sku: "VF-SKU-1012", quantity: 1 }, PRODUCTS).ok, false);
+  assert.equal(validateCheckoutItem({ sku: "VF-SKU-1018", quantity: 1 }, PRODUCTS).ok, false);
 });
 
 test("live on-hand stock, not build-time stockCount, gates checkout", () => {

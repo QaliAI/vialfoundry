@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Share2, Plus, Copy, CheckCircle2, DollarSign, Users, Check, X, Clock, FileText } from 'lucide-react';
-import { starterAffiliates, bpsToPercent, percentToBps } from '@/lib/affiliates/utils.mjs';
+import { Share2, Plus, Copy, CheckCircle2, Users, Clock, FileText, AlertCircle } from 'lucide-react';
+import { bpsToPercent, percentToBps } from '@/lib/affiliates/utils.mjs';
 
 interface Affiliate {
   id: string;
@@ -34,6 +34,8 @@ export default function AdminAffiliatesPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState('');
+  const [modalError, setModalError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
@@ -46,46 +48,18 @@ export default function AdminAffiliatesPage() {
       const res = await fetch('/api/admin/affiliates');
       if (res.ok) {
         const data = await res.json();
-        if (data.affiliates && data.affiliates.length > 0) {
-          setAffiliates(data.affiliates);
-        } else {
-          // Fallback starter affiliates
-          setAffiliates(
-            starterAffiliates.map((a, idx) => ({
-              id: `aff-${idx}`,
-              name: a.display_name || a.name || 'Partner',
-              email: a.email || `${a.code.toLowerCase()}@partner.vialfoundry.com`,
-              referral_code: a.code,
-              commission_rate_bps: a.commission_rate_bps || 1000,
-              status: a.status || 'active',
-              total_conversions: idx === 0 ? 12 : 3,
-              total_earned: idx === 0 ? 480.0 : 92.5,
-            }))
-          );
-        }
-
-        if (data.applications) {
+        setAffiliates(Array.isArray(data.affiliates) ? data.affiliates : []);
+        if (Array.isArray(data.applications)) {
           setApplications(data.applications);
         }
         setLoading(false);
         return;
       }
-    } catch {
-      // Fallback
+    } catch (err) {
+      console.warn('[admin/affiliates] loadData error:', err);
     }
 
-    setAffiliates(
-      starterAffiliates.map((a, idx) => ({
-        id: `aff-${idx}`,
-        name: a.display_name || a.name || 'Partner',
-        email: a.email || `${a.code.toLowerCase()}@partner.vialfoundry.com`,
-        referral_code: a.code,
-        commission_rate_bps: a.commission_rate_bps || 1000,
-        status: a.status || 'active',
-        total_conversions: idx === 0 ? 12 : 3,
-        total_earned: idx === 0 ? 480.0 : 92.5,
-      }))
-    );
+    setAffiliates([]);
     setLoading(false);
   };
 
@@ -151,6 +125,8 @@ export default function AdminAffiliatesPage() {
 
   const handleCreateAffiliate = async (e: React.FormEvent) => {
     e.preventDefault();
+    setModalError('');
+    setIsSubmitting(true);
     const rateBps = percentToBps(newPercent) || 1000;
 
     try {
@@ -166,32 +142,27 @@ export default function AdminAffiliatesPage() {
         }),
       });
 
-      if (res.ok) {
-        loadData();
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data.success) {
+        setModalError(data.error || 'Failed to create affiliate record in database.');
+        setIsSubmitting(false);
+        return;
       }
-    } catch {
-      // Local optimistic addition
+
+      setActionMessage(`Created affiliate partner ${newName} (${newCode.toUpperCase()})`);
+      setShowAddModal(false);
+      setNewName('');
+      setNewEmail('');
+      setNewCode('');
+      setNewPercent('10');
+      await loadData();
+    } catch (err: any) {
+      console.error('[admin/affiliates/create] error:', err);
+      setModalError(err.message || 'Network error communicating with server.');
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setAffiliates([
-      ...affiliates,
-      {
-        id: `aff-${Date.now()}`,
-        name: newName,
-        email: newEmail,
-        referral_code: newCode.toUpperCase(),
-        commission_rate_bps: rateBps,
-        status: 'active',
-        total_conversions: 0,
-        total_earned: 0,
-      },
-    ]);
-
-    setShowAddModal(false);
-    setNewName('');
-    setNewEmail('');
-    setNewCode('');
-    setNewPercent('10');
   };
 
   const pendingApps = applications.filter((app) => app.status === 'new' || app.status === 'pending');
@@ -205,7 +176,10 @@ export default function AdminAffiliatesPage() {
           <p className="text-xs font-mono text-slate-400">Manage research partner tracking links, commission rates, and payout statuses</p>
         </div>
         <button
-          onClick={() => setShowAddModal(true)}
+          onClick={() => {
+            setModalError('');
+            setShowAddModal(true);
+          }}
           className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-primary text-white font-display font-bold text-xs hover:bg-brand-primary-hover transition-all shadow-lg"
         >
           <Plus className="w-4 h-4" />
@@ -227,7 +201,9 @@ export default function AdminAffiliatesPage() {
             <span className="mono-tag text-[10px] text-slate-400">ACTIVE PARTNERS</span>
             <Users className="w-4 h-4 text-brand-paper" />
           </div>
-          <div className="font-mono text-3xl font-bold text-white">{affiliates.length}</div>
+          <div className="font-mono text-3xl font-bold text-white">
+            {loading ? '—' : affiliates.length}
+          </div>
           <div className="text-[10px] text-slate-400">Enrolled in Program</div>
         </div>
 
@@ -236,7 +212,9 @@ export default function AdminAffiliatesPage() {
             <span className="mono-tag text-[10px] text-slate-400">PENDING APPLICATIONS</span>
             <Clock className="w-4 h-4 text-amber-400" />
           </div>
-          <div className="font-mono text-3xl font-bold text-amber-400">{pendingApps.length}</div>
+          <div className="font-mono text-3xl font-bold text-amber-400">
+            {loading ? '—' : pendingApps.length}
+          </div>
           <div className="text-[10px] text-slate-400">Awaiting Review</div>
         </div>
 
@@ -295,42 +273,50 @@ export default function AdminAffiliatesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 bg-slate-950/60">
-              {affiliates.map((a) => (
-                <tr key={a.id} className="text-slate-300 hover:bg-white/[0.02]">
-                  <td className="p-4 font-bold text-white">{a.name}</td>
-                  <td className="p-4 text-slate-400">{a.email}</td>
-                  <td className="p-4 font-bold text-brand-paper">{a.referral_code}</td>
-                  <td className="p-4 text-emerald-400 font-bold">
-                    {bpsToPercent(a.commission_rate_bps || 1000)}%
-                  </td>
-                  <td className="p-4 text-slate-400">
-                    <span className="text-[11px] font-mono">/r/{a.referral_code}</span>
-                  </td>
-                  <td className="p-4">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 uppercase">
-                      {a.status}
-                    </span>
-                  </td>
-                  <td className="p-4 text-right">
-                    <button
-                      onClick={() => handleCopyLink(a.referral_code)}
-                      className="px-3 py-1 rounded bg-slate-900 border border-white/10 hover:border-brand-graphite text-brand-paper text-[10px] flex items-center space-x-1 ml-auto"
-                    >
-                      {copiedCode === a.referral_code ? (
-                        <>
-                          <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                          <span>Copied!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3 h-3" />
-                          <span>Copy URL</span>
-                        </>
-                      )}
-                    </button>
+              {affiliates.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-slate-400">
+                    {loading ? 'Loading partners...' : 'No affiliate partners enrolled yet. Click "New Affiliate Partner" to create one.'}
                   </td>
                 </tr>
-              ))}
+              ) : (
+                affiliates.map((a) => (
+                  <tr key={a.id} className="text-slate-300 hover:bg-white/[0.02]">
+                    <td className="p-4 font-bold text-white">{a.name}</td>
+                    <td className="p-4 text-slate-400">{a.email}</td>
+                    <td className="p-4 font-bold text-brand-paper">{a.referral_code}</td>
+                    <td className="p-4 text-emerald-400 font-bold">
+                      {bpsToPercent(a.commission_rate_bps || 1000)}%
+                    </td>
+                    <td className="p-4 text-slate-400">
+                      <span className="text-[11px] font-mono">/r/{a.referral_code}</span>
+                    </td>
+                    <td className="p-4">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 uppercase">
+                        {a.status}
+                      </span>
+                    </td>
+                    <td className="p-4 text-right">
+                      <button
+                        onClick={() => handleCopyLink(a.referral_code)}
+                        className="px-3 py-1 rounded bg-slate-900 border border-white/10 hover:border-brand-graphite text-brand-paper text-[10px] flex items-center space-x-1 ml-auto"
+                      >
+                        {copiedCode === a.referral_code ? (
+                          <>
+                            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                            <span>Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3 h-3" />
+                            <span>Copy URL</span>
+                          </>
+                        )}
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -411,6 +397,13 @@ export default function AdminAffiliatesPage() {
           <div className="w-full max-w-md glass-panel p-6 rounded-2xl border border-white/15 space-y-4 shadow-2xl">
             <h3 className="font-display text-lg font-bold text-white">Create Affiliate Partner</h3>
             
+            {modalError && (
+              <div className="p-3 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-mono flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{modalError}</span>
+              </div>
+            )}
+
             <form onSubmit={handleCreateAffiliate} className="space-y-3 text-xs font-mono">
               <div className="space-y-1">
                 <label className="text-slate-400">Partner Full Name</label>
@@ -418,7 +411,7 @@ export default function AdminAffiliatesPage() {
                   type="text" required
                   value={newName}
                   onChange={e => setNewName(e.target.value)}
-                  placeholder="Dr. Jordan Hayes"
+                  placeholder="Byron Waldrip"
                   className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white focus:outline-none focus:border-brand-graphite"
                 />
               </div>
@@ -429,7 +422,7 @@ export default function AdminAffiliatesPage() {
                   type="email" required
                   value={newEmail}
                   onChange={e => setNewEmail(e.target.value)}
-                  placeholder="jordan@researchlab.org"
+                  placeholder="byronmalachi@yahoo.com"
                   className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white focus:outline-none focus:border-brand-graphite"
                 />
               </div>
@@ -441,7 +434,7 @@ export default function AdminAffiliatesPage() {
                     type="text" required
                     value={newCode}
                     onChange={e => setNewCode(e.target.value)}
-                    placeholder="HAYES10"
+                    placeholder="BYRON"
                     className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/15 text-white focus:outline-none focus:border-brand-graphite uppercase"
                   />
                 </div>
@@ -460,15 +453,17 @@ export default function AdminAffiliatesPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
+                  disabled={isSubmitting}
                   className="px-4 py-2 rounded-xl bg-slate-900 border border-white/10 text-slate-300 text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-brand-primary text-brand-paper font-bold text-xs"
+                  disabled={isSubmitting}
+                  className="px-4 py-2 rounded-xl bg-brand-primary text-brand-paper font-bold text-xs disabled:opacity-50"
                 >
-                  Create Partner
+                  {isSubmitting ? 'Creating...' : 'Create Partner'}
                 </button>
               </div>
             </form>
