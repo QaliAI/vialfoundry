@@ -43,3 +43,14 @@ test("formatReferralLink constructs Byron referral link accurately", () => {
   assert.equal(formatReferralLink(normalizeAffiliateCode("byron")), "https://www.vialfoundry.com/r/BYRON");
   assert.equal(formatReferralLink(normalizeAffiliateCode("  Byron  ")), "https://www.vialfoundry.com/r/BYRON");
 });
+
+test("calculateOrderAffiliateCommission handles Byron 25% commission rate", () => {
+  const comm = calculateOrderAffiliateCommission({
+    productSubtotalCents: 10000, // $100.00
+    shippingCents: 999, // $9.99 shipping excluded
+    rateBps: 2500, // 25%
+  });
+
+  assert.equal(comm.commissionCents, 2500); // $25.00
+  assert.equal(comm.shippingCentsExcluded, 999);
+});
