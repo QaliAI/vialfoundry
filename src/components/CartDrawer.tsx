@@ -229,22 +229,44 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
               {/* Promo Code Entry & Status */}
               <div className="space-y-2">
                 {appliedPromo ? (
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs">
+                  <div className={`flex items-center justify-between p-2.5 rounded-xl border text-xs ${
+                    appliedPromo.isProvisional
+                      ? 'bg-amber-500/10 border-amber-500/20'
+                      : 'bg-emerald-500/10 border-emerald-500/20'
+                  }`}>
                     <div className="flex items-center space-x-2 truncate">
-                      <Tag className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                      <Tag className={`w-3.5 h-3.5 flex-shrink-0 ${
+                        appliedPromo.isProvisional ? 'text-amber-600' : 'text-emerald-600'
+                      }`} />
                       <div>
-                        <div className="font-mono font-bold text-emerald-800 flex items-center space-x-1.5">
+                        <div className={`font-mono font-bold flex items-center space-x-1.5 ${
+                          appliedPromo.isProvisional ? 'text-amber-800' : 'text-emerald-800'
+                        }`}>
                           <span>{appliedPromo.code}</span>
-                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-sans font-medium">Applied</span>
+                          {appliedPromo.isProvisional ? (
+                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-sans font-medium">
+                              Provisional
+                            </span>
+                          ) : (
+                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-sans font-medium">
+                              Applied
+                            </span>
+                          )}
                         </div>
-                        <div className="text-[11px] text-emerald-700 truncate">
+                        <div className={`text-[11px] truncate ${
+                          appliedPromo.isProvisional ? 'text-amber-700' : 'text-emerald-700'
+                        }`}>
                           {appliedPromo.name || `${((appliedPromo.discountRateBps || 0) / 100).toFixed(0)}% Discount`}
-                          {appliedPromo.firstOrderOnly && ' · First Order'}
+                          {appliedPromo.firstOrderOnly && (
+                            appliedPromo.isProvisional ? ' · Verified with email at checkout' : ' · First Order Verified'
+                          )}
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2 flex-shrink-0">
-                      <span className="font-mono font-bold text-emerald-700">
+                      <span className={`font-mono font-bold ${
+                        appliedPromo.isProvisional ? 'text-amber-700' : 'text-emerald-700'
+                      }`}>
                         -${discountAmount.toFixed(2)}
                       </span>
                       <button
@@ -307,13 +329,18 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
               {/* Cost Breakdown */}
               <div className="space-y-1.5 text-xs font-sans pt-1">
                 <div className="flex justify-between text-brand-steel">
-                  <span>Subtotal</span>
+                  <span>Product Subtotal</span>
                   <span className="font-bold font-mono text-brand-ink">${subtotal.toFixed(2)}</span>
                 </div>
                 {appliedPromo && discountAmount > 0 && (
-                  <div className="flex justify-between text-emerald-700 font-medium">
-                    <span className="flex items-center space-x-1">
-                      <span>Promotion ({appliedPromo.code})</span>
+                  <div className={`flex justify-between font-medium ${
+                    appliedPromo.isProvisional ? 'text-amber-700' : 'text-emerald-700'
+                  }`}>
+                    <span className="flex items-center space-x-1.5">
+                      <span>{appliedPromo.code} Discount {appliedPromo.discountRateBps ? `(-${(appliedPromo.discountRateBps / 100).toFixed(0)}%)` : ''}</span>
+                      {appliedPromo.isProvisional && (
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-sans">Provisional</span>
+                      )}
                     </span>
                     <span className="font-bold font-mono">-${discountAmount.toFixed(2)}</span>
                   </div>

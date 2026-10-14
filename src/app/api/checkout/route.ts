@@ -169,7 +169,7 @@ export async function POST(req: Request) {
 
       if (matchingPromo) {
         if (matchingPromo.first_order_only) {
-          const eligibility = await checkFirstOrderEligibility(data.customerEmail, supabase);
+          const eligibility = await checkFirstOrderEligibility(data.customerEmail, supabase, rawPromoCode);
           if (!eligibility.eligible) {
             return NextResponse.json(
               {
@@ -400,19 +400,7 @@ export async function POST(req: Request) {
           },
         });
 
-        // Update promotion usage count
-        if (appliedPromoCode) {
-          const promoToUpdate = allPromos.find((p) => p.code.toUpperCase() === appliedPromoCode);
-          if (promoToUpdate) {
-            await supabase
-              .from("promotions")
-              .update({
-                times_used: (promoToUpdate.times_used || 0) + 1,
-                updated_at: new Date().toISOString(),
-              })
-              .eq("code", appliedPromoCode);
-          }
-        }
+        // Promotion usage count is incremented strictly on verified payment settlement (e.g. Stripe webhook or admin paid transition).
 
         // Record affiliate referral revenue if attributed
         if (affiliateRecord?.id && commissionCalc?.affiliate_commission_amount) {

@@ -43,6 +43,8 @@ export async function POST(req: Request) {
         fixedDiscountCents: promoResult.fixedDiscountCents,
         discountCents: promoResult.discountCents,
         firstOrderOnly: promoResult.firstOrderOnly,
+        isProvisional: Boolean(promoResult.isProvisional),
+        eligibilityMessage: promoResult.eligibilityMessage || null,
         isAffiliate: false,
       });
     }

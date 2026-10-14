@@ -17,6 +17,8 @@ export interface AppliedPromoState {
   fixedDiscountCents?: number;
   discountCents: number;
   firstOrderOnly?: boolean;
+  isProvisional?: boolean;
+  eligibilityMessage?: string;
   isAffiliate?: boolean;
   affiliateCode?: string;
 }
@@ -130,6 +132,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             fixedDiscountCents: data.fixedDiscountCents || 0,
             discountCents: data.discountCents || 0,
             firstOrderOnly: data.firstOrderOnly,
+            isProvisional: Boolean(data.isProvisional),
+            eligibilityMessage: data.eligibilityMessage || undefined,
             isAffiliate: data.isAffiliate,
             affiliateCode: data.affiliateCode,
           };

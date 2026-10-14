@@ -108,8 +108,16 @@ test("shipping calculation enforces $199.99 vs $200.00 boundary conditions", () 
   assert.equal(expressAtThreshold.displayPrice, "$49.99");
 });
 
-test("promotions configuration keeps FOUNDRY10 active and RESEARCH25 disabled", () => {
+test("promotions configuration activates WELCOME10, keeps FOUNDRY10 active, and disables FOUNDRY20 and RESEARCH25", () => {
   const promos = vialFoundryBrandConfig.promotions;
+
+  const w10 = promos.find((p) => p.code === "WELCOME10");
+  assert.ok(w10);
+  assert.equal(w10.name, "WELCOME10 — 10% First Order Discount");
+  assert.equal(w10.enabled, true);
+  assert.equal(w10.bannerEnabled, true);
+  assert.equal(w10.discountRateBps, 1000);
+  assert.equal(w10.firstOrderOnly, true);
 
   const f10 = promos.find((p) => p.code === "FOUNDRY10");
   assert.ok(f10);
@@ -117,14 +125,28 @@ test("promotions configuration keeps FOUNDRY10 active and RESEARCH25 disabled", 
   assert.equal(f10.enabled, true);
   assert.equal(f10.discountRateBps, 1000);
 
+  const f20 = promos.find((p) => p.code === "FOUNDRY20");
+  assert.ok(f20);
+  assert.equal(f20.enabled, false);
+
   const r25 = promos.find((p) => p.code === "RESEARCH25");
   assert.ok(r25);
   assert.equal(r25.enabled, false);
+
+  // Resolution of active WELCOME10 for first order
+  const resolvedW10 = resolvePromoCodeWithConfig("welcome10", promos, 10000, { isFirstOrder: true });
+  assert.equal(resolvedW10.valid, true);
+  assert.equal(resolvedW10.discountRateBps, 1000);
 
   // Resolution of active FOUNDRY10
   const resolvedF10 = resolvePromoCodeWithConfig("foundry10", promos, 10000);
   assert.equal(resolvedF10.valid, true);
   assert.equal(resolvedF10.discountRateBps, 1000);
+
+  // Resolution of retired FOUNDRY20 fails cleanly
+  const resolvedF20 = resolvePromoCodeWithConfig("foundry20", promos, 10000);
+  assert.equal(resolvedF20.valid, false);
+  assert.match(resolvedF20.error || "", /inactive/i);
 
   // Resolution of disabled RESEARCH25 fails cleanly
   const resolvedR25 = resolvePromoCodeWithConfig("research25", promos, 25000);

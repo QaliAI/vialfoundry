@@ -39,6 +39,8 @@ export interface PromotionValidationResult {
   fixedDiscountCents: number;
   discountCents: number;
   firstOrderOnly?: boolean;
+  isProvisional?: boolean;
+  eligibilityMessage?: string;
   error?: string;
   minSubtotalCents?: number;
   affiliateCommissionRateBps?: number | null;
@@ -111,7 +113,7 @@ export async function getActiveBannerCampaign(supabase = createAdminClient()) {
   return {
     code: activeBanner.code,
     name: activeBanner.name,
-    message: activeBanner.banner_message || `${(activeBanner.discount_rate_bps / 100).toFixed(0)}% OFF YOUR FIRST ORDER · CODE ${activeBanner.code}`,
+    message: activeBanner.banner_message || `${(activeBanner.discount_rate_bps / 100).toFixed(0)}% OFF YOUR FIRST ORDER — USE CODE ${activeBanner.code}`,
     cta: activeBanner.banner_cta || "APPLY OFFER",
     discountRateBps: activeBanner.discount_rate_bps,
     fixedDiscountCents: activeBanner.fixed_discount_cents,
@@ -138,23 +140,36 @@ export async function validatePromotionServerSide(
   const promoRecord = allPromos.find((p) => normalizePromoCode(p.code) === normalized);
 
   let isFirstOrder: boolean | undefined = undefined;
-  if (promoRecord?.first_order_only) {
+  let isProvisional = false;
+  let eligibilityMessage: string | undefined = undefined;
+
+  const requiresFirstOrder = promoRecord
+    ? Boolean(promoRecord.first_order_only)
+    : normalized === "WELCOME10";
+
+  if (requiresFirstOrder) {
     if (!customerEmail) {
-      // If customer email has not yet been supplied, note that it requires first order verification at checkout
+      // If customer email has not yet been supplied, it is provisional
       isFirstOrder = undefined;
+      isProvisional = true;
+      eligibilityMessage = "Provisional first-order discount. Eligibility will be confirmed when your email is entered at checkout.";
     } else {
-      const eligibility = await checkFirstOrderEligibility(customerEmail, supabase);
+      const eligibility = await checkFirstOrderEligibility(customerEmail, supabase, normalized);
       if (!eligibility.eligible) {
         return {
           valid: false,
           code: normalized,
-          error: eligibility.reason || "This promo is valid for first-time orders only.",
+          error: eligibility.reason || `${normalized} is valid for first-time orders only.`,
           discountRateBps: 0,
           fixedDiscountCents: 0,
           discountCents: 0,
+          firstOrderOnly: true,
+          isProvisional: false,
         };
       }
       isFirstOrder = true;
+      isProvisional = false;
+      eligibilityMessage = "First-order eligibility confirmed.";
     }
   }
 
@@ -177,5 +192,37 @@ export async function validatePromotionServerSide(
   return {
     ...resolved,
     discountCents,
+    isProvisional,
+    eligibilityMessage,
   };
+}
+
+/**
+ * Safely increments promotion usage after verified payment.
+ */
+export async function recordPromotionUsage(
+  promoCode: string,
+  supabase = createAdminClient(),
+): Promise<void> {
+  if (!promoCode || !supabase) return;
+  const clean = normalizePromoCode(promoCode);
+  try {
+    const { data: promo } = await supabase
+      .from("promotions")
+      .select("id, code, times_used")
+      .eq("code", clean)
+      .maybeSingle();
+
+    if (promo) {
+      await supabase
+        .from("promotions")
+        .update({
+          times_used: (promo.times_used || 0) + 1,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", promo.id);
+    }
+  } catch (err) {
+    console.error("[promotions] Error updating times_used:", err);
+  }
 }

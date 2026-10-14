@@ -5,6 +5,7 @@ import { renderTrackingUpdateEmail } from "../email/templates/tracking";
 import { isValidStatusTransition, isCancelledStatus } from "./order-classification.mjs";
 import { recalculateInvoice } from "./order-math.mjs";
 import { logAdminAudit } from "./audit";
+import { recordPromotionUsage } from "../promotions/server";
 
 export async function fetchAdminOrders(options: {
   includeArchived?: boolean;
@@ -82,6 +83,13 @@ export async function updateAdminOrderStatus(params: {
   if (params.nextStatus === "shipped" && !order.shipped_at) {
     updates.shipped_at = new Date().toISOString();
   }
+  // Update payment status when transitioning to paid
+  if (params.nextStatus === "paid" && order.payment_status !== "paid") {
+    updates.payment_status = "paid";
+    if (!order.paid_at) {
+      updates.paid_at = new Date().toISOString();
+    }
+  }
 
   // 3. Update order
   const { data: updated, error: updateErr } = await supabase
@@ -93,6 +101,11 @@ export async function updateAdminOrderStatus(params: {
 
   if (updateErr) {
     throw new Error(`Failed to update order: ${updateErr.message}`);
+  }
+
+  // Record promotion usage on confirmed paid transition
+  if (params.nextStatus === "paid" && order.payment_status !== "paid" && order.promo_code) {
+    await recordPromotionUsage(order.promo_code, supabase);
   }
 
   // 4. Audit log

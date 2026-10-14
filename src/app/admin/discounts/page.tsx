@@ -12,8 +12,11 @@ import {
   Calendar,
   Lock,
   Edit2,
+  Trash2,
   AlertCircle,
   Percent,
+  Copy,
+  Check,
 } from 'lucide-react';
 
 interface Promotion {
@@ -44,6 +47,7 @@ export default function AdminDiscountsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   // Modal / Editor State
   const [showModal, setShowModal] = useState(false);
@@ -52,13 +56,13 @@ export default function AdminDiscountsPage() {
     name: '',
     description: '',
     discount_type: 'percentage',
-    discount_rate_bps: 2000,
+    discount_rate_bps: 1000,
     fixed_discount_cents: 0,
     minimum_subtotal_cents: 0,
     first_order_only: true,
     enabled: true,
     banner_enabled: true,
-    banner_message: '20% OFF YOUR FIRST ORDER · CODE FOUNDRY20 · APPLY OFFER',
+    banner_message: '10% OFF YOUR FIRST ORDER — USE CODE WELCOME10',
     banner_cta: 'APPLY OFFER',
     affiliate_stack_policy: 'exclusive',
     affiliate_commission_override_bps: 800,
@@ -86,6 +90,16 @@ export default function AdminDiscountsPage() {
     fetchPromotions();
   }, []);
 
+  const handleCopyCode = async (code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedCode(code);
+      setTimeout(() => setCopiedCode(null), 2000);
+    } catch {
+      // fallback
+    }
+  };
+
   const handleToggleEnable = async (promo: Promotion) => {
     if (!promo.id) return;
     try {
@@ -101,30 +115,62 @@ export default function AdminDiscountsPage() {
         );
         setSuccess(`Promotion ${promo.code} ${!promo.enabled ? 'activated' : 'disabled'}.`);
         setTimeout(() => setSuccess(null), 3000);
+      } else {
+        setError(data.error || 'Failed to update promotion status.');
       }
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Network error updating promotion.');
     }
   };
 
   const handleToggleBanner = async (promo: Promotion) => {
     if (!promo.id) return;
+    const nextState = !promo.banner_enabled;
     try {
       const res = await fetch(`/api/admin/promotions/${promo.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ banner_enabled: !promo.banner_enabled }),
+        body: JSON.stringify({ banner_enabled: nextState }),
       });
       const data = await res.json();
       if (data.success) {
+        // If turned on, all other promotions have banner disabled by server
         setPromotions((prev) =>
-          prev.map((p) => (p.id === promo.id ? { ...p, banner_enabled: !p.banner_enabled } : p))
+          prev.map((p) => {
+            if (p.id === promo.id) return { ...p, banner_enabled: nextState };
+            if (nextState) return { ...p, banner_enabled: false };
+            return p;
+          })
         );
         setSuccess(`Banner visibility updated for ${promo.code}.`);
         setTimeout(() => setSuccess(null), 3000);
+      } else {
+        setError(data.error || 'Failed to update banner visibility.');
       }
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Network error updating banner.');
+    }
+  };
+
+  const handleDeletePromo = async (promo: Promotion) => {
+    if (!promo.id) return;
+    const confirmed = window.confirm(`Are you sure you want to delete coupon ${promo.code}? This cannot be undone.`);
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`/api/admin/promotions/${promo.id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success) {
+        setPromotions((prev) => prev.filter((p) => p.id !== promo.id));
+        setSuccess(`Promotion ${promo.code} deleted.`);
+        setTimeout(() => setSuccess(null), 3000);
+      } else {
+        setError(data.error || 'Failed to delete promotion.');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Network error deleting promotion.');
     }
   };
 
@@ -148,7 +194,7 @@ export default function AdminDiscountsPage() {
         setError(data.error || 'Failed to save promotion');
       }
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Network error saving promotion.');
     } finally {
       setSaving(false);
     }
@@ -160,13 +206,13 @@ export default function AdminDiscountsPage() {
       name: '',
       description: '',
       discount_type: 'percentage',
-      discount_rate_bps: 2000,
+      discount_rate_bps: 1000,
       fixed_discount_cents: 0,
       minimum_subtotal_cents: 0,
       first_order_only: true,
       enabled: true,
-      banner_enabled: true,
-      banner_message: '20% OFF YOUR FIRST ORDER · CODE FOUNDRY20 · APPLY OFFER',
+      banner_enabled: false,
+      banner_message: '10% OFF YOUR FIRST ORDER — USE CODE WELCOME10',
       banner_cta: 'APPLY OFFER',
       affiliate_stack_policy: 'exclusive',
       affiliate_commission_override_bps: 800,
@@ -243,8 +289,8 @@ export default function AdminDiscountsPage() {
               <th className="p-4">Discount</th>
               <th className="p-4">Min Subtotal</th>
               <th className="p-4">Audience</th>
+              <th className="p-4">Performance</th>
               <th className="p-4">Announcement Banner</th>
-              <th className="p-4">Affiliate Override</th>
               <th className="p-4">Status</th>
               <th className="p-4 text-right">Actions</th>
             </tr>
@@ -258,18 +304,29 @@ export default function AdminDiscountsPage() {
               const minSpend = p.minimum_subtotal_cents
                 ? `$${(p.minimum_subtotal_cents / 100).toFixed(2)}`
                 : 'None';
-              const affOverride = p.affiliate_commission_override_bps
-                ? `${(p.affiliate_commission_override_bps / 100).toFixed(1)}%`
-                : 'Default (10%)';
 
               return (
                 <tr key={p.code} className="text-slate-300 hover:bg-white/5 transition-colors">
                   <td className="p-4 font-bold text-white">
                     <div className="space-y-1">
-                      <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded bg-white/5 border border-white/10 text-brand-paper">
-                        <Tag className="w-3 h-3 text-brand-teal" />
-                        <span className="font-semibold">{p.code}</span>
-                      </span>
+                      <div className="flex items-center space-x-2">
+                        <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded bg-white/5 border border-white/10 text-brand-paper">
+                          <Tag className="w-3 h-3 text-brand-teal" />
+                          <span className="font-semibold">{p.code}</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyCode(p.code)}
+                          title="Copy promo code"
+                          className="p-1 rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                        >
+                          {copiedCode === p.code ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      </div>
                       {p.name && <div className="text-[11px] text-slate-400 font-normal">{p.name}</div>}
                     </div>
                   </td>
@@ -286,6 +343,14 @@ export default function AdminDiscountsPage() {
                     )}
                   </td>
                   <td className="p-4">
+                    <div className="space-y-0.5">
+                      <span className="font-bold text-white">{p.times_used || 0}</span>
+                      <span className="text-[10px] text-slate-400 block">
+                        {p.max_total_uses ? `of ${p.max_total_uses} max redemptions` : 'redemptions (unlimited)'}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="p-4">
                     <button
                       onClick={() => handleToggleBanner(p)}
                       className={`inline-flex items-center space-x-1.5 px-2.5 py-1 rounded text-[10px] font-medium border transition-colors ${
@@ -298,7 +363,6 @@ export default function AdminDiscountsPage() {
                       <span>{p.banner_enabled ? 'Active on Banner' : 'Banner Off'}</span>
                     </button>
                   </td>
-                  <td className="p-4 text-slate-400">{affOverride}</td>
                   <td className="p-4">
                     <button
                       onClick={() => handleToggleEnable(p)}
@@ -313,13 +377,22 @@ export default function AdminDiscountsPage() {
                     </button>
                   </td>
                   <td className="p-4 text-right">
-                    <button
-                      onClick={() => openEditModal(p)}
-                      className="p-1.5 rounded hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
-                      title="Edit Promotion"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center justify-end space-x-1.5">
+                      <button
+                        onClick={() => openEditModal(p)}
+                        className="p-1.5 rounded hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+                        title="Edit Promotion"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeletePromo(p)}
+                        className="p-1.5 rounded hover:bg-white/10 text-slate-400 hover:text-red-400 transition-colors"
+                        title="Delete Promotion"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );
@@ -355,7 +428,7 @@ export default function AdminDiscountsPage() {
                     onChange={(e) =>
                       setEditingPromo({ ...editingPromo, code: e.target.value.toUpperCase() })
                     }
-                    placeholder="e.g. FOUNDRY20"
+                    placeholder="e.g. WELCOME10"
                     className="w-full bg-slate-950 border border-white/10 rounded-lg p-2.5 text-white font-bold tracking-wider"
                   />
                 </div>
@@ -366,7 +439,7 @@ export default function AdminDiscountsPage() {
                     required
                     value={editingPromo.name || ''}
                     onChange={(e) => setEditingPromo({ ...editingPromo, name: e.target.value })}
-                    placeholder="e.g. 20% First Order Discount"
+                    placeholder="e.g. 10% First Order Discount"
                     className="w-full bg-slate-950 border border-white/10 rounded-lg p-2.5 text-white"
                   />
                 </div>
@@ -405,7 +478,7 @@ export default function AdminDiscountsPage() {
                 <div>
                   <label className="block text-slate-400 mb-1">
                     {editingPromo.discount_type === 'percentage'
-                      ? 'Discount Rate (Basis Points: 2000 = 20%)'
+                      ? 'Discount Rate (Basis Points: 1000 = 10%)'
                       : 'Fixed Discount (Cents: 2500 = $25.00)'}
                   </label>
                   <input
@@ -446,17 +519,49 @@ export default function AdminDiscountsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-400 mb-1">Affiliate Commission (BPS)</label>
+                  <label className="block text-slate-400 mb-1">Max Total Redemptions (Optional)</label>
                   <input
                     type="number"
-                    value={editingPromo.affiliate_commission_override_bps || 800}
+                    value={editingPromo.max_total_uses || ''}
                     onChange={(e) =>
                       setEditingPromo({
                         ...editingPromo,
-                        affiliate_commission_override_bps: Number(e.target.value),
+                        max_total_uses: e.target.value ? Number(e.target.value) : null,
                       })
                     }
-                    placeholder="800 for 8.00%"
+                    placeholder="Leave empty for unlimited"
+                    className="w-full bg-slate-950 border border-white/10 rounded-lg p-2.5 text-white"
+                  />
+                </div>
+              </div>
+
+              {/* Date Windows */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-slate-400 mb-1">Starts At (Optional)</label>
+                  <input
+                    type="datetime-local"
+                    value={editingPromo.starts_at ? editingPromo.starts_at.slice(0, 16) : ''}
+                    onChange={(e) =>
+                      setEditingPromo({
+                        ...editingPromo,
+                        starts_at: e.target.value ? new Date(e.target.value).toISOString() : null,
+                      })
+                    }
+                    className="w-full bg-slate-950 border border-white/10 rounded-lg p-2.5 text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-400 mb-1">Ends At (Optional)</label>
+                  <input
+                    type="datetime-local"
+                    value={editingPromo.ends_at ? editingPromo.ends_at.slice(0, 16) : ''}
+                    onChange={(e) =>
+                      setEditingPromo({
+                        ...editingPromo,
+                        ends_at: e.target.value ? new Date(e.target.value).toISOString() : null,
+                      })
+                    }
                     className="w-full bg-slate-950 border border-white/10 rounded-lg p-2.5 text-white"
                   />
                 </div>
@@ -502,7 +607,7 @@ export default function AdminDiscountsPage() {
                       onChange={(e) =>
                         setEditingPromo({ ...editingPromo, banner_message: e.target.value })
                       }
-                      placeholder="e.g. 20% OFF YOUR FIRST ORDER · CODE FOUNDRY20 · APPLY OFFER"
+                      placeholder="e.g. 10% OFF YOUR FIRST ORDER — USE CODE WELCOME10"
                       className="w-full bg-slate-900 border border-white/10 rounded-lg p-2 text-white text-[11px]"
                     />
                   </div>

@@ -15,7 +15,7 @@ export function normalizePromoCode(value) {
  * - Refunded orders: If an order reached payment settlement (payment_status = 'paid' or
  *   amount_refunded > 0), the customer already exercised their first-order incentive and is disqualified.
  */
-export async function checkFirstOrderEligibility(customerEmail, supabase) {
+export async function checkFirstOrderEligibility(customerEmail, supabase, promoCode = "WELCOME10") {
   const email = String(customerEmail ?? "").trim().toLowerCase();
   if (!email || !email.includes("@")) {
     return {
@@ -36,7 +36,10 @@ export async function checkFirstOrderEligibility(customerEmail, supabase) {
 
     if (error) {
       console.warn("[promotions] Error querying customer order history:", error.message);
-      return { eligible: true };
+      return {
+        eligible: false,
+        reason: "Unable to verify eligibility at this time. Please try again.",
+      };
     }
 
     if (!Array.isArray(priorOrders) || priorOrders.length === 0) {
@@ -57,9 +60,10 @@ export async function checkFirstOrderEligibility(customerEmail, supabase) {
     });
 
     if (disqualifyingOrder) {
+      const codeName = normalizePromoCode(promoCode) || "This coupon";
       return {
         eligible: false,
-        reason: "FOUNDRY20 is valid for first-time orders only. A previous paid order was found for this email.",
+        reason: `${codeName} is valid for first-time orders only. A previous paid order was found for this email.`,
         priorOrderNumber: disqualifyingOrder.order_number,
       };
     }
@@ -67,7 +71,10 @@ export async function checkFirstOrderEligibility(customerEmail, supabase) {
     return { eligible: true };
   } catch (err) {
     console.error("[promotions] Exception checking first-order eligibility:", err);
-    return { eligible: true };
+    return {
+      eligible: false,
+      reason: "Unable to verify eligibility at this time. Please try again.",
+    };
   }
 }
 
@@ -101,12 +108,12 @@ export function resolvePromoCodeWithConfig(value, promotions = [], subtotalCents
 
   if (!match) {
     // Default fallback for recognized brand codes
-    if (code === "FOUNDRY20") {
+    if (code === "WELCOME10") {
       if (options.isFirstOrder === false) {
         return {
           valid: false,
           code,
-          error: "FOUNDRY20 is valid for first-time customers only.",
+          error: "WELCOME10 is valid for first-time orders only.",
           discountRateBps: 0,
           fixedDiscountCents: 0,
         };
@@ -114,12 +121,24 @@ export function resolvePromoCodeWithConfig(value, promotions = [], subtotalCents
       return {
         valid: true,
         code,
-        name: "FOUNDRY20 — 20% First Order Discount",
-        discountRateBps: 2000,
+        name: "WELCOME10 — 10% First Order Discount",
+        discountRateBps: 1000,
         fixedDiscountCents: 0,
         minSubtotalCents: 0,
         firstOrderOnly: true,
         affiliateCommissionRateBps: 800,
+        bannerEnabled: true,
+        bannerMessage: "10% OFF YOUR FIRST ORDER — USE CODE WELCOME10",
+        bannerCta: "APPLY OFFER",
+      };
+    }
+    if (code === "FOUNDRY20") {
+      return {
+        valid: false,
+        code,
+        error: "This promo code is currently inactive.",
+        discountRateBps: 0,
+        fixedDiscountCents: 0,
       };
     }
     if (code === "FOUNDRY10" || code === "SAVE10") {

@@ -141,7 +141,7 @@ export const vialFoundryBrandConfig: BrandConfig = {
   affiliateSettings: {
     defaultCommissionRateBps: 1000, // 10.00%
     promoCodeOverrideBps: {
-      FOUNDRY20: 800, // 8.00% on discounted orders
+      WELCOME10: 800, // 8.00% on discounted orders
       FOUNDRY10: 800, // 8.00% on discounted orders
       SAVE10: 800,
     },
@@ -171,16 +171,16 @@ export const vialFoundryBrandConfig: BrandConfig = {
   ],
   promotions: [
     {
-      code: "FOUNDRY20",
-      name: "FOUNDRY20 — 20% First Order Discount",
-      description: "20% off your first order. Strictly for new customers with no prior paid orders.",
+      code: "WELCOME10",
+      name: "WELCOME10 — 10% First Order Discount",
+      description: "10% off your first research order. Strictly for new customers with no prior paid orders.",
       discountType: "percentage",
-      discountRateBps: 2000,
+      discountRateBps: 1000,
       firstOrderOnly: true,
       affiliateCommissionRateBps: 800,
       enabled: true,
       bannerEnabled: true,
-      bannerMessage: "20% OFF YOUR FIRST ORDER · CODE FOUNDRY20 · APPLY OFFER",
+      bannerMessage: "10% OFF YOUR FIRST ORDER — USE CODE WELCOME10",
       bannerCta: "APPLY OFFER",
       affiliateStackPolicy: "exclusive",
     },
@@ -193,6 +193,18 @@ export const vialFoundryBrandConfig: BrandConfig = {
       firstOrderOnly: false,
       affiliateCommissionRateBps: 800,
       enabled: true,
+      bannerEnabled: false,
+      affiliateStackPolicy: "exclusive",
+    },
+    {
+      code: "FOUNDRY20",
+      name: "FOUNDRY20 — 20% First Order Discount",
+      description: "20% off your first order. Retired campaign.",
+      discountType: "percentage",
+      discountRateBps: 2000,
+      firstOrderOnly: true,
+      affiliateCommissionRateBps: 800,
+      enabled: false,
       bannerEnabled: false,
       affiliateStackPolicy: "exclusive",
     },

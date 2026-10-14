@@ -10,8 +10,18 @@ import { FEATURED_PRODUCT_IDS, getFeaturedProducts } from '../src/config/merchan
 import { PRODUCTS } from '../src/data/products.ts';
 import { parseUtmParams } from '../src/lib/analytics/attribution.ts';
 
-test('promotions engine: FOUNDRY20 is configured for 20% discount on first orders only', () => {
+test('promotions engine: WELCOME10 is configured for 10% discount on first orders only', () => {
   const promos = [
+    {
+      code: 'WELCOME10',
+      name: 'WELCOME10 — 10% First Order Discount',
+      discount_type: 'percentage',
+      discount_rate_bps: 1000,
+      fixed_discount_cents: 0,
+      minimum_subtotal_cents: 0,
+      first_order_only: true,
+      enabled: true,
+    },
     {
       code: 'FOUNDRY20',
       name: 'FOUNDRY20 — 20% First Order Discount',
@@ -20,20 +30,25 @@ test('promotions engine: FOUNDRY20 is configured for 20% discount on first order
       fixed_discount_cents: 0,
       minimum_subtotal_cents: 0,
       first_order_only: true,
-      enabled: true,
+      enabled: false,
     },
   ];
 
-  // Eligible first-time customer
-  const eligible = resolvePromoCodeWithConfig('FOUNDRY20', promos, 10000, { isFirstOrder: true });
+  // Eligible first-time customer with WELCOME10
+  const eligible = resolvePromoCodeWithConfig('WELCOME10', promos, 10000, { isFirstOrder: true });
   assert.equal(eligible.valid, true);
-  assert.equal(eligible.discountRateBps, 2000);
-  assert.equal(eligible.code, 'FOUNDRY20');
+  assert.equal(eligible.discountRateBps, 1000);
+  assert.equal(eligible.code, 'WELCOME10');
 
-  // Ineligible repeat customer
-  const ineligible = resolvePromoCodeWithConfig('FOUNDRY20', promos, 10000, { isFirstOrder: false });
+  // Ineligible repeat customer with WELCOME10
+  const ineligible = resolvePromoCodeWithConfig('WELCOME10', promos, 10000, { isFirstOrder: false });
   assert.equal(ineligible.valid, false);
   assert.ok(ineligible.error.includes('first-time'));
+
+  // Disabled FOUNDRY20 is rejected
+  const disabledFoundry20 = resolvePromoCodeWithConfig('FOUNDRY20', promos, 10000, { isFirstOrder: true });
+  assert.equal(disabledFoundry20.valid, false);
+  assert.match(disabledFoundry20.error, /inactive/i);
 });
 
 test('first-order eligibility: allows customer with no prior orders or canceled/unpaid orders', async () => {

@@ -19,10 +19,10 @@ interface BannerCampaign {
 export const AnnouncementBar: React.FC = () => {
   const { appliedPromo, applyPromoCode, setIsCartOpen } = useCart();
   const [campaign, setCampaign] = useState<BannerCampaign | null>({
-    code: 'FOUNDRY20',
-    message: '20% OFF YOUR FIRST ORDER · CODE FOUNDRY20',
+    code: 'WELCOME10',
+    message: '10% OFF YOUR FIRST ORDER — USE CODE WELCOME10',
     cta: 'APPLY OFFER',
-    discountRateBps: 2000,
+    discountRateBps: 1000,
     firstOrderOnly: true,
     endsAt: null,
   });
@@ -93,7 +93,11 @@ export const AnnouncementBar: React.FC = () => {
 
   const handleApplyOffer = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!campaign || isCurrentPromoApplied) {
+    if (!campaign) {
+      setIsCartOpen(true);
+      return;
+    }
+    if (isCurrentPromoApplied) {
       setIsCartOpen(true);
       return;
     }
@@ -103,6 +107,7 @@ export const AnnouncementBar: React.FC = () => {
     if (res.success) {
       setJustApplied(true);
       setTimeout(() => setJustApplied(false), 3000);
+      setIsCartOpen(true);
     }
   };
 
@@ -138,7 +143,7 @@ export const AnnouncementBar: React.FC = () => {
         <div className="sm:hidden flex items-center space-x-1.5 text-[10px] tracking-wide truncate">
           <Tag className="w-2.5 h-2.5 text-brand-teal flex-shrink-0" />
           <span className="font-semibold text-slate-200 truncate">
-            FIRST ORDER: 20% OFF · {campaign.code}
+            {campaign.message}
           </span>
         </div>
 
@@ -147,6 +152,7 @@ export const AnnouncementBar: React.FC = () => {
           <button
             onClick={handleApplyOffer}
             disabled={applying}
+            aria-label={isCurrentPromoApplied ? 'Offer applied to order' : `Apply offer ${campaign.code}`}
             className={`inline-flex items-center space-x-1 px-2.5 py-0.5 rounded text-[10px] font-sans font-bold uppercase tracking-wider transition-all duration-150 shadow-2xs ${
               isCurrentPromoApplied || justApplied
                 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'

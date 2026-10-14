@@ -90,26 +90,85 @@ function CheckoutPageInner() {
   const subtotalCents = Math.round(subtotal * 100);
 
   const [discountCode, setDiscountCode] = useState('');
-  const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; discountCents: number; name?: string } | null>(null);
+  const [appliedDiscount, setAppliedDiscount] = useState<{
+    code: string;
+    discountCents: number;
+    name?: string;
+    discountRateBps?: number;
+    firstOrderOnly?: boolean;
+    isProvisional?: boolean;
+    eligibilityMessage?: string;
+  } | null>(null);
   const [discountError, setDiscountError] = useState('');
   const [isCheckingPromo, setIsCheckingPromo] = useState(false);
 
   // Sync promo from cart context (e.g. applied from AnnouncementBar or CartDrawer)
   useEffect(() => {
-    if (appliedPromo && !appliedDiscount) {
+    if (appliedPromo) {
       setDiscountCode(appliedPromo.code);
+      const rateBps = appliedPromo.discountRateBps || 0;
+      const discountCents = rateBps > 0
+        ? Math.round(subtotalCents * (rateBps / 10000))
+        : appliedPromo.fixedDiscountCents || appliedPromo.discountCents || 0;
+
       setAppliedDiscount({
         code: appliedPromo.code,
-        discountCents:
-          appliedPromo.discountCents ||
-          (appliedPromo.discountRateBps
-            ? Math.round(subtotalCents * (appliedPromo.discountRateBps / 10000))
-            : appliedPromo.fixedDiscountCents || 0),
+        discountCents,
         name: appliedPromo.name,
+        discountRateBps: rateBps,
+        firstOrderOnly: appliedPromo.firstOrderOnly,
+        isProvisional: appliedPromo.isProvisional,
+        eligibilityMessage: appliedPromo.eligibilityMessage,
       });
+    } else {
+      setAppliedDiscount(null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appliedPromo, subtotalCents]);
+
+  const revalidateDiscountWithEmail = async (emailToVerify: string) => {
+    const code = appliedDiscount?.code || discountCode.trim().toUpperCase();
+    if (!code) return;
+    const cleanEmail = emailToVerify.trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes('@') || !cleanEmail.includes('.')) return;
+
+    try {
+      const res = await fetch('/api/promotions/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code,
+          subtotalCents,
+          customerEmail: cleanEmail,
+        }),
+      });
+
+      const promoResult = await res.json();
+      if (promoResult.valid && (promoResult.discountCents > 0 || promoResult.discountRateBps > 0 || promoResult.fixedDiscountCents > 0)) {
+        const discountCents =
+          promoResult.discountCents ||
+          (promoResult.discountRateBps
+            ? Math.round(subtotalCents * (promoResult.discountRateBps / 10000))
+            : promoResult.fixedDiscountCents || 0);
+
+        setAppliedDiscount({
+          code: promoResult.code || code,
+          discountCents,
+          name: promoResult.name,
+          discountRateBps: promoResult.discountRateBps,
+          firstOrderOnly: promoResult.firstOrderOnly,
+          isProvisional: Boolean(promoResult.isProvisional),
+          eligibilityMessage: promoResult.eligibilityMessage || 'First-order eligibility confirmed.',
+        });
+        setDiscountError('');
+      } else {
+        setAppliedDiscount(null);
+        removePromoCode();
+        setDiscountError(promoResult.error || 'This promotion is valid for first-time orders only.');
+      }
+    } catch {
+      /* Keep existing state on transient network error */
+    }
+  };
   const [ruoAgreed, setRuoAgreed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -201,8 +260,12 @@ function CheckoutPageInner() {
           code: promoResult.code || code,
           discountCents,
           name: promoResult.name,
+          discountRateBps: promoResult.discountRateBps,
+          firstOrderOnly: promoResult.firstOrderOnly,
+          isProvisional: Boolean(promoResult.isProvisional),
+          eligibilityMessage: promoResult.eligibilityMessage,
         });
-        applyPromoCode(promoResult.code || code);
+        applyPromoCode(promoResult.code || code, shippingAddress.email.trim() || undefined);
         setDiscountError('');
         trackEvent('promo_applied', {
           code: promoResult.code || code,
@@ -224,8 +287,11 @@ function CheckoutPageInner() {
           code: fallbackResult.code || code,
           discountCents: fallbackResult.discountCents,
           name: fallbackResult.name,
+          discountRateBps: fallbackResult.discountRateBps,
+          firstOrderOnly: fallbackResult.firstOrderOnly,
+          isProvisional: Boolean(fallbackResult.firstOrderOnly && !shippingAddress.email.trim()),
         });
-        applyPromoCode(fallbackResult.code || code);
+        applyPromoCode(fallbackResult.code || code, shippingAddress.email.trim() || undefined);
         setDiscountError('');
       } else {
         setAppliedDiscount(null);
@@ -481,6 +547,7 @@ function CheckoutPageInner() {
                 type="email" required
                 value={shippingAddress.email}
                 onChange={e => setShippingAddress({ ...shippingAddress, email: e.target.value })}
+                onBlur={() => revalidateDiscountWithEmail(shippingAddress.email)}
                 className="w-full px-3.5 py-2.5 rounded-xl bg-brand-canvas border border-brand-border text-brand-ink focus:outline-none focus:bg-brand-paper focus:border-brand-graphite"
               />
             </div>
@@ -697,32 +764,69 @@ function CheckoutPageInner() {
                 />
                 <button
                   onClick={handleApplyDiscount}
+                  disabled={isCheckingPromo || !discountCode.trim()}
                   type="button"
-                  className="px-4 py-2 rounded-xl bg-brand-surface-muted hover:bg-brand-border text-xs font-sans font-bold text-brand-ink border border-brand-border transition-colors"
+                  className="px-4 py-2 rounded-xl bg-brand-surface-muted hover:bg-brand-border text-xs font-sans font-bold text-brand-ink border border-brand-border transition-colors disabled:opacity-50"
                 >
-                  Apply
+                  {isCheckingPromo ? 'Checking...' : 'Apply Code'}
                 </button>
               </div>
               {appliedDiscount && (
-                <div className="text-[11px] font-sans text-brand-mineral flex items-center space-x-1">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-brand-accent" />
-                  <span>Code {appliedDiscount.code} applied (-${(appliedDiscount.discountCents / 100).toFixed(2)})</span>
+                <div className="space-y-1">
+                  <div className="text-[11px] font-sans text-brand-mineral flex items-center justify-between">
+                    <div className="flex items-center space-x-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-brand-accent flex-shrink-0" />
+                      <span className="font-semibold">{appliedDiscount.code} Applied</span>
+                      <span>(-${(appliedDiscount.discountCents / 100).toFixed(2)})</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveDiscount}
+                      className="text-[10px] text-brand-steel hover:text-brand-danger underline font-sans"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  {appliedDiscount.isProvisional && (
+                    <div className="text-[11px] font-sans text-amber-700 bg-amber-500/10 p-2 rounded-lg border border-amber-500/20">
+                      Provisional discount applied. First-order eligibility will be verified when your email address is entered.
+                    </div>
+                  )}
+                  {!appliedDiscount.isProvisional && appliedDiscount.firstOrderOnly && (
+                    <div className="text-[11px] font-sans text-emerald-700 bg-emerald-500/10 p-1.5 rounded-lg border border-emerald-500/20 flex items-center space-x-1">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600 flex-shrink-0" />
+                      <span>First-order eligibility confirmed.</span>
+                    </div>
+                  )}
                 </div>
               )}
               {discountError && (
-                <div className="text-[11px] font-sans text-brand-danger">{discountError}</div>
+                <div className="text-[11px] font-sans text-brand-danger bg-red-500/10 p-2 rounded-lg border border-red-500/20">
+                  {discountError}
+                </div>
               )}
             </div>
 
             {/* Totals Breakdown */}
             <div className="space-y-2 text-xs font-sans pt-2">
               <div className="flex justify-between text-brand-steel">
-                <span>Subtotal</span>
+                <span>Product subtotal</span>
                 <span className="font-bold font-mono text-brand-ink">${subtotal.toFixed(2)}</span>
               </div>
               {appliedDiscount && (
                 <div className="flex justify-between text-brand-mineral font-medium">
-                  <span>Discount ({appliedDiscount.code})</span>
+                  <span className="flex items-center space-x-1.5">
+                    <span>{appliedDiscount.code} discount {appliedDiscount.discountRateBps ? `(-${(appliedDiscount.discountRateBps / 100).toFixed(0)}%)` : ''}</span>
+                    {appliedDiscount.isProvisional ? (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-mono font-medium">
+                        Provisional
+                      </span>
+                    ) : (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono font-medium">
+                        Verified
+                      </span>
+                    )}
+                  </span>
                   <span className="font-mono">-${(appliedDiscount.discountCents / 100).toFixed(2)}</span>
                 </div>
               )}
@@ -732,8 +836,12 @@ function CheckoutPageInner() {
                   {shippingInfo.displayPrice}
                 </span>
               </div>
+              <div className="flex justify-between text-brand-steel">
+                <span>Tax</span>
+                <span className="font-mono text-brand-steel">$0.00</span>
+              </div>
               <div className="flex justify-between text-brand-ink font-bold text-base pt-3 border-t border-brand-border/60">
-                <span>Total Due</span>
+                <span>Final total due</span>
                 <span className="font-mono text-brand-ink">${grandTotalDollars}</span>
               </div>
             </div>

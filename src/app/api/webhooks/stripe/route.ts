@@ -23,6 +23,7 @@ import { renderOrderConfirmationEmail } from '../../../../lib/email/templates/or
 import { renderInternalOrderNotificationEmail } from '../../../../lib/email/templates/internal-order';
 import { renderRefundConfirmationEmail } from '../../../../lib/email/templates/refund';
 import { getBrandConfig } from '../../../../config/brand';
+import { recordPromotionUsage } from '../../../../lib/promotions/server';
 
 /**
  * Stripe webhook — the ONLY authoritative confirmation that money moved.
@@ -262,6 +263,10 @@ export async function POST(req: Request) {
           .from('referral_revenue')
           .update({ status: 'pending_payout' })
           .eq('manual_order_id', order.id);
+      }
+
+      if (order.promo_code) {
+        await recordPromotionUsage(order.promo_code, supabase);
       }
 
       await recordOrderEvent({
