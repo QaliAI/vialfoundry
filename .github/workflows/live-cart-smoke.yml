@@ -1,0 +1,43 @@
+name: Live cart and coupon smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/context/CartContext.tsx'
+      - 'src/components/CartDrawer.tsx'
+      - 'src/components/AnnouncementBar.tsx'
+      - 'src/app/checkout/**'
+      - 'src/app/api/promotions/**'
+      - 'src/lib/promotions/**'
+      - 'scripts/smoke-cart-coupon.mjs'
+      - '.github/workflows/live-cart-smoke.yml'
+  workflow_dispatch:
+
+jobs:
+  live-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Install headless browser
+        run: |
+          npm install --no-save --no-audit --no-fund playwright
+          npx playwright install --with-deps chromium
+      - name: Validate live mobile and desktop cart / coupon / checkout
+        run: node scripts/smoke-cart-coupon.mjs
+        env:
+          SITE_URL: https://www.vialfoundry.com
+      - name: Upload screenshots for inspection
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-cart-smoke-screenshots
+          path: qa-artifacts/
+          if-no-files-found: ignore
+          retention-days: 7
