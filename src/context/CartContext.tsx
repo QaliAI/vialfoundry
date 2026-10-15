@@ -157,27 +157,38 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {}
   }, []);
 
-  // Hydrate cart and check pending promo
+  // Restore saved cart ONCE. Do not depend on applyPromoCode: that callback
+  // changes when subtotal changes, which previously rehydrated stale cart data,
+  // retriggered coupon validation and caused visible cart/discount flickering.
   useEffect(() => {
     try {
       const savedCart = localStorage.getItem('vf_cart');
       if (savedCart) {
         const parsed = JSON.parse(savedCart);
-        const validItems = Array.isArray(parsed) ? parsed.filter((item: any) => item.product?.purchasable !== false && item.product?.catalogStatus === 'public') : [];
+        const validItems = Array.isArray(parsed)
+          ? parsed.filter((item: any) => item.product?.purchasable !== false && item.product?.catalogStatus === 'public')
+          : [];
         setCart(validItems);
-      }
-
-      const pending = localStorage.getItem('vf_pending_promo');
-      if (pending) {
-        // Silently validate and restore pending promo
-        applyPromoCode(pending);
       }
     } catch {
       /* corrupt or unavailable storage */
     }
     setHydrated(true);
-    refreshInventory();
-  }, [applyPromoCode, refreshInventory]);
+    void refreshInventory();
+  }, [refreshInventory]);
+
+  // Apply any saved coupon only after the cart subtotal has been restored.
+  // Intentionally run only when hydration completes, not on quantity edits.
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      const pending = localStorage.getItem('vf_pending_promo');
+      if (pending) void applyPromoCode(pending);
+    } catch {
+      /* storage unavailable */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated]);
 
   useEffect(() => {
     if (!hydrated) return;
