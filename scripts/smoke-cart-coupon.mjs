@@ -24,6 +24,15 @@ try {
 
     try {
       await page.goto(baseURL + '/catalog', { waitUntil: 'domcontentloaded', timeout: 40000 });
+      // Exercise the real research-use acknowledgment; do not bypass the gate.
+      const researchGate = page.getByRole('dialog', { name: /Research Use Only/i });
+      if (await researchGate.count()) {
+        const acknowledgements = researchGate.getByRole('checkbox');
+        assert.equal(await acknowledgements.count(), 3, 'Expected three RUO acknowledgments');
+        for (let index = 0; index < 3; index++) await acknowledgements.nth(index).check();
+        await researchGate.getByRole('button', { name: 'Enter Site' }).click();
+        await researchGate.waitFor({ state: 'hidden', timeout: 10000 });
+      }
       await page.locator('#catalog-search').waitFor({ timeout: 20000 });
       await page.locator('#catalog-search').fill('AOD-9604');
 
