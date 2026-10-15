@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCart } from '../../context/CartContext';
 import { vialFoundryBrandConfig } from '../../config/brand';
 import { calculateShipping } from '../../lib/manual-orders/shipping.mjs';
-import { calculateConfiguredPromoDiscount } from '../../lib/promotions/promotions.mjs';
 import { getClientAffiliateCode } from '../../lib/affiliates/client-storage.mjs';
 import { productSize, productTitle } from '../../lib/catalog-display';
 import { PAYMENT_METHODS, CONFIGURED_PAYMENT_METHODS, PaymentMethodId, getPaymentMethod } from '../../data/payment';
@@ -101,6 +100,8 @@ function CheckoutPageInner() {
   } | null>(null);
   const [discountError, setDiscountError] = useState('');
   const [isCheckingPromo, setIsCheckingPromo] = useState(false);
+  const lastVerifiedEmailRef = useRef('');
+  const latestEmailRef = useRef('');
 
   // Sync promo from cart context (e.g. applied from AnnouncementBar or CartDrawer)
   useEffect(() => {
@@ -117,7 +118,7 @@ function CheckoutPageInner() {
         name: appliedPromo.name,
         discountRateBps: rateBps,
         firstOrderOnly: appliedPromo.firstOrderOnly,
-        isProvisional: appliedPromo.isProvisional,
+        isProvisional: Boolean(appliedPromo.firstOrderOnly && (appliedPromo.isProvisional || !lastVerifiedEmailRef.current)),
         eligibilityMessage: appliedPromo.eligibilityMessage,
       });
     } else {
@@ -125,48 +126,29 @@ function CheckoutPageInner() {
     }
   }, [appliedPromo, subtotalCents]);
 
+  // One validation path for cart, checkout and first-order email verification.
+  // The shared cart state is authoritative for presentation; the checkout API
+  // rechecks eligibility and amounts before a Stripe session can be created.
   const revalidateDiscountWithEmail = async (emailToVerify: string) => {
-    const code = appliedDiscount?.code || discountCode.trim().toUpperCase();
+    const code = appliedPromo?.code || appliedDiscount?.code;
     if (!code) return;
     const cleanEmail = emailToVerify.trim().toLowerCase();
     if (!cleanEmail || !cleanEmail.includes('@') || !cleanEmail.includes('.')) return;
 
-    try {
-      const res = await fetch('/api/promotions/validate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code,
-          subtotalCents,
-          customerEmail: cleanEmail,
-        }),
-      });
+    setIsCheckingPromo(true);
+    const result = await applyPromoCode(code, cleanEmail);
+    setIsCheckingPromo(false);
 
-      const promoResult = await res.json();
-      if (promoResult.valid && (promoResult.discountCents > 0 || promoResult.discountRateBps > 0 || promoResult.fixedDiscountCents > 0)) {
-        const discountCents =
-          promoResult.discountCents ||
-          (promoResult.discountRateBps
-            ? Math.round(subtotalCents * (promoResult.discountRateBps / 10000))
-            : promoResult.fixedDiscountCents || 0);
-
-        setAppliedDiscount({
-          code: promoResult.code || code,
-          discountCents,
-          name: promoResult.name,
-          discountRateBps: promoResult.discountRateBps,
-          firstOrderOnly: promoResult.firstOrderOnly,
-          isProvisional: Boolean(promoResult.isProvisional),
-          eligibilityMessage: promoResult.eligibilityMessage || 'First-order eligibility confirmed.',
-        });
-        setDiscountError('');
-      } else {
-        setAppliedDiscount(null);
-        removePromoCode();
-        setDiscountError(promoResult.error || 'This promotion is valid for first-time orders only.');
-      }
-    } catch {
-      /* Keep existing state on transient network error */
+    // The address might change while the network request is in flight.
+    if (latestEmailRef.current !== cleanEmail) return;
+    if (result.success) {
+      lastVerifiedEmailRef.current = cleanEmail;
+      setDiscountError('');
+    } else {
+      lastVerifiedEmailRef.current = '';
+      removePromoCode();
+      setAppliedDiscount(null);
+      setDiscountError(result.error || 'Unable to verify your first-order discount.');
     }
   };
   const [ruoAgreed, setRuoAgreed] = useState(false);
@@ -227,6 +209,7 @@ function CheckoutPageInner() {
     if (e) e.preventDefault();
     const code = discountCode.trim().toUpperCase();
     if (!code) {
+      lastVerifiedEmailRef.current = '';
       setAppliedDiscount(null);
       setDiscountError('');
       removePromoCode();
@@ -235,75 +218,23 @@ function CheckoutPageInner() {
 
     setIsCheckingPromo(true);
     setDiscountError('');
+    const customerEmail = shippingAddress.email.trim().toLowerCase();
+    const result = await applyPromoCode(code, customerEmail || undefined);
+    setIsCheckingPromo(false);
 
-    try {
-      const res = await fetch('/api/promotions/validate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code,
-          subtotalCents,
-          customerEmail: shippingAddress.email.trim() || undefined,
-        }),
-      });
-
-      const promoResult = await res.json();
-
-      if (promoResult.valid && (promoResult.discountCents > 0 || promoResult.discountRateBps > 0 || promoResult.fixedDiscountCents > 0)) {
-        const discountCents =
-          promoResult.discountCents ||
-          (promoResult.discountRateBps
-            ? Math.round(subtotalCents * (promoResult.discountRateBps / 10000))
-            : promoResult.fixedDiscountCents || 0);
-
-        setAppliedDiscount({
-          code: promoResult.code || code,
-          discountCents,
-          name: promoResult.name,
-          discountRateBps: promoResult.discountRateBps,
-          firstOrderOnly: promoResult.firstOrderOnly,
-          isProvisional: Boolean(promoResult.isProvisional),
-          eligibilityMessage: promoResult.eligibilityMessage,
-        });
-        applyPromoCode(promoResult.code || code, shippingAddress.email.trim() || undefined);
-        setDiscountError('');
-        trackEvent('promo_applied', {
-          code: promoResult.code || code,
-          discountCents,
-        });
-      } else {
-        setAppliedDiscount(null);
-        removePromoCode();
-        setDiscountError(promoResult.error || 'Invalid or inapplicable promotional code.');
-      }
-    } catch {
-      const fallbackResult = calculateConfiguredPromoDiscount(
-        subtotalCents,
-        code,
-        vialFoundryBrandConfig.promotions
-      );
-      if (fallbackResult.valid && fallbackResult.discountCents > 0) {
-        setAppliedDiscount({
-          code: fallbackResult.code || code,
-          discountCents: fallbackResult.discountCents,
-          name: fallbackResult.name,
-          discountRateBps: fallbackResult.discountRateBps,
-          firstOrderOnly: fallbackResult.firstOrderOnly,
-          isProvisional: Boolean(fallbackResult.firstOrderOnly && !shippingAddress.email.trim()),
-        });
-        applyPromoCode(fallbackResult.code || code, shippingAddress.email.trim() || undefined);
-        setDiscountError('');
-      } else {
-        setAppliedDiscount(null);
-        removePromoCode();
-        setDiscountError(fallbackResult.error || 'Invalid or inapplicable promotional code.');
-      }
-    } finally {
-      setIsCheckingPromo(false);
+    if (result.success) {
+      lastVerifiedEmailRef.current = customerEmail;
+      trackEvent('promo_applied', { code });
+    } else {
+      lastVerifiedEmailRef.current = '';
+      removePromoCode();
+      setAppliedDiscount(null);
+      setDiscountError(result.error || 'Invalid or inapplicable promotional code.');
     }
   };
 
   const handleRemoveDiscount = () => {
+    lastVerifiedEmailRef.current = '';
     setAppliedDiscount(null);
     setDiscountCode('');
     setDiscountError('');
@@ -330,6 +261,22 @@ function CheckoutPageInner() {
 
     setIsSubmitting(true);
     setSubmitError('');
+
+    // Before opening Stripe, verify first-order eligibility with the current
+    // email. Never submit a stale or merely provisional coupon.
+    if (appliedPromo?.firstOrderOnly) {
+      const validation = await applyPromoCode(appliedPromo.code, shippingAddress.email.trim().toLowerCase());
+      if (!validation.success) {
+        lastVerifiedEmailRef.current = '';
+        removePromoCode();
+        setAppliedDiscount(null);
+        setDiscountError(validation.error || 'This coupon could not be verified for your email.');
+        setSubmitError('Please review your discount before continuing.');
+        setIsSubmitting(false);
+        return;
+      }
+      lastVerifiedEmailRef.current = shippingAddress.email.trim().toLowerCase();
+    }
 
     // Generate unique idempotency key
     const submissionKey = `vf_sub_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
@@ -546,8 +493,13 @@ function CheckoutPageInner() {
               <input
                 type="email" required
                 value={shippingAddress.email}
-                onChange={e => setShippingAddress({ ...shippingAddress, email: e.target.value })}
-                onBlur={() => revalidateDiscountWithEmail(shippingAddress.email)}
+                onChange={e => {
+                    latestEmailRef.current = e.target.value.trim().toLowerCase();
+                    lastVerifiedEmailRef.current = '';
+                    setShippingAddress({ ...shippingAddress, email: e.target.value });
+                    setAppliedDiscount((prev) => prev?.firstOrderOnly ? { ...prev, isProvisional: true } : prev);
+                  }}
+                onBlur={() => { void revalidateDiscountWithEmail(shippingAddress.email); }}
                 className="w-full px-3.5 py-2.5 rounded-xl bg-brand-canvas border border-brand-border text-brand-ink focus:outline-none focus:bg-brand-paper focus:border-brand-graphite"
               />
             </div>
