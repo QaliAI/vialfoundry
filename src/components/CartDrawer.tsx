@@ -360,9 +360,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
                   <span className="text-brand-mineral font-semibold">Included</span>
                 </div>
                 <div className="flex justify-between text-brand-ink font-bold text-sm pt-2 border-t border-brand-border/60">
-                  <span>Estimated Total</span>
+                  <span>Estimated product total</span>
                   <span className="font-mono text-brand-ink">${estimatedTotal.toFixed(2)}</span>
                 </div>
+                <p className="text-[10px] text-brand-steel leading-relaxed">
+                  Shipping and any applicable tax are added at checkout.
+                  {appliedPromo?.isProvisional ? ' First-order eligibility is confirmed after you enter your email.' : ''}
+                </p>
               </div>
 
               <button
