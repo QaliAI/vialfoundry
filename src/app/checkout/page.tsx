@@ -154,6 +154,22 @@ function CheckoutPageInner() {
   const [ruoAgreed, setRuoAgreed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [checkoutHealth, setCheckoutHealth] = useState<'checking' | 'available' | 'unavailable'>('checking');
+
+  const checkCheckoutHealth = async () => {
+    setCheckoutHealth('checking');
+    try {
+      const response = await fetch('/api/health/checkout', { cache: 'no-store' });
+      const health = await response.json();
+      setCheckoutHealth(response.ok && health.checkoutAvailable === true ? 'available' : 'unavailable');
+    } catch {
+      setCheckoutHealth('unavailable');
+    }
+  };
+
+  useEffect(() => {
+    void checkCheckoutHealth();
+  }, []);
   const [paymentMethodId, setPaymentMethodId] = useState<PaymentMethodId>(
     (availablePaymentMethods[0]?.id as PaymentMethodId) || 'manual_invoice'
   );
@@ -243,6 +259,10 @@ function CheckoutPageInner() {
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (checkoutHealth !== 'available') {
+      setSubmitError('Checkout is temporarily unavailable. No payment has been taken. Please try again later.');
+      return;
+    }
     if (!ruoAgreed) {
       alert('You must confirm that materials are for Research Use Only (RUO).');
       return;
@@ -423,6 +443,16 @@ function CheckoutPageInner() {
         </div>
       )}
 
+      {checkoutHealth === 'unavailable' && (
+        <div role="alert" className="p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-sm font-sans space-y-2">
+          <p className="font-semibold">Checkout is temporarily unavailable.</p>
+          <p>We cannot safely verify or save orders at the moment. Your cart is preserved, and no payment has been taken.</p>
+          <button type="button" onClick={() => { void checkCheckoutHealth(); }} className="underline font-semibold">Check again</button>
+        </div>
+      )}
+      {checkoutHealth === 'checking' && (
+        <p role="status" className="text-sm text-brand-steel">Verifying secure checkout availability…</p>
+      )}
       {submitError && (
         <div className="p-4 rounded-xl bg-brand-paper border border-brand-danger text-brand-danger text-xs font-sans font-medium">
           {submitError}
@@ -800,11 +830,11 @@ function CheckoutPageInner() {
 
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full py-3.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-bold text-sm shadow-xs flex items-center justify-center space-x-2 transition-all"
+              disabled={isSubmitting || checkoutHealth !== 'available'}
+              className="w-full py-3.5 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed bg-brand-primary hover:bg-brand-primary-hover text-white font-display font-bold text-sm shadow-xs flex items-center justify-center space-x-2 transition-all"
             >
               <Lock className="w-4 h-4" />
-              <span>{isSubmitting ? (stripeLive ? 'Redirecting to payment...' : 'Submitting Request...') : (stripeLive ? 'Continue to Secure Payment' : 'Submit Order Request')}</span>
+              <span>{checkoutHealth === 'checking' ? 'Checking checkout availability...' : checkoutHealth === 'unavailable' ? 'Checkout unavailable' : isSubmitting ? (stripeLive ? 'Redirecting to payment...' : 'Submitting Request...') : (stripeLive ? 'Continue to Secure Payment' : 'Submit Order Request')}</span>
             </button>
 
             <div className="text-center text-[11px] font-sans text-brand-steel flex items-center justify-center space-x-1.5">
