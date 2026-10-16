@@ -42,8 +42,9 @@ export async function POST(req: Request) {
     const data = result.data;
     const brand = getBrandConfig();
     const supabase = createAdminClient();
+    const stripeMode = isStripeEnabled();
 
-    if (isProductionRuntime() && !isSupabaseOperational()) {
+    if (!supabase || (isProductionRuntime() && !isSupabaseOperational())) {
       return NextResponse.json(
         { success: false, error: "Checkout is temporarily unavailable. Please try again shortly." },
         { status: 503 },
@@ -52,11 +53,15 @@ export async function POST(req: Request) {
 
     // 1. Check idempotency if database is connected
     if (supabase) {
-      const { data: existing } = await supabase
+      const { data: existing, error: lookupError } = await supabase
         .from("manual_orders")
         .select("order_number, total_amount, subtotal_amount, discount_amount, shipping_amount, preferred_payment_method, checkout_mode, payment_status")
         .eq("submission_key", data.submissionKey)
-        .single();
+        .maybeSingle();
+
+      if (lookupError) {
+        return NextResponse.json({ success: false, error: "We could not verify this checkout request. Please try again shortly." }, { status: 503 });
+      }
 
       if (existing) {
         // Stripe sessions must never be represented as successfully paid or
@@ -97,6 +102,7 @@ export async function POST(req: Request) {
       lotNumber?: string | null;
     }> = [];
 
+    const requestedQuantities = new Map<string, number>();
     for (const item of data.items) {
       const resolved = validateCheckoutItem(item, PRODUCTS);
       if (!resolved.ok || !resolved.product || !resolved.quantity || !resolved.unit_price_amount) {
@@ -129,7 +135,9 @@ export async function POST(req: Request) {
         );
       }
 
-      const stockCheck = assertSufficientStock(onHand, resolved.quantity, catalogProduct.name);
+      const requestedQuantity = (requestedQuantities.get(catalogProduct.id) || 0) + resolved.quantity;
+      requestedQuantities.set(catalogProduct.id, requestedQuantity);
+      const stockCheck = assertSufficientStock(onHand, requestedQuantity, catalogProduct.name);
       if (!stockCheck.ok) {
         return NextResponse.json({ success: false, error: stockCheck.error }, { status: 400 });
       }
@@ -225,7 +233,9 @@ export async function POST(req: Request) {
       }
     }
 
-    const paymentMethodDiscountBps = PAYMENT_METHOD_DISCOUNT_BPS[data.preferredPaymentMethod] || 0;
+    // The actual gateway determines payment discounts, not a client-supplied
+    // manual method while the customer is being charged through Stripe.
+    const paymentMethodDiscountBps = stripeMode ? 0 : PAYMENT_METHOD_DISCOUNT_BPS[data.preferredPaymentMethod] || 0;
 
     let activePromoConfigList = allPromos;
     if (
@@ -278,14 +288,13 @@ export async function POST(req: Request) {
     }
 
     // 5. Generate Order Number
-    const orderNumber = `VF-${Date.now().toString().slice(-6)}`;
     const orderId = crypto.randomUUID();
+    const orderNumber = `VF-${Date.now().toString().slice(-6)}-${orderId.slice(0, 8).toUpperCase()}`;
 
     // Stripe only handles checkout when it is explicitly selected, fully
     // credentialed, and the key mode matches this environment. Otherwise we
     // keep the configured manual-invoice flow. We never silently switch to
     // live keys and never invent a sandbox payment method.
-    const stripeMode = isStripeEnabled();
     if (process.env.PAYMENT_GATEWAY_TYPE === "stripe" && !stripeMode) {
       const status = stripeConfigStatus();
       console.error(
@@ -374,7 +383,7 @@ export async function POST(req: Request) {
         referrer_url: data.attribution?.referrerUrl || null,
         customer_affiliate_discount_amount: customerAffiliateDiscountCents,
         notes: data.notes || null,
-        is_test: Boolean(data.isTest) || stripeLivemode === false,
+        is_test: stripeMode ? stripeLivemode === false : !isProductionRuntime() && Boolean(data.isTest),
         stripe_livemode: stripeLivemode,
       });
 

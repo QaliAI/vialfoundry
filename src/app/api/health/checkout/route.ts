@@ -39,9 +39,13 @@ export async function GET() {
     // Never claim card payments work unless the server-side credentials are valid.
     const gatewaySelected = process.env.PAYMENT_GATEWAY_TYPE === "stripe";
     const available = !gatewaySelected || isStripeEnabled();
+    const processing = gatewaySelected ? await supabase.rpc('stripe_processing_health') : null;
+    const webhookHealthy = !gatewaySelected || (!processing?.error && processing?.data &&
+      processing.data.retryPending === 0 && processing.data.reviewPending === 0 && processing.data.messagesPending === 0 && processing.data.deliveryReview === 0);
     return NextResponse.json(
-      { status: available ? "ok" : "unavailable", checkoutAvailable: available, database: "available", paymentMode },
-      { status: available ? 200 : 503, headers: noCache },
+      { status: available && webhookHealthy ? "ok" : "degraded", checkoutAvailable: available, database: "available", paymentMode,
+        webhookProcessing: webhookHealthy ? 'ok' : 'attention_required' },
+      { status: available && webhookHealthy ? 200 : 503, headers: noCache },
     );
   } catch (err) {
     console.warn("[health/checkout] Order database check exception:", err instanceof Error ? err.message : "unknown");

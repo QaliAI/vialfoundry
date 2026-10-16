@@ -24,32 +24,11 @@ test('internal order notification template defines fulfillment next step and exc
   assert.ok(!tplSrc.includes('client_secret'));
 });
 
-test('stripe webhook ensures email failure does not lose the paid order', () => {
-  const webhookSrc = read('src/app/api/webhooks/stripe/route.ts');
-
-  // Customer email wrapped in try/catch
-  assert.ok(
-    webhookSrc.includes('// 1. Customer confirmation email (isolated try/catch so failure never throws)'),
-    'customer email dispatch must be isolated in try/catch',
-  );
-
-  // Owner alert wrapped in try/catch
-  assert.ok(
-    webhookSrc.includes('// 2. Owner alert email (isolated try/catch so failure never throws)'),
-    'owner alert dispatch must be isolated in try/catch',
-  );
-
-  // Pass fulfillment next step
-  assert.ok(
-    webhookSrc.includes('fulfillmentNextStep'),
-    'webhook must provide fulfillmentNextStep in owner alert',
-  );
-
-  // Order transition to waiting_inventory on oversell
-  assert.ok(
-    webhookSrc.includes("status: 'waiting_inventory'"),
-    'webhook must transition order status to waiting_inventory on oversell',
-  );
+test('paid owner message includes the persisted fulfillment next step', () => {
+  const source = read('src/lib/email/stripe-messages.ts');
+  assert.ok(source.includes('fulfillmentNextStep'));
+  assert.ok(source.includes("order.status === 'waiting_inventory'"));
+  assert.ok(source.includes('renderInternalOrderNotificationEmail'));
 });
 
 test('admin resend-email route supports owner_alert with proper event logging', () => {

@@ -387,20 +387,11 @@ test('admin resend email route verifies sendEmailSafely result and logs order ev
 // -----------------------------------------------------------------------------
 // 9. Paid email flow records internal admin notifications
 // -----------------------------------------------------------------------------
-test('stripe webhook records internal admin order notifications in order_events', () => {
-  const webhookSrc = read('src/app/api/webhooks/stripe/route.ts');
-  assert.ok(
-    webhookSrc.includes('const sentInternal = await sendEmailSafely'),
-    'webhook must capture internal email dispatch result'
-  );
-  assert.ok(
-    webhookSrc.includes("type: sentInternal.success ? 'email_sent' : 'email_failed'"),
-    'webhook must record internal notification success/failure event'
-  );
-  assert.ok(
-    webhookSrc.includes('paid_email_sent_at'),
-    'webhook preserves atomic paid_email_sent_at idempotency'
-  );
+test('Stripe message delivery persists per-recipient results transactionally', () => {
+  const sql = read('supabase/migrations/20261016231001_stripe_atomic_settlement.sql');
+  assert.ok(sql.includes("'paid_customer','paid_owner'"));
+  assert.ok(sql.includes("THEN 'email_failed' ELSE 'email_sent'"));
+  assert.ok(sql.includes('paid_email_sent_at=now()'));
 });
 
 // -----------------------------------------------------------------------------

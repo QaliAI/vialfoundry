@@ -44,6 +44,6 @@ jobs:
           else
             gh issue create \
               --title "Vial Foundry checkout monitor outage" \
-              --body "Automated live commerce probe failed. Investigate checkout database, Stripe gateway mode and WELCOME10 validation. This is a **read-only probe**; no real customer payment or completed transaction was attempted. Production: https://www.vialfoundry.com/api/health/checkout — Workflow: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. Do not mutate merchant keys or customer data automatically."
+              --body "Automated live commerce probe failed. Investigate checkout database, Stripe gateway mode, WELCOME10 validation and webhook settlement/notification backlog. Reconciliation runbook: https://github.com/$GITHUB_REPOSITORY/blob/main/docs/stripe-settlement-reconciliation.md. This is a **read-only probe**; no real customer payment or completed transaction was attempted. Production: https://www.vialfoundry.com/api/health/checkout — Workflow: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. Do not mutate merchant keys or customer data automatically."
           fi
           exit 0

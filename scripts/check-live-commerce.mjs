@@ -34,6 +34,8 @@ async function probe() {
     throw new Error('Checkout database/availability health was not OK');
   if (health.paymentMode !== 'stripe')
     throw new Error('Checkout no longer reports Stripe enabled; no card-payment claim can be made');
+  if (health.webhookProcessing !== 'ok')
+    throw new Error('Stripe settlement retries or notification backlog require reconciliation');
   if (promotions.banner?.code !== 'WELCOME10')
     throw new Error('WELCOME10 is not the active announcement campaign');
   if (!coupon.valid || coupon.code !== 'WELCOME10' || coupon.discountRateBps !== 1000 ||
