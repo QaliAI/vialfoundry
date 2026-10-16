@@ -43,6 +43,9 @@ jobs:
           node scripts/check-live-commerce.mjs
         env:
           CHECKOUT_SITE_URL: https://www.vialfoundry.com
+          # A push can run before Vercel has promoted the matching health code.
+          # Only a missing new health field gets this bounded deployment grace.
+          COMMERCE_DEPLOYMENT_GRACE: ${{ github.event_name == 'push' && 'true' || 'false' }}
       - name: Open or deduplicate production incident
         if: failure()
         env:

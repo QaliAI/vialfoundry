@@ -34,6 +34,11 @@ async function probe() {
     throw new Error('Checkout database/availability health was not OK');
   if (health.paymentMode !== 'stripe')
     throw new Error('Checkout no longer reports Stripe enabled; no card-payment claim can be made');
+  if (health.webhookProcessing === undefined && process.env.COMMERCE_DEPLOYMENT_GRACE === 'true') {
+    const pending = new Error('Waiting for the new production health contract during deployment');
+    pending.deploymentPending = true;
+    throw pending;
+  }
   if (health.webhookProcessing !== 'ok')
     throw new Error('Stripe settlement retries or notification backlog require reconciliation');
   if (promotions.banner?.code !== 'WELCOME10')
@@ -47,7 +52,8 @@ async function probe() {
 }
 
 let lastError;
-for (let attempt = 1; attempt <= 3; attempt++) {
+const maxAttempts = process.env.COMMERCE_DEPLOYMENT_GRACE === 'true' ? 12 : 3;
+for (let attempt = 1; attempt <= maxAttempts; attempt++) {
   try {
     const result = await probe();
     console.log('PASS', JSON.stringify({ target: base, ...result }));
@@ -55,8 +61,9 @@ for (let attempt = 1; attempt <= 3; attempt++) {
     process.exit(0);
   } catch (error) {
     lastError = error;
-    console.error('Attempt ' + attempt + '/3:', error.message);
-    if (attempt < 3) await sleep(attempt * 2500);
+    console.error('Attempt ' + attempt + '/' + maxAttempts + ':', error.message);
+    if (!error.deploymentPending && attempt >= 3) break;
+    if (attempt < maxAttempts) await sleep(Math.min(attempt * 2500, 10000));
   }
 }
 console.error('FAIL: checkout watchdog detected an outage; ' + (lastError?.message || 'unknown'));
