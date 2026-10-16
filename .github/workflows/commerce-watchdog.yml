@@ -1,0 +1,49 @@
+name: Vial Foundry production commerce watchdog
+
+on:
+  schedule:
+    # Avoid the top of each hour, when GitHub's scheduler is busiest.
+    - cron: '17 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/check-live-commerce.mjs'
+      - '.github/workflows/commerce-watchdog.yml'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: commerce-watchdog
+  cancel-in-progress: false
+
+jobs:
+  checkout-health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Probe actual checkout database, configured Stripe gateway and WELCOME10
+        id: probe
+        run: node scripts/check-live-commerce.mjs
+        env:
+          CHECKOUT_SITE_URL: https://www.vialfoundry.com
+      - name: Open or deduplicate production incident
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          existing="$(gh issue list --state open --search 'Vial Foundry checkout monitor outage in:title' --json number --jq '.[0].number // empty')"
+          if [ -n "$existing" ]; then
+            echo "Existing checkout incident #$existing; no duplicate issue created."
+          else
+            gh issue create \
+              --title "Vial Foundry checkout monitor outage" \
+              --body "Automated live commerce probe failed. Investigate checkout database, Stripe gateway mode and WELCOME10 validation. This is a **read-only probe**; no real customer payment or completed transaction was attempted. Production: https://www.vialfoundry.com/api/health/checkout — Workflow: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. Do not mutate merchant keys or customer data automatically."
+          fi
+          exit 0
