@@ -25,7 +25,7 @@ test("handles the required Stripe events including checkout expiry", () => {
     assert.ok(isHandledEvent(t), t);
   }
   assert.equal(isHandledEvent("customer.created"), false);
-  assert.equal(HANDLED_EVENT_TYPES.length, 5);
+  assert.equal(HANDLED_EVENT_TYPES.length, 7);
 });
 
 test("marks an unpaid order paid when the amount matches exactly", () => {

@@ -23,13 +23,18 @@ export async function sendEmailSafely(params: {
   text?: string;
   from?: string;
   replyTo?: string;
+  idempotencyKey?: string;
+  requireDelivery?: boolean;
 }): Promise<{ success: boolean; id?: string; error?: string }> {
   try {
     const resend = getResendClient();
     const brand = getBrandConfig();
 
     if (!resend) {
-      console.log(`[email/mock] sendEmailSafely to: ${params.to} | subject: "${params.subject}" (RESEND_API_KEY not configured)`);
+      if (params.requireDelivery || process.env.VERCEL_ENV === 'production') {
+        return { success: false, error: 'Email provider unavailable' };
+      }
+      console.log('[email/mock] provider not configured');
       return { success: true, id: "mock-email-id" };
     }
 
@@ -42,16 +47,16 @@ export async function sendEmailSafely(params: {
       html: params.html,
       text: params.text,
       replyTo: params.replyTo || identity.replyTo,
-    });
+    }, params.idempotencyKey ? { idempotencyKey: params.idempotencyKey } : undefined);
 
     if (error) {
-      console.error("[email/resend] send error:", error);
+      console.error('[email/resend] provider rejected delivery');
       return { success: false, error: error.message };
     }
 
-    return { success: true, id: data?.id };
+    return data?.id ? { success: true, id: data.id } : { success: false, error: 'Provider receipt missing' };
   } catch (err: any) {
-    console.error("[email/resend] exception in sendEmailSafely:", err);
+    console.error('[email/resend] delivery request failed');
     // Never rethrow - preserve customer checkout success
     return { success: false, error: err.message };
   }

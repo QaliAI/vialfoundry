@@ -66,6 +66,12 @@ try {
         await page.waitForTimeout(200);
       }
 
+      // Quantity edits must revalidate and retain the selected promotion.
+      await page.getByRole('button', { name: 'Increase quantity', exact: true }).click();
+      await page.getByText('WELCOME10', { exact: true }).first().waitFor({ timeout: 12000 });
+      await page.getByRole('button', { name: 'Decrease quantity', exact: true }).click();
+      await page.getByText('WELCOME10', { exact: true }).first().waitFor({ timeout: 12000 });
+
       await page.getByRole('button', { name: /Proceed to Checkout/i }).click();
       await page.waitForURL(/\/checkout/, { timeout: 15000 });
       await page.getByRole('heading', { name: 'Order Summary' }).waitFor({ timeout: 10000 });

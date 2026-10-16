@@ -79,5 +79,5 @@ test("the Stripe webhook is signature-verified and gated", () => {
   const src = fs.readFileSync("src/app/api/webhooks/stripe/route.ts", "utf8");
   assert.ok(src.includes("constructEvent"), "webhook must verify the Stripe signature");
   assert.ok(src.includes("isStripeEnabled"), "webhook must be gated on Stripe configuration");
-  assert.ok(src.includes("stripe_webhook_events"), "webhook must record event ids for idempotency");
+  assert.ok(src.includes("applySettlement"), "webhook must use transactional settlement and its receipt ledger");
 });

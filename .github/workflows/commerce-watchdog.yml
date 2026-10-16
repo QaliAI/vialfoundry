@@ -5,6 +5,11 @@ on:
     # Avoid the top of each hour, when GitHub's scheduler is busiest.
     - cron: '17 * * * *'
   workflow_dispatch:
+    inputs:
+      incident_drill:
+        description: 'Verify GitHub incident creation with a deliberate read-only probe failure'
+        type: boolean
+        default: false
   push:
     branches: [main]
     paths:
@@ -30,20 +35,29 @@ jobs:
           node-version: '24'
       - name: Probe actual checkout database, configured Stripe gateway and WELCOME10
         id: probe
-        run: node scripts/check-live-commerce.mjs
+        run: |
+          if [ "${{ inputs.incident_drill }}" = "true" ]; then
+            echo "Intentional incident drill; no production failure is implied."
+            exit 1
+          fi
+          node scripts/check-live-commerce.mjs
         env:
           CHECKOUT_SITE_URL: https://www.vialfoundry.com
+          # A push can run before Vercel has promoted the matching health code.
+          # Only a missing new health field gets this bounded deployment grace.
+          COMMERCE_DEPLOYMENT_GRACE: ${{ github.event_name == 'push' && 'true' || 'false' }}
       - name: Open or deduplicate production incident
         if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
+          INCIDENT_TITLE: ${{ inputs.incident_drill && 'Vial Foundry checkout monitor drill' || 'Vial Foundry checkout monitor outage' }}
         run: |
-          existing="$(gh issue list --state open --search 'Vial Foundry checkout monitor outage in:title' --json number --jq '.[0].number // empty')"
+          existing="$(gh issue list --state open --search "$INCIDENT_TITLE in:title" --json number --jq '.[0].number // empty')"
           if [ -n "$existing" ]; then
             echo "Existing checkout incident #$existing; no duplicate issue created."
           else
             gh issue create \
-              --title "Vial Foundry checkout monitor outage" \
-              --body "Automated live commerce probe failed. Investigate checkout database, Stripe gateway mode and WELCOME10 validation. This is a **read-only probe**; no real customer payment or completed transaction was attempted. Production: https://www.vialfoundry.com/api/health/checkout — Workflow: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. Do not mutate merchant keys or customer data automatically."
+              --title "$INCIDENT_TITLE" \
+              --body "Automated live commerce probe failed. Investigate checkout database, Stripe gateway mode, WELCOME10 validation and webhook settlement/notification backlog. Reconciliation runbook: https://github.com/$GITHUB_REPOSITORY/blob/main/docs/stripe-settlement-reconciliation.md. This is a **read-only probe**; no real customer payment or completed transaction was attempted. Production: https://www.vialfoundry.com/api/health/checkout — Workflow: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. Do not mutate merchant keys or customer data automatically."
           fi
           exit 0
