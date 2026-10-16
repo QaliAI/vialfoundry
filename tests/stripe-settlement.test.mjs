@@ -22,6 +22,9 @@ before(async()=>{
   await exec(fs.readFileSync('tests/fixtures/stripe-settlement-schema.sql','utf8'));
   for(const name of ['05_commerce_core.sql','06_stripe_commerce.sql','07_stripe_lifecycle.sql'])
     await exec(fs.readFileSync('supabase/migrations/'+name,'utf8'));
+  // Reproduce Supabase's pre-migration public insert grants so the revocation
+  // assertions fail if the migration ever leaves the original bypass open.
+  await exec('GRANT INSERT ON manual_orders,manual_order_items TO anon,authenticated');
   await exec(fs.readFileSync(migration,'utf8'));
 });
 after(async()=>{if(db)await (db.close?db.close():db.end());});
@@ -171,6 +174,20 @@ test('financial RPC and outbox are service role only',async()=>{
     assert.equal(r.rows[0].allowed,false);assert.equal(r.rows[0].readable,false);
     const insert=await q("select has_table_privilege($1,'manual_orders','INSERT') orders,has_table_privilege($1,'manual_order_items','INSERT') items",[role]);
     assert.equal(insert.rows[0].orders,false);assert.equal(insert.rows[0].items,false);
+  }
+});
+
+test('missing email provider never claims delivery for a Stripe job or production email',async()=>{
+  const key=process.env.RESEND_API_KEY;const environment=process.env.VERCEL_ENV;
+  delete process.env.RESEND_API_KEY;
+  const {sendEmailSafely}=loadTSModule('src/lib/email/resend.ts');
+  try {
+    assert.equal((await sendEmailSafely({to:'qa@example.invalid',subject:'QA',html:'QA',requireDelivery:true})).success,false);
+    process.env.VERCEL_ENV='production';
+    assert.equal((await sendEmailSafely({to:'qa@example.invalid',subject:'QA',html:'QA'})).success,false);
+  } finally {
+    if(key===undefined)delete process.env.RESEND_API_KEY;else process.env.RESEND_API_KEY=key;
+    if(environment===undefined)delete process.env.VERCEL_ENV;else process.env.VERCEL_ENV=environment;
   }
 });
 
