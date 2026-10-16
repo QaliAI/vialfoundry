@@ -26,14 +26,25 @@ const account=await stripe.accounts.retrieve();
 assert.ok(account.charges_enabled && account.capabilities?.card_payments==='active');
 assert.equal(account.id,'acct_1UEGL21yrb0MJg1w','REFUSED: expected VialFoundry sandbox');
 const {db,client}=await isolatedCommerce();
+const scenario=process.argv.includes('--declined')?'declined':process.argv.includes('--expired')?'expired':process.argv.includes('--canceled')?'canceled':'success';
 const brand={...vialFoundryBrandConfig,orderNotificationEmails:['delivered@resend.dev']};
 const replacements={'src/lib/supabase/admin.ts':{createAdminClient:()=>client},'src/config/brand.ts':{getBrandConfig:()=>brand}};
 const checkout=loadTSModule('src/app/api/checkout/route.ts',replacements);
 const webhook=loadTSModule('src/app/api/webhooks/stripe/route.ts',replacements);
 const product=PRODUCTS.find(p=>p.id==='vf-std-001');
 await db.query('INSERT INTO products(id,inventory_quantity) VALUES($1,10)',[product.id]);
-let browser;
-try{
+let browser;let page;
+const deliver=async event=>{
+  const payload=JSON.stringify(event);const signature=stripe.webhooks.generateTestHeaderString({payload,secret:process.env.STRIPE_WEBHOOK_SECRET});
+  return webhook.POST(new Request('http://localhost/api/webhooks/stripe',{method:'POST',body:payload,headers:{'stripe-signature':signature}}));
+};
+async function verifyUnpaid(expected){
+  assert.equal((await db.query('select payment_status from manual_orders')).rows[0].payment_status,expected);
+  assert.equal((await db.query('select inventory_quantity from products')).rows[0].inventory_quantity,10);
+  assert.equal(Number((await db.query('select count(*) n from stripe_email_outbox')).rows[0].n),0);
+  console.log(`PASS: actual sandbox ${scenario} leaves inventory unchanged and sends no paid confirmation`);
+}
+async function run(){
   const request={submissionKey:crypto.randomUUID(),customerEmail:'delivered@resend.dev',customerName:'Sandbox QA',ruoAgreed:true,
     preferredPaymentMethod:'card',promoCode:'WELCOME10',shippingMethodId:'standard',
     shippingAddress:{firstName:'Sandbox',lastName:'QA',address:'123 Test St',city:'Test',state:'TX',zip:'75001',email:'delivered@resend.dev'},
@@ -45,17 +56,41 @@ try{
   assert.equal(session.livemode,false);assert.equal(session.amount_total,order.total_amount);
   assert.equal(data.discountAmount,Math.round(product.price*100*0.1));
   console.log('PASS: actual /api/checkout persisted isolated order/items and created exact-amount WELCOME10 Stripe test session');
+  if(scenario==='expired'){
+    await stripe.checkout.sessions.expire(session.id);
+    const events=await stripe.events.list({type:'checkout.session.expired',limit:20});
+    const expired=events.data.find(e=>e.data.object.id===session.id);assert.ok(expired);
+    assert.equal((await deliver(expired)).status,200);await verifyUnpaid('expired');
+    return;
+  }
   const {chromium}=await import('playwright');browser=await chromium.launch({headless:true});
-  const page=await browser.newPage();
+  page=await browser.newPage();
   await page.route('http://127.0.0.1:9001/**',route=>route.fulfill({status:200,body:'Sandbox checkout return'}));
   await page.goto(data.checkoutUrl,{waitUntil:'domcontentloaded',timeout:60000});
-  await page.locator('#cardNumber').fill('4242424242424242',{timeout:25000});
+  if(scenario==='canceled'){
+    await page.goto(session.cancel_url);await verifyUnpaid('unpaid');
+    assert.equal((await stripe.checkout.sessions.retrieve(session.id)).payment_status,'unpaid');
+    await stripe.checkout.sessions.expire(session.id);
+    return;
+  }
+  await page.locator('#cardNumber').fill(scenario==='declined'?'4000000000000002':'4242424242424242',{timeout:25000});
   await page.locator('#cardExpiry').fill('1230');await page.locator('#cardCvc').fill('123');
   if(await page.locator('#billingName').count())await page.locator('#billingName').fill('Sandbox QA');
   if(await page.locator('#billingPostalCode').count())await page.locator('#billingPostalCode').fill('75001');
   const saveWithLink=page.getByRole('checkbox',{name:/Save my information/i});
   if(await saveWithLink.count())await saveWithLink.uncheck();
   const pay=page.locator('button[type="submit"]').last();await pay.click();
+  if(scenario==='declined'){
+    let failed;for(let attempt=0;attempt<20;attempt++){
+      const events=await stripe.events.list({type:'payment_intent.payment_failed',limit:20});
+      failed=events.data.find(e=>e.data.object.metadata?.orderId===order.id);if(failed)break;
+      await new Promise(r=>setTimeout(r,1000));
+    }
+    assert.ok(failed,'Stripe payment failure event must exist');
+    assert.equal((await deliver(failed)).status,200);await verifyUnpaid('failed');
+    await stripe.checkout.sessions.expire(session.id);
+    return;
+  }
   for(let i=0;i<30;i++){
     await new Promise(r=>setTimeout(r,1000));session=await stripe.checkout.sessions.retrieve(session.id);
     if(session.payment_status==='paid')break;
@@ -71,10 +106,6 @@ try{
     settled=events.data.find(e=>e.data.object.id===session.id);if(settled)break;await new Promise(r=>setTimeout(r,1000));
   }
   assert.ok(settled,'Stripe completion event must exist');
-  const deliver=async event=>{
-    const payload=JSON.stringify(event);const signature=stripe.webhooks.generateTestHeaderString({payload,secret:process.env.STRIPE_WEBHOOK_SECRET});
-    return webhook.POST(new Request('http://localhost/api/webhooks/stripe',{method:'POST',body:payload,headers:{'stripe-signature':signature}}));
-  };
   const result=await deliver(settled);assert.equal(result.status,200,await result.text());
   await Promise.all([deliver(settled),deliver(settled)]);
   const piEvents=await stripe.events.list({type:'payment_intent.succeeded',limit:20});
@@ -92,4 +123,8 @@ try{
   console.log('EMAIL PROVIDER STATUS:',JSON.stringify(receipts));
   fs.mkdirSync('output/playwright',{recursive:true});await page.screenshot({path:'output/playwright/stripe-sandbox-completed.png'});
   fs.writeFileSync('output/stripe-sandbox-evidence.json',JSON.stringify({account:account.id,sessionId:session.id,eventId:settled.id,paymentIntentId:session.payment_intent,livemode:false,amountTotal:session.amount_total,orderStatus:paid.status,emailProviderEvents:receipts,duplicateDeliveries:3},null,2));
+}
+try{await run();}catch(error){
+  if(page){fs.mkdirSync('output/playwright',{recursive:true});await page.screenshot({path:`output/playwright/stripe-${scenario}-failure.png`,fullPage:true});console.log((await page.locator('body').innerText()).slice(-900));}
+  throw error;
 }finally{if(browser)await browser.close();await db.close();}

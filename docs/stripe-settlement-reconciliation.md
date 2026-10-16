@@ -83,6 +83,8 @@ It strips all Supabase environment settings, refuses live keys and sends only
 to Resend's documented test sink. It requires Playwright and configured sandbox
 and email credentials. Evidence is written under ignored `output/`. It does
 not prove live-card acceptance or the network delivery of a production webhook.
+Use `--declined`, `--canceled`, or `--expired` for the negative sandbox cases;
+each verifies unchanged isolated inventory and no paid confirmation message.
 
 The production audit independently checked VialFoundry merchant capabilities,
 enabled production webhook, and production publishable-key alignment. The
