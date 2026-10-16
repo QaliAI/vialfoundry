@@ -54,11 +54,19 @@ export async function POST(req: Request) {
     if (supabase) {
       const { data: existing } = await supabase
         .from("manual_orders")
-        .select("order_number, total_amount, subtotal_amount, discount_amount, shipping_amount, preferred_payment_method")
+        .select("order_number, total_amount, subtotal_amount, discount_amount, shipping_amount, preferred_payment_method, checkout_mode, payment_status")
         .eq("submission_key", data.submissionKey)
         .single();
 
       if (existing) {
+        // Stripe sessions must never be represented as successfully paid or
+        // manually submitted orders by an idempotency retry.
+        if (existing.checkout_mode === "stripe") {
+          return NextResponse.json(
+            { success: false, error: "A checkout was already started for this request. Refresh checkout and try again; no new charge was made." },
+            { status: 409 },
+          );
+        }
         return NextResponse.json({
           success: true,
           orderNumber: existing.order_number,
@@ -105,9 +113,10 @@ export async function POST(req: Request) {
           .maybeSingle();
         if (stockErr || !stockRow) {
           if (isProductionRuntime()) {
+            console.error("[checkout] Inventory lookup failed:", stockErr?.message || "missing inventory record", catalogProduct.sku);
             return NextResponse.json(
-              { success: false, error: `Product "${catalogProduct.name}" is currently out of stock.` },
-              { status: 400 },
+              { success: false, error: "We could not verify inventory right now. No payment has been taken. Please try again shortly." },
+              { status: 503 },
             );
           }
         } else {
@@ -279,8 +288,13 @@ export async function POST(req: Request) {
     const stripeMode = isStripeEnabled();
     if (process.env.PAYMENT_GATEWAY_TYPE === "stripe" && !stripeMode) {
       const status = stripeConfigStatus();
-      console.warn(
+      console.error(
         `[checkout] Stripe selected but not enabled (missing=[${status.missing.join(",")}] mismatch=[${status.mismatch.join(",")}] mode=${status.mode || "none"} runtime=${status.runtime})`,
+      );
+      // Do not fall back to an unpaid invoice while the storefront promises card payment.
+      return NextResponse.json(
+        { success: false, error: "Secure card checkout is temporarily unavailable. No charge has been made. Please contact support." },
+        { status: 503 },
       );
     }
     const stripeLivemode = stripeMode ? stripeSecretMode() === "live" : null;
@@ -366,6 +380,10 @@ export async function POST(req: Request) {
 
       if (orderErr) {
         console.error("[checkout] manual_orders insert error:", orderErr.message);
+        return NextResponse.json(
+          { success: false, error: "We could not save your order. Nothing was charged. Please try again shortly." },
+          { status: 503 },
+        );
       } else {
         // Insert line items
         const lineItemInserts = validatedItems.map((i) => ({
@@ -385,7 +403,20 @@ export async function POST(req: Request) {
         const { error: itemsErr } = await supabase
           .from("manual_order_items")
           .insert(lineItemInserts);
-        if (itemsErr) console.error("[checkout] manual_order_items error:", itemsErr.message);
+        if (itemsErr) {
+          console.error("[checkout] manual_order_items error:", itemsErr.message);
+          // Keep the incomplete order identifiable for support, but do not
+          // issue an invoice, initiate Stripe, or claim checkout succeeded.
+          const { error: flagErr } = await supabase
+            .from("manual_orders")
+            .update({ status: "checkout_error", updated_at: new Date().toISOString() })
+            .eq("id", orderId);
+          if (flagErr) console.error("[checkout] could not flag incomplete order:", flagErr.message);
+          return NextResponse.json(
+            { success: false, error: "We could not save all order items. Nothing was charged. Please try again shortly." },
+            { status: 503 },
+          );
+        }
 
         await recordOrderEvent({
           orderId,
@@ -467,7 +498,7 @@ export async function POST(req: Request) {
         });
 
         if (supabase) {
-          await supabase
+          const { error: sessionSaveErr } = await supabase
             .from("manual_orders")
             .update({
               stripe_checkout_session_id: session.sessionId,
@@ -475,6 +506,9 @@ export async function POST(req: Request) {
               updated_at: new Date().toISOString(),
             })
             .eq("id", orderId);
+          if (sessionSaveErr) {
+            throw new Error("Stripe session created but could not be linked to the saved order: " + sessionSaveErr.message);
+          }
         }
 
         await recordOrderEvent({
