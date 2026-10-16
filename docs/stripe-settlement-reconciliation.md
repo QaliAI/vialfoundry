@@ -24,6 +24,11 @@ select id,manual_order_id,kind,attempts,last_error,first_attempt_at,provider_id
 from public.stripe_email_outbox where sent_at is null;
 ```
 
+To test incident creation without changing production, dispatch the existing
+workflow with `incident_drill=true`. It deliberately fails before the read-only
+probe and opens/deduplicates a separate **checkout monitor drill** issue. Close
+that drill issue after verifying its contents. Scheduled runs leave this false.
+
 Failed financial transactions leave a retryable receipt. Stripe retries non-2xx
 responses; the same event can commit exactly once after the underlying issue is
 resolved. Two settlement event types serialize on the same order row. A failed
@@ -83,8 +88,9 @@ The production audit independently checked VialFoundry merchant capabilities,
 enabled production webhook, and production publishable-key alignment. The
 unrelated Stripe connector account is not used. The Supabase MCP connection
 cannot access the production project; direct read-only access was verified
-against `zywesqnrlmbzztxzjlgi` only. Runtime log retention is limited to one hour,
-so a 48-hour retrospective cannot be established from Vercel's retained logs.
+against `zywesqnrlmbzztxzjlgi` only. Raw runtime log retention is limited to one
+hour. Vercel's separate aggregated runtime-error query reported no clusters over
+48 hours; raw failed-request coverage for that whole period cannot be established.
 
 ## Rollback
 

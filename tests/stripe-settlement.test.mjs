@@ -94,7 +94,7 @@ test('missing attributed order retries; unknown unattributed event is identified
   await assert.rejects(apply(event(undefined,undefined,{metadata:{orderId:'00000000-0000-4000-8000-000000000099'},client_reference_id:null,id:'cs_unknown',payment_intent:'pi_unknown'})));
   const unknown=await apply(event(undefined,'evt_unknown',{metadata:{},client_reference_id:null,id:'cs_unknown',payment_intent:'pi_unknown'}));
   assert.equal(unknown.outcome,'unknown_unattributed_event');
-  assert.equal((await q("select count(*) n from stripe_webhook_events where id='evt_unknown'")).rows[0].n,0);
+  assert.equal(Number((await q("select count(*) n from stripe_webhook_events where id='evt_unknown'")).rows[0].n),0);
 });
 test('legacy claimed event and already-paid partial effects are held for review',async()=>{
   await q("insert into stripe_webhook_events(id,event_type,manual_order_id) values('evt_a','checkout.session.completed',$1)",[orderId]);
