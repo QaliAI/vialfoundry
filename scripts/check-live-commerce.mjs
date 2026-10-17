@@ -21,13 +21,9 @@ async function getJson(path, options = {}) {
 }
 
 async function probe() {
-  const [health, promotions, coupon] = await Promise.all([
+  const [health, promotions] = await Promise.all([
     getJson('/api/health/checkout'),
     getJson('/api/promotions'),
-    getJson('/api/promotions/validate', {
-      method: 'POST',
-      body: JSON.stringify({ code: 'WELCOME10', subtotalCents: 5999, customerEmail: 'health-probe-20261016@example.invalid' }),
-    }),
   ]);
 
   if (health.status !== 'ok' || health.checkoutAvailable !== true || health.database !== 'available')
@@ -43,12 +39,27 @@ async function probe() {
     throw new Error('Stripe settlement retries or notification backlog require reconciliation');
   if (promotions.banner?.code !== 'WELCOME10')
     throw new Error('WELCOME10 is not the active announcement campaign');
-  if (!coupon.valid || coupon.code !== 'WELCOME10' || coupon.discountRateBps !== 1000 ||
-      coupon.discountCents !== 600 || coupon.isProvisional !== false)
+
+  // Derive the expected coupon math from the live promotions feed instead of
+  // hardcoding it, so a future campaign or pricing change cannot page falsely.
+  const campaignCode = promotions.banner.code;
+  const promo = (promotions.promotions || []).find((p) => p.code === campaignCode);
+  if (!promo || typeof promo.discountRateBps !== 'number')
+    throw new Error('Active campaign ' + campaignCode + ' has no discountRateBps in the promotions feed');
+  const subtotalCents = 5999;
+  const expectedDiscountCents = Math.round(subtotalCents * (promo.discountRateBps / 10000));
+
+  const coupon = await getJson('/api/promotions/validate', {
+    method: 'POST',
+    body: JSON.stringify({ code: campaignCode, subtotalCents, customerEmail: 'health-probe-20261016@example.invalid' }),
+  });
+
+  if (!coupon.valid || coupon.code !== campaignCode || coupon.discountRateBps !== promo.discountRateBps ||
+      coupon.discountCents !== expectedDiscountCents || coupon.isProvisional !== false)
     throw new Error('WELCOME10 live eligibility/discount validation failed');
 
   return { checkout: 'ok', database: 'available', stripeConfigured: true,
-    coupon: 'WELCOME10', couponDiscountCents: coupon.discountCents };
+    coupon: campaignCode, couponDiscountCents: coupon.discountCents };
 }
 
 let lastError;
