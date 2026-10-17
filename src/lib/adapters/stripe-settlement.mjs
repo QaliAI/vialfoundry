@@ -23,7 +23,11 @@ export async function applySettlement(database, event) {
   if (error || !data) {
     // A failed receipt remains retryable and visible to the existing watchdog.
     await database.rpc('record_stripe_failure', { p_id: event.id, p_type: event.type });
-    throw new Error('settlement_database_failure');
+    // Preserve the underlying RPC reason (e.g. stripe_amount_or_currency_mismatch)
+    // so the route can tell permanent failures apart from transient ones.
+    throw new Error('settlement_database_failure', {
+      cause: error && typeof error.message === 'string' ? error.message : 'unknown',
+    });
   }
   return data;
 }
